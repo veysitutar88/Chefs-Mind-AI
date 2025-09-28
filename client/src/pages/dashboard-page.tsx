@@ -53,6 +53,12 @@ export default function DashboardPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent>(agents[0]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  
+  // Media Studio state
+  const [mediaStudioSettings, setMediaStudioSettings] = useState({
+    contentType: 'text' as 'text' | 'image' | 'video',
+    selectedModel: 'gpt-5'
+  });
 
   const { data: sessions } = useQuery({
     queryKey: ['/api/chat/sessions'],
@@ -147,12 +153,16 @@ export default function DashboardPage() {
           <ChatInterface 
             selectedAgent={selectedAgent}
             sessionId={currentSessionId}
+            mediaStudioSettings={mediaStudioSettings}
           />
         </main>
 
         {/* Right Panel */}
         <aside className="w-80 bg-card border-l border-border overflow-y-auto">
-          <MediaStudioPanel />
+          <MediaStudioPanel 
+            settings={mediaStudioSettings}
+            onSettingsChange={setMediaStudioSettings}
+          />
           
           {/* System Status */}
           <div className="p-6 border-b border-border">

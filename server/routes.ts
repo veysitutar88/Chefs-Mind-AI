@@ -120,33 +120,52 @@ export function registerRoutes(app: Express): Server {
             metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
           }
         } else if (session.agentType === 'media-studio') {
+          // Debug logging for media studio requests
+          console.log('Media Studio Request Debug:', {
+            agentType: session.agentType,
+            mediaType: req.body.mediaType,
+            model: req.body.model,
+            bodyKeys: Object.keys(req.body)
+          });
+          
           // Handle media generation requests
           if (req.body.mediaType === 'text') {
             // Use GPT-5 for creative text generation
             aiResponse = await analyzeWithGPT(data.content, session.agentType);
             metadata = { model: 'gpt-5', contentType: 'text' };
           } else if (req.body.mediaType === 'image') {
+            console.log('Processing image generation request');
             const model = req.body.model || 'imagen-3';
             let result;
             
-            if (model === 'dall-e-3') {
-              result = await generateWithOpenAI(data.content, 'image');
-            } else {
-              result = await generateWithGemini(data.content, 'image');
+            try {
+              if (model === 'dall-e-3') {
+                console.log('Calling generateWithOpenAI for DALL-E 3');
+                result = await generateWithOpenAI(data.content, 'image');
+              } else {
+                console.log('Calling generateWithGemini for Imagen 3');
+                result = await generateWithGemini(data.content, 'image');
+              }
+              
+              console.log('Image generation result:', { url: result.url, metadata: result.metadata });
+              
+              // Save generated content
+              await storage.createGeneratedContent({
+                userId: req.user!.id,
+                type: 'image',
+                prompt: data.content,
+                model,
+                url: result.url,
+                metadata: result.metadata
+              });
+              
+              aiResponse = `Изображение создано успешно с использованием ${model}`;
+              metadata = { imageUrl: result.url, model, contentType: 'image' };
+              console.log('Image generation completed successfully');
+            } catch (imageError) {
+              console.error('Image generation failed:', imageError);
+              throw imageError; // Re-throw to be caught by outer try-catch
             }
-            
-            // Save generated content
-            await storage.createGeneratedContent({
-              userId: req.user!.id,
-              type: 'image',
-              prompt: data.content,
-              model,
-              url: result.url,
-              metadata: result.metadata
-            });
-            
-            aiResponse = `Изображение создано успешно с использованием ${model}`;
-            metadata = { imageUrl: result.url, model, contentType: 'image' };
           } else if (req.body.mediaType === 'video') {
             const model = req.body.model || 'veo-3';
             const result = await generateWithGemini(data.content, 'video');

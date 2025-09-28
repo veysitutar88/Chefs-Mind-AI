@@ -10,9 +10,13 @@ import type { Agent, ChatMessage } from "@/types";
 interface ChatInterfaceProps {
   selectedAgent: Agent;
   sessionId: string | null;
+  mediaStudioSettings?: {
+    contentType: 'text' | 'image' | 'video';
+    selectedModel: string;
+  };
 }
 
-export function ChatInterface({ selectedAgent, sessionId }: ChatInterfaceProps) {
+export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const { data: fetchedMessages, isLoading } = useQuery({
@@ -42,7 +46,38 @@ export function ChatInterface({ selectedAgent, sessionId }: ChatInterfaceProps) 
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const result = await api.sendMessage(sessionId, content, metadata);
+      // For Media Studio agent, include media settings in the request
+      let finalMetadata = metadata || {};
+      if (selectedAgent.id === 'media-studio' && mediaStudioSettings) {
+        // Map content type to backend expected values
+        const mediaTypeMap = {
+          'text': 'text',
+          'images': 'image', 
+          'video': 'video'
+        };
+        
+        // Map model names to backend expected values
+        const modelMap = {
+          'DALL·E 3 (OpenAI)': 'dall-e-3',
+          'Imagen 3 (Google)': 'imagen-3',
+          'Veo 3 (Google)': 'veo-3'
+        };
+        
+        finalMetadata = {
+          ...finalMetadata,
+          mediaType: mediaTypeMap[mediaStudioSettings.contentType as keyof typeof mediaTypeMap],
+          model: modelMap[mediaStudioSettings.selectedModel as keyof typeof modelMap]
+        };
+        console.log('Media Studio request:', { 
+          agent: selectedAgent.id, 
+          contentType: mediaStudioSettings.contentType, 
+          model: mediaStudioSettings.selectedModel,
+          content,
+          finalMetadata 
+        });
+      }
+
+      const result = await api.sendMessage(sessionId, content, finalMetadata);
       
       // Replace optimistic message with real ones
       setMessages(prev => [

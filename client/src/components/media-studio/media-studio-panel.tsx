@@ -4,9 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
-export function MediaStudioPanel() {
-  const [contentType, setContentType] = useState<'text' | 'image' | 'video'>('text');
-  const [selectedModel, setSelectedModel] = useState('gpt-5');
+interface MediaStudioPanelProps {
+  settings: {
+    contentType: 'text' | 'image' | 'video';
+    selectedModel: string;
+  };
+  onSettingsChange: (settings: { contentType: 'text' | 'image' | 'video'; selectedModel: string; }) => void;
+}
+
+export function MediaStudioPanel({ settings, onSettingsChange }: MediaStudioPanelProps) {
+  const { contentType, selectedModel } = settings;
 
   const getModelOptions = () => {
     if (contentType === 'text') {
@@ -26,15 +33,27 @@ export function MediaStudioPanel() {
   };
 
   const handleContentTypeChange = (type: 'text' | 'image' | 'video') => {
-    setContentType(type);
+    let newModel: string;
     // Reset model selection when switching content type
     if (type === 'text') {
-      setSelectedModel('gpt-5');
+      newModel = 'gpt-5';
     } else if (type === 'image') {
-      setSelectedModel('imagen-3');
+      newModel = 'imagen-3';
     } else {
-      setSelectedModel('veo-3');
+      newModel = 'veo-3';
     }
+    
+    onSettingsChange({
+      contentType: type,
+      selectedModel: newModel
+    });
+  };
+
+  const handleModelChange = (model: string) => {
+    onSettingsChange({
+      contentType,
+      selectedModel: model
+    });
   };
 
   return (
@@ -83,7 +102,7 @@ export function MediaStudioPanel() {
           </span>
         </div>
         
-        <Select value={selectedModel} onValueChange={setSelectedModel}>
+        <Select value={selectedModel} onValueChange={handleModelChange}>
           <SelectTrigger className="w-full" data-testid="select-ai-model">
             <SelectValue />
           </SelectTrigger>
