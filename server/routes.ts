@@ -127,47 +127,7 @@ export function registerRoutes(app: Express): Server {
           agentType: session.agentType 
         });
 
-        if (session.agentType === 'accountant') {
-          // Get available tables for Gemini context
-          const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices'))");
-          const availableTables = tablesQuery.rows.map(row => row.table_name);
-          
-          // Use Gemini for data analysis and SQL generation
-          const result = await analyzeWithGemini(data.content, session.agentType, availableTables);
-          aiResponse = result.response;
-          metadata = result.metadata;
-          
-          // If SQL query is generated for accountant, validate and execute it
-          if (result.metadata?.sqlQuery) {
-            console.log('Generated SQL Query:', result.metadata.sqlQuery);
-            const validationResult = validateSQL(result.metadata.sqlQuery);
-            console.log('SQL Validation Result:', validationResult);
-            if (!validationResult.isValid) {
-              throw new Error(`SQL Validation Error: ${validationResult.error}`);
-            }
-            
-            try {
-              const queryResults = await executeReadOnlySQL(result.metadata.sqlQuery);
-              metadata.queryResults = queryResults;
-              metadata.debugSql = validationResult.sanitizedQuery || result.metadata.sqlQuery;
-            } catch (sqlError) {
-              const sqlErrorMessage = sqlError instanceof Error ? sqlError.message : 'SQL execution error';
-              metadata.sqlError = sqlErrorMessage;
-            }
-          }
-        } else if (session.agentType === 'analyst') {
-          // Use Perplexity for market analysis and research
-          try {
-            const result = await analyzeWithPerplexity(data.content, session.agentType);
-            aiResponse = result.response;
-            metadata = result.metadata;
-          } catch (perplexityError) {
-            console.error('Perplexity failed, falling back to GPT-5:', perplexityError);
-            // Fallback to GPT-5 if Perplexity fails
-            aiResponse = await analyzeWithGPT(data.content, session.agentType);
-            metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
-          }
-        } else if (session.agentType === 'media-studio') {
+        if (session.agentType === 'media-studio') {
           console.log('🎨 Media Studio - Two-Step Generation Process Started');
           console.log('Request params:', { mediaType: req.body.mediaType, model: req.body.model });
           
@@ -295,9 +255,37 @@ export function registerRoutes(app: Express): Server {
           } else if (selectedModel === 'gemini-2.5-pro' || selectedModel === 'gemini-2.5-flash') {
             // Use Gemini 2.5 Pro or Flash
             console.log(`🔵 Calling analyzeWithGemini with ${selectedModel}...`);
-            const result = await analyzeWithGemini(data.content, session.agentType, undefined, selectedModel);
+            
+            // Special handling for accountant: provide available tables
+            let availableTables;
+            if (session.agentType === 'accountant') {
+              const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices'))");
+              availableTables = tablesQuery.rows.map(row => row.table_name);
+            }
+            
+            const result = await analyzeWithGemini(data.content, session.agentType, availableTables, selectedModel);
             aiResponse = result.response;
             metadata = result.metadata;
+            
+            // If SQL query is generated for accountant, validate and execute it
+            if (session.agentType === 'accountant' && result.metadata?.sqlQuery) {
+              console.log('Generated SQL Query:', result.metadata.sqlQuery);
+              const validationResult = validateSQL(result.metadata.sqlQuery);
+              console.log('SQL Validation Result:', validationResult);
+              if (!validationResult.isValid) {
+                throw new Error(`SQL Validation Error: ${validationResult.error}`);
+              }
+              
+              try {
+                const queryResults = await executeReadOnlySQL(result.metadata.sqlQuery);
+                metadata.queryResults = queryResults;
+                metadata.debugSql = validationResult.sanitizedQuery || result.metadata.sqlQuery;
+              } catch (sqlError) {
+                const sqlErrorMessage = sqlError instanceof Error ? sqlError.message : 'SQL execution error';
+                metadata.sqlError = sqlErrorMessage;
+              }
+            }
+            
             console.log('🔵 Gemini response metadata:', JSON.stringify(metadata, null, 2));
           } else if (selectedModel === 'gpt-5') {
             // Use GPT-5
