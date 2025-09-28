@@ -4,22 +4,34 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "" 
 });
 
-export async function analyzeWithGemini(text: string, agentType: string): Promise<{response: string, metadata: any}> {
+export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[]): Promise<{response: string, metadata: any}> {
   let systemPrompt = "";
   let model = "gemini-2.5-pro";
   
   switch (agentType) {
     case 'accountant':
-      systemPrompt = `Du bist ein Experte für Finanzanalyse und Buchhaltung. Analysiere Daten, erstelle SQL-Abfragen für PostgreSQL und gib strukturierte Antworten zurück. Wenn SQL erforderlich ist, füge es in das Metadatenfeld ein. Antworte auf Deutsch.`;
+      let tablesInfo = '';
+      if (availableTables && availableTables.length > 0) {
+        tablesInfo = ` Verfügbare Tabellen in der Datenbank: ${availableTables.join(', ')}. `;
+      }
+      systemPrompt = `Du bist ein Experte für Finanzanalyse und Buchhaltung. Analysiere Daten, erstelle SQL-Abfragen für PostgreSQL und gib strukturierte Antworten zurück.${tablesInfo}WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Wenn SQL erforderlich ist, füge es in das Metadatenfeld ein. Antworte auf Deutsch.`;
       break;
     case 'analyst':
-      systemPrompt = `Du bist ein Datenanalyst. Erstelle SQL-Abfragen, analysiere Trends und gib datengestützte Erkenntnisse. Verwende PostgreSQL-Syntax. Antworte auf Deutsch.`;
+      let tablesInfoAnalyst = '';
+      if (availableTables && availableTables.length > 0) {
+        tablesInfoAnalyst = ` Verfügbare Tabellen in der Datenbank: ${availableTables.join(', ')}. `;
+      }
+      systemPrompt = `Du bist ein Datenanalyst. Erstelle SQL-Abfragen, analysiere Trends und gib datengestützte Erkenntnisse. Verwende PostgreSQL-Syntax.${tablesInfoAnalyst}WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Antworte auf Deutsch.`;
       break;
     case 'chef':
       systemPrompt = `Du bist ein Küchenchef und kulinarischer Experte. Gib Rezepte, Kochtipps und Restaurantmanagement-Beratung. Antworte auf Deutsch.`;
       break;
     case 'visualizer':
-      systemPrompt = `Du bist ein Datenvisualisierungs-Experte. Erstelle SQL-Abfragen für Diagramme und erkläre, welche Visualisierungen am besten geeignet sind. Antworte auf Deutsch.`;
+      let tablesInfoViz = '';
+      if (availableTables && availableTables.length > 0) {
+        tablesInfoViz = ` Verfügbare Tabellen in der Datenbank: ${availableTables.join(', ')}. `;
+      }
+      systemPrompt = `Du bist ein Datenvisualisierungs-Experte. Erstelle SQL-Abfragen für Diagramme und erkläre, welche Visualisierungen am besten geeignet sind.${tablesInfoViz}WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Antworte auf Deutsch.`;
       break;
     default:
       systemPrompt = `Du bist ein hilfsbereiter KI-Assistent. Antworte auf Deutsch und sei präzise und informativ.`;

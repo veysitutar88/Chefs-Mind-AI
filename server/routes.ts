@@ -9,6 +9,7 @@ import { validateSQL, executeReadOnlySQL } from "./services/sqlValidator";
 import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
 import { generateWithOpenAI, analyzeWithGPT } from "./services/openai";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema } from "@shared/schema";
+import { pool } from "./db";
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -78,14 +79,20 @@ export function registerRoutes(app: Express): Server {
 
       try {
         if (session.agentType === 'accountant' || session.agentType === 'analyst') {
+          // Get available tables for Gemini context
+          const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'imported_%'");
+          const availableTables = tablesQuery.rows.map(row => row.table_name);
+          
           // Use Gemini for data analysis and SQL generation
-          const result = await analyzeWithGemini(data.content, session.agentType);
+          const result = await analyzeWithGemini(data.content, session.agentType, availableTables);
           aiResponse = result.response;
           metadata = result.metadata;
           
           // If SQL query is generated, validate and execute it
           if (result.metadata?.sqlQuery) {
+            console.log('Generated SQL Query:', result.metadata.sqlQuery);
             const validationResult = validateSQL(result.metadata.sqlQuery);
+            console.log('SQL Validation Result:', validationResult);
             if (!validationResult.isValid) {
               throw new Error(`SQL Validation Error: ${validationResult.error}`);
             }
@@ -93,7 +100,7 @@ export function registerRoutes(app: Express): Server {
             try {
               const queryResults = await executeReadOnlySQL(result.metadata.sqlQuery);
               metadata.queryResults = queryResults;
-              metadata.debugSql = result.metadata.sqlQuery;
+              metadata.debugSql = validationResult.sanitizedQuery || result.metadata.sqlQuery;
             } catch (sqlError) {
               const sqlErrorMessage = sqlError instanceof Error ? sqlError.message : 'SQL execution error';
               metadata.sqlError = sqlErrorMessage;
