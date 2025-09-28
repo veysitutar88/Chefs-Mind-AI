@@ -67,7 +67,7 @@ export async function enhancePromptForMediaGeneration(userPrompt: string, mediaT
         { role: "user", content: userPrompt }
       ],
       temperature: 0.8,
-      max_tokens: 500
+      max_completion_tokens: 500
     });
 
     const enhancedPrompt = response.choices[0].message.content?.trim() || userPrompt;
