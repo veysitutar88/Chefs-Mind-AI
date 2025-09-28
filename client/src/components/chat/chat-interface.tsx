@@ -64,7 +64,7 @@ export function ChatInterface({ selectedAgent, sessionId }: ChatInterfaceProps) 
       case 'accountant':
         return 'Gemini 2.5 Pro • Структурированные таблицы • SQL Debug';
       case 'analyst':
-        return 'Gemini 2.5 Pro • Анализ данных • SQL генерация';
+        return 'Perplexity • Маркетинговые исследования • Анализ трендов';
       case 'chef':
         return 'GPT-5 • Кулинарная экспертиза';
       case 'media-studio':
