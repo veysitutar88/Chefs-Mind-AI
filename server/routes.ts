@@ -79,6 +79,13 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
+        // Debug: Log all request parameters
+        console.log('🔍 Request body params:', { 
+          aiModel: req.body.aiModel, 
+          mediaType: req.body.mediaType, 
+          agentType: session.agentType 
+        });
+
         if (session.agentType === 'accountant') {
           // Get available tables for Gemini context
           const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices'))");
@@ -221,9 +228,67 @@ export function registerRoutes(app: Express): Server {
           
           console.log('🎉 Media Studio - Two-Step Generation Process Completed');
         } else {
-          // Use GPT-5 for creative and text-focused tasks
-          aiResponse = await analyzeWithGPT(data.content, session.agentType);
-          metadata = { model: 'gpt-5' };
+          // Handle regular agents with AI model selection
+          const selectedModel = req.body.aiModel || getDefaultModelForAgent(session.agentType);
+          
+          console.log(`🤖 ${session.agentType} agent using model: ${selectedModel}`);
+          
+          if (selectedModel === 'auto') {
+            // Universal agent with automatic routing
+            if (session.agentType === 'universal') {
+              // Use Gemini for analytical tasks, GPT-5 for creative tasks
+              const isAnalytical = /\b(анализ|данные|таблица|статистика|график|отчет|sql|query)\b/i.test(data.content);
+              if (isAnalytical) {
+                const result = await analyzeWithGemini(data.content, session.agentType);
+                aiResponse = result.response;
+                metadata = { ...result.metadata, autoRouted: 'gemini' };
+              } else {
+                aiResponse = await analyzeWithGPT(data.content, session.agentType);
+                metadata = { model: 'gpt-5', autoRouted: 'gpt' };
+              }
+            } else {
+              // Fallback to GPT-5
+              aiResponse = await analyzeWithGPT(data.content, session.agentType);
+              metadata = { model: 'gpt-5' };
+            }
+          } else if (selectedModel === 'gemini-1.5-pro') {
+            // Use Gemini Pro
+            console.log('🔵 Calling analyzeWithGemini...');
+            const result = await analyzeWithGemini(data.content, session.agentType);
+            aiResponse = result.response;
+            metadata = result.metadata;
+            console.log('🔵 Gemini response metadata:', JSON.stringify(metadata, null, 2));
+          } else if (selectedModel === 'gpt-5') {
+            // Use GPT-5
+            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            metadata = { model: 'gpt-5' };
+          } else if (selectedModel === 'perplexity') {
+            // Use Perplexity (mainly for analyst)
+            try {
+              const result = await analyzeWithPerplexity(data.content, session.agentType);
+              aiResponse = result.response;
+              metadata = result.metadata;
+            } catch (perplexityError) {
+              console.error('Perplexity failed, falling back to GPT-5:', perplexityError);
+              aiResponse = await analyzeWithGPT(data.content, session.agentType);
+              metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
+            }
+          } else {
+            // Default to GPT-5 for unknown models
+            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            metadata = { model: 'gpt-5', note: `Unknown model ${selectedModel}, using GPT-5` };
+          }
+        }
+
+        // Helper function to get default model for each agent
+        function getDefaultModelForAgent(agentType: string): string {
+          switch (agentType) {
+            case 'universal': return 'auto';
+            case 'accountant': return 'gemini-1.5-pro';
+            case 'chef': return 'gpt-5';
+            case 'analyst': return 'perplexity';
+            default: return 'gpt-5';
+          }
         }
       } catch (aiError) {
         const aiErrorMessage = aiError instanceof Error ? aiError.message : 'Unknown error';
