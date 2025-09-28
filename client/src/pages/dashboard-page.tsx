@@ -60,6 +60,14 @@ export default function DashboardPage() {
     selectedModel: 'gpt-5'
   });
 
+  // AI Model selection state for regular agents
+  const [selectedAiModels, setSelectedAiModels] = useState({
+    universal: 'auto',
+    accountant: 'gemini-1.5-pro',
+    chef: 'gpt-5',
+    analyst: 'perplexity'
+  });
+
   const { data: sessions } = useQuery({
     queryKey: ['/api/chat/sessions'],
     queryFn: () => api.getChatSessions()
@@ -80,6 +88,13 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to create chat session:', error);
     }
+  };
+
+  const handleAiModelChange = (agentId: string, model: string) => {
+    setSelectedAiModels(prev => ({
+      ...prev,
+      [agentId]: model
+    }));
   };
 
   return (
@@ -154,6 +169,8 @@ export default function DashboardPage() {
             selectedAgent={selectedAgent}
             sessionId={currentSessionId}
             mediaStudioSettings={mediaStudioSettings}
+            selectedAiModel={selectedAiModels[selectedAgent.id as keyof typeof selectedAiModels]}
+            onAiModelChange={(model: string) => handleAiModelChange(selectedAgent.id, model)}
           />
         </main>
 

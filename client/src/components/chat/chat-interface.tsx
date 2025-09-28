@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "./chat-input";
 import { Message } from "./message";
+import { AIModelSelector } from "./ai-model-selector";
 import { api } from "@/lib/api";
 import type { Agent, ChatMessage } from "@/types";
 
@@ -14,9 +15,11 @@ interface ChatInterfaceProps {
     contentType: 'text' | 'image' | 'video';
     selectedModel: string;
   };
+  selectedAiModel?: string;
+  onAiModelChange?: (model: string) => void;
 }
 
-export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }: ChatInterfaceProps) {
+export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings, selectedAiModel, onAiModelChange }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const { data: fetchedMessages, isLoading } = useQuery({
@@ -46,8 +49,9 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }:
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      // For Media Studio agent, include media settings in the request
+      // Include metadata for all agents
       let finalMetadata = metadata || {};
+      
       if (selectedAgent.id === 'media-studio' && mediaStudioSettings) {
         // Media Studio settings already contain the correct values
         finalMetadata = {
@@ -55,13 +59,12 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }:
           mediaType: mediaStudioSettings.contentType, // Already correct: 'text', 'image', 'video'
           model: mediaStudioSettings.selectedModel     // Already correct: 'dall-e-3', 'imagen-3', 'veo-3'
         };
-        console.log('Media Studio request:', { 
-          agent: selectedAgent.id, 
-          contentType: mediaStudioSettings.contentType, 
-          model: mediaStudioSettings.selectedModel,
-          content,
-          finalMetadata 
-        });
+      } else if (selectedAiModel) {
+        // For regular agents, include selected AI model
+        finalMetadata = {
+          ...finalMetadata,
+          aiModel: selectedAiModel
+        };
       }
 
       const result = await api.sendMessage(sessionId, content, finalMetadata);
@@ -121,6 +124,15 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }:
           </div>
         </div>
       </div>
+
+      {/* AI Model Selector for regular agents (not Media Studio) */}
+      {selectedAgent.id !== 'media-studio' && selectedAiModel && onAiModelChange && (
+        <AIModelSelector
+          agentType={selectedAgent.id}
+          selectedModel={selectedAiModel}
+          onModelChange={onAiModelChange}
+        />
+      )}
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
