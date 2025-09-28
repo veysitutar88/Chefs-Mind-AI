@@ -109,9 +109,16 @@ export function registerRoutes(app: Express): Server {
           }
         } else if (session.agentType === 'analyst') {
           // Use Perplexity for market analysis and research
-          const result = await analyzeWithPerplexity(data.content, session.agentType);
-          aiResponse = result.response;
-          metadata = result.metadata;
+          try {
+            const result = await analyzeWithPerplexity(data.content, session.agentType);
+            aiResponse = result.response;
+            metadata = result.metadata;
+          } catch (perplexityError) {
+            console.error('Perplexity failed, falling back to GPT-5:', perplexityError);
+            // Fallback to GPT-5 if Perplexity fails
+            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
+          }
         } else if (session.agentType === 'media-studio') {
           // Handle media generation requests
           if (req.body.mediaType === 'image') {

@@ -66,7 +66,9 @@ export async function analyzeWithPerplexity(text: string, agentType: string): Pr
     });
 
     if (!response.ok) {
-      throw new Error(`Perplexity API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Perplexity API Response:', response.status, errorText);
+      throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
     }
 
     const data: PerplexityResponse = await response.json();
