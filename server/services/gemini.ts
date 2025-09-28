@@ -80,30 +80,100 @@ WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Wenn SQL erforderlich ist, 
 }
 
 export async function generateWithGemini(prompt: string, type: 'image' | 'video'): Promise<{url: string, metadata: any}> {
-  // Note: Implement actual Gemini image/video generation when available
-  // For now, return placeholder response
-  
-  if (type === 'image') {
-    // Use Imagen 3 generation (placeholder implementation)
-    return {
-      url: "https://placeholder-image-url.com/generated.jpg",
-      metadata: {
-        model: "imagen-3",
-        prompt,
-        generated: true
-      }
-    };
-  } else if (type === 'video') {
-    // Use Veo 3 generation (placeholder implementation)
-    return {
-      url: "https://placeholder-video-url.com/generated.mp4",
-      metadata: {
-        model: "veo-3",
-        prompt,
-        generated: true
-      }
-    };
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured');
   }
-  
-  throw new Error("Unsupported generation type");
+
+  try {
+    if (type === 'image') {
+      // Use Imagen 3 generation
+      const systemPrompt = `Du bist ein KI-Assistent für ein Restaurant in Berlin, Deutschland. Generiere hochwertige Bilder für Restaurant-Zwecke. Berücksichtige die deutsche Kultur und den Berliner Kontext.`;
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash-preview-image-generation",
+        contents: [{ role: "user", parts: [{ text: `${systemPrompt}\n\nBildprompt: ${prompt}` }] }],
+        config: {
+          responseModalities: ["TEXT", "IMAGE"],
+        },
+      });
+
+      // Extract image from response
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        throw new Error('No candidates returned from Imagen 3');
+      }
+
+      const content = candidates[0].content;
+      if (!content || !content.parts) {
+        throw new Error('No content parts returned from Imagen 3');
+      }
+
+      let imageUrl = '';
+      let generatedText = '';
+
+      for (const part of content.parts) {
+        if (part.text) {
+          generatedText = part.text;
+        } else if (part.inlineData && part.inlineData.data) {
+          // Convert base64 to blob URL (in a real implementation, you'd upload to cloud storage)
+          const imageData = Buffer.from(part.inlineData.data, 'base64');
+          // For now, create a data URL (in production, upload to cloud storage)
+          imageUrl = `data:image/jpeg;base64,${part.inlineData.data}`;
+        }
+      }
+
+      if (!imageUrl) {
+        throw new Error('No image data returned from Imagen 3');
+      }
+
+      return {
+        url: imageUrl,
+        metadata: {
+          model: "imagen-3",
+          prompt,
+          generatedText,
+          generated: true,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+    } else if (type === 'video') {
+      // Use Veo 3 generation
+      const systemPrompt = `Du bist ein KI-Assistent für ein Restaurant in Berlin, Deutschland. Generiere hochwertige Videos für Restaurant-Zwecke. Berücksichtige die deutsche Kultur und den Berliner Kontext.`;
+      
+      const operation = await ai.models.generateVideos({
+        model: "veo-3.0-generate-preview",
+        prompt: `${systemPrompt}\n\nVideo-Prompt: ${prompt}`,
+        config: {
+          negativePrompt: "low quality, blurry, pixelated",
+          aspectRatio: "16:9",
+          resolution: "720p"
+        }
+      });
+
+      // For video generation, we need to wait for the operation to complete
+      // This is a long-running operation, so we'll return a placeholder for now
+      // In a real implementation, you'd implement proper async handling
+      
+      return {
+        url: "data:text/plain;base64,VmlkZW8gZ2VuZXJhdGlvbiBzdGFydGVk", // Placeholder
+        metadata: {
+          model: "veo-3",
+          prompt,
+          operationId: operation.name || 'unknown',
+          status: 'generating',
+          generated: true,
+          timestamp: new Date().toISOString(),
+          note: "Video wird generiert. Dies kann einige Minuten dauern."
+        }
+      };
+    }
+    
+    throw new Error("Unsupported generation type");
+    
+  } catch (error) {
+    console.error(`Gemini ${type} generation error:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Fehler bei der ${type === 'image' ? 'Bild' : 'Video'}-Generierung mit Gemini: ${errorMessage}`);
+  }
 }

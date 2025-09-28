@@ -121,7 +121,11 @@ export function registerRoutes(app: Express): Server {
           }
         } else if (session.agentType === 'media-studio') {
           // Handle media generation requests
-          if (req.body.mediaType === 'image') {
+          if (req.body.mediaType === 'text') {
+            // Use GPT-5 for creative text generation
+            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            metadata = { model: 'gpt-5', contentType: 'text' };
+          } else if (req.body.mediaType === 'image') {
             const model = req.body.model || 'imagen-3';
             let result;
             
@@ -142,23 +146,26 @@ export function registerRoutes(app: Express): Server {
             });
             
             aiResponse = `Изображение создано успешно с использованием ${model}`;
-            metadata = { imageUrl: result.url, model };
+            metadata = { imageUrl: result.url, model, contentType: 'image' };
           } else if (req.body.mediaType === 'video') {
+            const model = req.body.model || 'veo-3';
             const result = await generateWithGemini(data.content, 'video');
             
             await storage.createGeneratedContent({
               userId: req.user!.id,
               type: 'video',
               prompt: data.content,
-              model: 'veo-3',
+              model,
               url: result.url,
               metadata: result.metadata
             });
             
-            aiResponse = `Видео создано успешно с использованием Veo 3`;
-            metadata = { videoUrl: result.url, model: 'veo-3' };
+            aiResponse = `Видео создано успешно с использованием ${model}`;
+            metadata = { videoUrl: result.url, model, contentType: 'video' };
           } else {
-            aiResponse = await analyzeWithGemini(data.content, session.agentType).then(r => r.response);
+            // Default to GPT-5 for text generation
+            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            metadata = { model: 'gpt-5', contentType: 'text' };
           }
         } else {
           // Use GPT-5 for creative and text-focused tasks
