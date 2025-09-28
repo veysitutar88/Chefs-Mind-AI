@@ -41,14 +41,41 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setAttachedFiles(prev => [...prev, ...files]);
-      toast({
-        title: "Файлы прикреплены",
-        description: `Прикреплено ${files.length} файл(ов)`,
-      });
+      try {
+        const uploadPromises = files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Upload failed for ${file.name}`);
+          }
+          
+          return await response.json();
+        });
+        
+        const uploadResults = await Promise.all(uploadPromises);
+        
+        setAttachedFiles(prev => [...prev, ...files]);
+        toast({
+          title: "Файлы загружены",
+          description: `Успешно загружено ${files.length} файл(ов)`,
+        });
+      } catch (error) {
+        console.error('File upload error:', error);
+        toast({
+          title: "Ошибка загрузки",
+          description: "Не удалось загрузить файлы",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -71,12 +98,18 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
         };
 
         recorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          // Use the actual MIME type from MediaRecorder
+          const mimeType = recorder.mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunks, { type: mimeType });
           
           // Convert audio to text using Whisper API
           try {
             const formData = new FormData();
-            formData.append('audio', audioBlob, 'recording.wav');
+            // Use proper extension based on MIME type
+            const extension = mimeType.includes('webm') ? '.webm' : 
+                            mimeType.includes('ogg') ? '.ogg' : 
+                            mimeType.includes('mp4') ? '.mp4' : '.wav';
+            formData.append('audio', audioBlob, `recording${extension}`);
             
             const response = await fetch('/api/transcribe', {
               method: 'POST',
