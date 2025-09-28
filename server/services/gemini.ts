@@ -26,13 +26,6 @@ export async function analyzeWithGemini(text: string, agentType: string, availab
     case 'chef':
       systemPrompt = `Du bist ein Küchenchef und kulinarischer Experte. Gib Rezepte, Kochtipps und Restaurantmanagement-Beratung. Antworte auf Deutsch.`;
       break;
-    case 'visualizer':
-      let tablesInfoViz = '';
-      if (availableTables && availableTables.length > 0) {
-        tablesInfoViz = ` Verfügbare Tabellen in der Datenbank: ${availableTables.join(', ')}. `;
-      }
-      systemPrompt = `Du bist ein Datenvisualisierungs-Experte. Erstelle SQL-Abfragen für Diagramme und erkläre, welche Visualisierungen am besten geeignet sind.${tablesInfoViz}WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Antworte auf Deutsch.`;
-      break;
     default:
       systemPrompt = `Du bist ein hilfsbereiter KI-Assistent. Antworte auf Deutsch und sei präzise und informativ.`;
   }

@@ -40,13 +40,6 @@ const agents: Agent[] = [
     color: 'bg-chart-3/20 text-chart-3'
   },
   {
-    id: 'visualizer',
-    name: 'Visualizer',
-    description: 'Визуализация данных',
-    icon: 'fas fa-chart-bar',
-    color: 'bg-chart-4/20 text-chart-4'
-  },
-  {
     id: 'media-studio',
     name: 'Media Studio',
     description: 'Генерация контента',
