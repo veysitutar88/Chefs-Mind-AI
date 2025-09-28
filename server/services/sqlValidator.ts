@@ -77,6 +77,7 @@ export async function executeReadOnlySQL(query: string): Promise<any[]> {
     }
   } catch (error) {
     console.error("SQL execution error:", error);
-    throw new Error(`SQL Execution Error: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`SQL Execution Error: ${errorMessage}`);
   }
 }

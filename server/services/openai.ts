@@ -45,7 +45,7 @@ export async function generateWithOpenAI(prompt: string, type: 'image'): Promise
       });
 
       return {
-        url: response.data[0].url!,
+        url: response.data[0]?.url || '',
         metadata: {
           model: "dall-e-3",
           prompt,
@@ -55,7 +55,8 @@ export async function generateWithOpenAI(prompt: string, type: 'image'): Promise
       };
     } catch (error) {
       console.error("DALL-E 3 generation error:", error);
-      throw new Error("Fehler bei der Bildgenerierung mit DALL-E 3");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Fehler bei der Bildgenerierung mit DALL-E 3: ${errorMessage}`);
     }
   }
   
