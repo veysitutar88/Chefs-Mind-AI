@@ -5,11 +5,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 
 export function MediaStudioPanel() {
-  const [contentType, setContentType] = useState<'image' | 'video'>('image');
-  const [selectedModel, setSelectedModel] = useState('imagen-3');
+  const [contentType, setContentType] = useState<'text' | 'image' | 'video'>('text');
+  const [selectedModel, setSelectedModel] = useState('gpt-5');
 
   const getModelOptions = () => {
-    if (contentType === 'image') {
+    if (contentType === 'text') {
+      return [
+        { value: 'gpt-5', label: 'GPT-5 (OpenAI)' }
+      ];
+    } else if (contentType === 'image') {
       return [
         { value: 'imagen-3', label: 'Imagen 3 (Google)' },
         { value: 'dall-e-3', label: 'DALL·E 3 (OpenAI)' }
@@ -21,10 +25,12 @@ export function MediaStudioPanel() {
     }
   };
 
-  const handleContentTypeChange = (type: 'image' | 'video') => {
+  const handleContentTypeChange = (type: 'text' | 'image' | 'video') => {
     setContentType(type);
     // Reset model selection when switching content type
-    if (type === 'image') {
+    if (type === 'text') {
+      setSelectedModel('gpt-5');
+    } else if (type === 'image') {
       setSelectedModel('imagen-3');
     } else {
       setSelectedModel('veo-3');
@@ -37,7 +43,16 @@ export function MediaStudioPanel() {
       
       {/* Content Type Switcher */}
       <div className="bg-muted rounded-lg p-1 mb-4">
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-3 gap-1">
+          <Button
+            variant={contentType === 'text' ? 'default' : 'ghost'}
+            size="sm"
+            className="text-xs"
+            onClick={() => handleContentTypeChange('text')}
+            data-testid="button-content-type-text"
+          >
+            <i className="fas fa-align-left mr-1"></i>Текст
+          </Button>
           <Button
             variant={contentType === 'image' ? 'default' : 'ghost'}
             size="sm"
@@ -85,6 +100,30 @@ export function MediaStudioPanel() {
         <div className="space-y-2">
           <Label className="text-xs font-medium text-foreground">Параметры</Label>
           <div className="grid grid-cols-2 gap-2">
+            {contentType === 'text' && (
+              <>
+                <Select defaultValue="creative">
+                  <SelectTrigger data-testid="select-text-style">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="creative">Творческий</SelectItem>
+                    <SelectItem value="professional">Профессиональный</SelectItem>
+                    <SelectItem value="casual">Неформальный</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select defaultValue="medium">
+                  <SelectTrigger data-testid="select-text-length">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="short">Короткий</SelectItem>
+                    <SelectItem value="medium">Средний</SelectItem>
+                    <SelectItem value="long">Длинный</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            )}
             {contentType === 'image' && (
               <>
                 <Select defaultValue="1024x1024">
@@ -119,14 +158,14 @@ export function MediaStudioPanel() {
                     <SelectItem value="1080p">1080p</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select defaultValue="10s">
+                <Select defaultValue="8s">
                   <SelectTrigger data-testid="select-video-duration">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5s">5 секунд</SelectItem>
-                    <SelectItem value="10s">10 секунд</SelectItem>
-                    <SelectItem value="15s">15 секунд</SelectItem>
+                    <SelectItem value="4s">4 секунды</SelectItem>
+                    <SelectItem value="6s">6 секунд</SelectItem>
+                    <SelectItem value="8s">8 секунд</SelectItem>
                   </SelectContent>
                 </Select>
               </>
@@ -137,7 +176,9 @@ export function MediaStudioPanel() {
         <div className="text-xs text-muted-foreground mt-4">
           <p className="flex items-center">
             <i className="fas fa-info-circle mr-2"></i>
-            {contentType === 'image' 
+            {contentType === 'text' 
+              ? 'Используйте агент Media Studio для создания текстового контента'
+              : contentType === 'image' 
               ? 'Используйте агент Media Studio для генерации изображений'
               : 'Используйте агент Media Studio для создания видео'
             }
