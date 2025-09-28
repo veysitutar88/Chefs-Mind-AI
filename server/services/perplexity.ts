@@ -28,7 +28,7 @@ export async function analyzeWithPerplexity(text: string, agentType: string): Pr
   
   switch (agentType) {
     case 'analyst':
-      systemPrompt = `Du bist ein Datenanalyst in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Führe gründliche Marktanalysen durch, suche nach aktuellen Trends und erstelle datenbasierte Insights. Antworte auf Deutsch.`;
+      systemPrompt = `Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein Datenanalyst. Führe gründliche Marktanalysen durch, suche nach aktuellen Trends und erstelle datenbasierte Insights. Antworte auf Deutsch.`;
       break;
     default:
       systemPrompt = `Du bist ein hilfreicher KI-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Antworte auf Deutsch und sei präzise und informativ.`;

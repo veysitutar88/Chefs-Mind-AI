@@ -8,13 +8,13 @@ export async function analyzeWithGPT(text: string, agentType: string): Promise<s
   
   switch (agentType) {
     case 'chef':
-      systemPrompt = "Du bist ein erfahrener Küchenchef und kulinarischer Experte. Gib praktische Rezepte, Kochtipps und Restaurantmanagement-Beratung. Antworte immer auf Deutsch.";
+      systemPrompt = "Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein erfahrener Küchenchef und kulinarischer Experte. Gib praktische Rezepte, Kochtipps und Restaurantmanagement-Beratung. Antworte immer auf Deutsch.";
       break;
     case 'universal':
-      systemPrompt = "Du bist ein hilfsbereiter KI-Assistent für ein Restaurantmanagement-System. Du kannst bei verschiedenen Aufgaben helfen. Antworte immer auf Deutsch.";
+      systemPrompt = "Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein hilfsbereiter KI-Assistent für ein Restaurantmanagement-System. Du kannst bei verschiedenen Aufgaben helfen. Antworte immer auf Deutsch.";
       break;
     default:
-      systemPrompt = "Du bist ein hilfsbereiter KI-Assistent. Antworte auf Deutsch und sei präzise und informativ.";
+      systemPrompt = "Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein hilfsbereiter KI-Assistent. Antworte auf Deutsch und sei präzise und informativ.";
   }
 
   try {
