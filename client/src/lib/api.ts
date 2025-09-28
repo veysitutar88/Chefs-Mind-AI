@@ -21,12 +21,15 @@ export const api = {
   },
 
   async sendMessage(sessionId: string, content: string, metadata?: any) {
-    const res = await apiRequest("POST", "/api/chat/messages", {
+    // Spread metadata to top level for backend compatibility
+    const requestBody = {
       sessionId,
       role: 'user',
       content,
-      metadata
-    });
+      ...metadata  // Spread mediaType, model to top level
+    };
+    
+    const res = await apiRequest("POST", "/api/chat/messages", requestBody);
     return res.json();
   },
 
