@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   onSendMessage: (content: string, metadata?: any) => void;
@@ -11,6 +12,11 @@ interface ChatInputProps {
 export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +34,94 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+    }
+  };
+
+  const handleFileAttach = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setAttachedFiles(prev => [...prev, ...files]);
+      toast({
+        title: "Файлы прикреплены",
+        description: `Прикреплено ${files.length} файл(ов)`,
+      });
+    }
+  };
+
+  const handleVoiceInput = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorder) {
+        mediaRecorder.stop();
+        setIsRecording(false);
+      }
+    } else {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        const audioChunks: Blob[] = [];
+
+        recorder.ondataavailable = (event) => {
+          audioChunks.push(event.data);
+        };
+
+        recorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          
+          // Convert audio to text using Whisper API
+          try {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+            
+            const response = await fetch('/api/transcribe', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (response.ok) {
+              const { text } = await response.json();
+              setMessage(prev => prev + (prev ? ' ' : '') + text);
+              toast({
+                title: "Голосовой ввод",
+                description: "Аудио успешно преобразовано в текст",
+              });
+            } else {
+              throw new Error('Transcription failed');
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            toast({
+              title: "Ошибка",
+              description: "Не удалось преобразовать аудио в текст",
+              variant: "destructive",
+            });
+          }
+
+          // Clean up stream
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        recorder.start();
+        setMediaRecorder(recorder);
+        setIsRecording(true);
+        
+        toast({
+          title: "Запись началась",
+          description: "Говорите в микрофон. Нажмите кнопку еще раз для остановки.",
+        });
+      } catch (error) {
+        console.error('Microphone access error:', error);
+        toast({
+          title: "Ошибка доступа",
+          description: "Не удалось получить доступ к микрофону",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -78,27 +172,67 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
             className="p-3"
             title="Прикрепить файл"
             data-testid="button-attach-file"
+            onClick={handleFileAttach}
           >
             <i className="fas fa-paperclip"></i>
           </Button>
           <Button
             type="button"
-            variant="secondary"
+            variant={isRecording ? "destructive" : "secondary"}
             size="sm"
             className="p-3"
-            title="Голосовой ввод"
+            title={isRecording ? "Остановить запись" : "Голосовой ввод"}
             data-testid="button-voice-input"
+            onClick={handleVoiceInput}
           >
-            <i className="fas fa-microphone"></i>
+            <i className={`fas ${isRecording ? 'fa-stop' : 'fa-microphone'}`}></i>
           </Button>
         </div>
+        
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.csv,.xlsx,.xls"
+          style={{ display: 'none' }}
+          onChange={handleFileSelect}
+        />
       </form>
       
+      {/* Show attached files */}
+      {attachedFiles.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {attachedFiles.map((file, index) => (
+            <div key={index} className="flex items-center gap-2 bg-muted px-3 py-1 rounded-full text-xs">
+              <i className="fas fa-file"></i>
+              <span>{file.name}</span>
+              <button
+                onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== index))}
+                className="text-muted-foreground hover:text-foreground"
+                title="Удалить файл"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
         <div className="flex items-center space-x-4">
           <span>Нажмите Enter для отправки</span>
           <span>•</span>
           <span>Shift+Enter для новой строки</span>
+          {isRecording && (
+            <>
+              <span>•</span>
+              <span className="text-red-500 animate-pulse">
+                <i className="fas fa-circle mr-1"></i>
+                Идет запись...
+              </span>
+            </>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <i className="fas fa-shield-alt text-green-600"></i>

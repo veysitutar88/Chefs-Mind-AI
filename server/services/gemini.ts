@@ -118,41 +118,90 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
 }
 
 export async function generateWithGemini(prompt: string, type: 'image' | 'video'): Promise<{url: string, metadata: any}> {
-  // Check if the API key is configured
-  if (!process.env.GOOGLE_API_KEY && !process.env.GEMINI_API_KEY) {
-    throw new Error('GOOGLE_API_KEY is not configured');
-  }
-
   try {
     if (type === 'image') {
-      // Imagen 3 is available through Google AI Studio
-      // Using Gemini 1.5 Pro with vision capabilities as a workaround
-      // Note: Direct image generation is not available in free Google AI Studio
-      // This is a placeholder implementation
+      console.log('🎨 Generating image with Imagen 3 via Vertex AI...');
       
-      console.log('🎨 Attempting Imagen 3 generation through Google AI Studio...');
+      // Import Vertex AI for Imagen 3
+      const { VertexAI } = await import('@google-cloud/vertexai');
       
-      // For now, return a placeholder until proper Imagen 3 integration
-      const placeholderData = "data:text/plain;base64," + Buffer.from(`Imagen 3 generation requested for: ${prompt}`).toString('base64');
-      
-      return {
-        url: placeholderData,
-        metadata: {
-          model: "imagen-3",
-          prompt,
-          status: 'placeholder',
-          generated: false,
-          timestamp: new Date().toISOString(),
-          note: "Imagen 3 Integration wird konfiguriert. Verwenden Sie DALL-E 3 für sofortige Bilderzeugung."
+      // Check required environment variables
+      if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
+        throw new Error('GOOGLE_CLOUD_PROJECT_ID environment variable is required for Vertex AI');
+      }
+
+      if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        throw new Error('GOOGLE_APPLICATION_CREDENTIALS environment variable is required for Vertex AI');
+      }
+
+      // Parse service account credentials from environment variable
+      let credentials;
+      try {
+        credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || '{}');
+      } catch (error) {
+        throw new Error('Invalid GOOGLE_APPLICATION_CREDENTIALS JSON format');
+      }
+
+      // Initialize Vertex AI client with explicit credentials
+      const vertexAI = new VertexAI({
+        project: process.env.GOOGLE_CLOUD_PROJECT_ID,
+        location: 'us-central1', // Imagen is available in us-central1
+        googleAuthOptions: {
+          credentials: credentials
         }
+      });
+
+      // Get Imagen 3 model
+      const model = vertexAI.getGenerativeModel({
+        model: 'imagen-3.0-generate-001'
+      });
+
+      // Generate image
+      const request = {
+        contents: [{
+          role: 'user',
+          parts: [{ text: prompt }]
+        }]
       };
 
+      console.log('📡 Calling Vertex AI Imagen 3 API...');
+      const response = await model.generateContent(request);
+      
+      // Extract image data from response
+      if (response.response && response.response.candidates && response.response.candidates[0]) {
+        const candidate = response.response.candidates[0];
+        
+        // Check if there are any parts with inline data (base64 image)
+        if (candidate.content && candidate.content.parts) {
+          for (const part of candidate.content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              // Return the base64 image data
+              const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+              
+              console.log('✅ Imagen 3 generation successful');
+              return {
+                url: imageUrl,
+                metadata: {
+                  model: "imagen-3",
+                  prompt,
+                  status: 'success',
+                  generated: true,
+                  timestamp: new Date().toISOString(),
+                  mimeType: part.inlineData.mimeType || 'image/png'
+                }
+              };
+            }
+          }
+        }
+      }
+
+      // If no image data found, throw error
+      throw new Error('No image data returned from Vertex AI Imagen');
+
     } else if (type === 'video') {
-      // Veo 3 is available through Google AI Studio but requires special access
-      // This is a placeholder implementation
+      console.log('🎬 Video generation with Veo 3 is not yet available in this region');
       
-      console.log('🎬 Attempting Veo 3 generation through Google AI Studio...');
-      
+      // Veo 3 is still in limited preview
       const placeholderData = "data:text/plain;base64," + Buffer.from(`Veo 3 generation requested for: ${prompt}`).toString('base64');
       
       return {
@@ -160,10 +209,10 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
         metadata: {
           model: "veo-3",
           prompt,
-          status: 'placeholder',
+          status: 'unavailable',
           generated: false,
           timestamp: new Date().toISOString(),
-          note: "Veo 3 Integration wird konfiguriert. Video-Generation erfordert spezielle API-Berechtigung."
+          note: "Veo 3 is in limited preview and not yet available in all regions"
         }
       };
     }
@@ -171,8 +220,23 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
     throw new Error("Unsupported generation type");
     
   } catch (error) {
-    console.error(`Gemini ${type} generation error:`, error);
+    console.error(`Vertex AI ${type} generation error:`, error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Fehler bei der ${type === 'image' ? 'Bild' : 'Video'}-Generierung mit Google AI: ${errorMessage}`);
+    
+    // Fallback to placeholder if Vertex AI fails
+    const placeholderData = "data:text/plain;base64," + Buffer.from(`${type === 'image' ? 'Imagen 3' : 'Veo 3'} generation failed: ${errorMessage}`).toString('base64');
+    
+    return {
+      url: placeholderData,
+      metadata: {
+        model: type === 'image' ? "imagen-3" : "veo-3",
+        prompt,
+        status: 'error',
+        generated: false,
+        timestamp: new Date().toISOString(),
+        error: errorMessage,
+        note: `Fehler bei der ${type === 'image' ? 'Bild' : 'Video'}-Generierung mit Vertex AI. Bitte überprüfen Sie Ihre Google Cloud Konfiguration.`
+      }
+    };
   }
 }
