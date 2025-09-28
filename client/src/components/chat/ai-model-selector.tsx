@@ -14,29 +14,34 @@ export function AIModelSelector({ agentType, selectedModel, onModelChange }: AIM
       case 'universal':
         return [
           { value: 'auto', label: 'Автоматический выбор' },
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Google)' },
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' },
           { value: 'gpt-5', label: 'GPT-5 (OpenAI)' }
         ];
       case 'accountant':
         return [
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Google)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' },
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
           { value: 'gpt-5', label: 'GPT-5 (OpenAI)' }
         ];
       case 'chef':
         return [
           { value: 'gpt-5', label: 'GPT-5 (OpenAI)' },
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Google)' }
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' }
         ];
       case 'analyst':
         return [
           { value: 'perplexity', label: 'Perplexity (Исследования)' },
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Google)' },
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' },
           { value: 'gpt-5', label: 'GPT-5 (OpenAI)' }
         ];
       default:
         return [
           { value: 'gpt-5', label: 'GPT-5 (OpenAI)' },
-          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Google)' }
+          { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
+          { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' }
         ];
     }
   };
@@ -46,7 +51,7 @@ export function AIModelSelector({ agentType, selectedModel, onModelChange }: AIM
       case 'universal':
         return 'auto';
       case 'accountant':
-        return 'gemini-1.5-pro';
+        return 'gemini-2.5-pro';
       case 'chef':
         return 'gpt-5';
       case 'analyst':

@@ -239,9 +239,9 @@ export function registerRoutes(app: Express): Server {
               // Use Gemini for analytical tasks, GPT-5 for creative tasks
               const isAnalytical = /\b(анализ|данные|таблица|статистика|график|отчет|sql|query)\b/i.test(data.content);
               if (isAnalytical) {
-                const result = await analyzeWithGemini(data.content, session.agentType);
+                const result = await analyzeWithGemini(data.content, session.agentType, undefined, 'gemini-2.5-flash');
                 aiResponse = result.response;
-                metadata = { ...result.metadata, autoRouted: 'gemini' };
+                metadata = { ...result.metadata, autoRouted: 'gemini-2.5-flash' };
               } else {
                 aiResponse = await analyzeWithGPT(data.content, session.agentType);
                 metadata = { model: 'gpt-5', autoRouted: 'gpt' };
@@ -251,10 +251,10 @@ export function registerRoutes(app: Express): Server {
               aiResponse = await analyzeWithGPT(data.content, session.agentType);
               metadata = { model: 'gpt-5' };
             }
-          } else if (selectedModel === 'gemini-1.5-pro') {
-            // Use Gemini Pro
-            console.log('🔵 Calling analyzeWithGemini...');
-            const result = await analyzeWithGemini(data.content, session.agentType);
+          } else if (selectedModel === 'gemini-2.5-pro' || selectedModel === 'gemini-2.5-flash') {
+            // Use Gemini 2.5 Pro or Flash
+            console.log(`🔵 Calling analyzeWithGemini with ${selectedModel}...`);
+            const result = await analyzeWithGemini(data.content, session.agentType, undefined, selectedModel);
             aiResponse = result.response;
             metadata = result.metadata;
             console.log('🔵 Gemini response metadata:', JSON.stringify(metadata, null, 2));
@@ -284,7 +284,7 @@ export function registerRoutes(app: Express): Server {
         function getDefaultModelForAgent(agentType: string): string {
           switch (agentType) {
             case 'universal': return 'auto';
-            case 'accountant': return 'gemini-1.5-pro';
+            case 'accountant': return 'gemini-2.5-pro';
             case 'chef': return 'gpt-5';
             case 'analyst': return 'perplexity';
             default: return 'gpt-5';
