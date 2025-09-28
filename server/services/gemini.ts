@@ -3,9 +3,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Initialize the Google AI client with the API key from Google AI Studio
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
 
-export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[]): Promise<{response: string, metadata: any}> {
+export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[], modelName?: string): Promise<{response: string, metadata: any}> {
   let systemPrompt = "";
-  let model = "gemini-1.5-pro"; // Using the correct model name for Google AI Studio
+  // Default to appropriate model based on agent type, but allow override
+  let model = modelName || (agentType === 'accountant' ? "gemini-2.5-pro" : "gemini-2.5-flash");
   
   switch (agentType) {
     case 'accountant':
