@@ -39,8 +39,6 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
         return 'Спросите о рецептах, технологиях приготовления или управлении кухней...';
       case 'analyst':
         return 'Запросите анализ данных или создание SQL запросов...';
-      case 'visualizer':
-        return 'Попросите создать график или диаграмму на основе данных...';
       case 'media-studio':
         return 'Опишите изображение или видео, которое нужно создать...';
       default:

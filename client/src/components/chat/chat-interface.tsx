@@ -67,8 +67,6 @@ export function ChatInterface({ selectedAgent, sessionId }: ChatInterfaceProps) 
         return 'Gemini 2.5 Pro • Анализ данных • SQL генерация';
       case 'chef':
         return 'GPT-5 • Кулинарная экспертиза';
-      case 'visualizer':
-        return 'Gemini 2.5 Pro • Графики и диаграммы';
       case 'media-studio':
         return 'Imagen 3 • DALL·E 3 • Veo 3';
       default:
