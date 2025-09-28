@@ -7,7 +7,7 @@ import path from "path";
 import { processCSVFile, processXLSXFile } from "./services/fileProcessor";
 import { validateSQL, executeReadOnlySQL } from "./services/sqlValidator";
 import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
-import { generateWithOpenAI, analyzeWithGPT } from "./services/openai";
+import { generateWithOpenAI, analyzeWithGPT, enhancePromptForMediaGeneration } from "./services/openai";
 import { analyzeWithPerplexity } from "./services/perplexity";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema } from "@shared/schema";
 import { pool } from "./db";
@@ -64,6 +64,11 @@ export function registerRoutes(app: Express): Server {
   // Chat messages and AI processing
   app.post("/api/chat/messages", requireAuth, async (req, res) => {
     try {
+      // Debug: Log the complete request body to understand parameter passing
+      console.log('🔍 DEBUG - Complete request body:', JSON.stringify(req.body, null, 2));
+      console.log('🔍 DEBUG - mediaType:', req.body.mediaType);
+      console.log('🔍 DEBUG - model:', req.body.model);
+      
       const data = insertMessageSchema.parse(req.body);
       
       // Save user message
@@ -120,72 +125,106 @@ export function registerRoutes(app: Express): Server {
             metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
           }
         } else if (session.agentType === 'media-studio') {
-          // Debug logging for media studio requests
-          console.log('Media Studio Request Debug:', {
-            agentType: session.agentType,
-            mediaType: req.body.mediaType,
-            model: req.body.model,
-            bodyKeys: Object.keys(req.body)
-          });
+          console.log('🎨 Media Studio - Two-Step Generation Process Started');
+          console.log('Request params:', { mediaType: req.body.mediaType, model: req.body.model });
           
-          // Handle media generation requests
+          // Handle media generation requests with two-step architecture
           if (req.body.mediaType === 'text') {
-            // Use GPT-5 for creative text generation
+            // Direct text generation with GPT-5 (no prompt enhancement needed)
+            console.log('📝 Step 1/1: Direct text generation with GPT-5');
             aiResponse = await analyzeWithGPT(data.content, session.agentType);
             metadata = { model: 'gpt-5', contentType: 'text' };
+            
           } else if (req.body.mediaType === 'image') {
-            console.log('Processing image generation request');
+            console.log('🖼️ Step 1/2: Enhancing prompt for image generation');
+            // Step 1: Enhance prompt using GPT-5 as prompt expert
+            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'image');
+            
+            console.log('🎯 Step 2/2: Generating image with enhanced prompt');
             const model = req.body.model || 'imagen-3';
             let result;
             
-            try {
-              if (model === 'dall-e-3') {
-                console.log('Calling generateWithOpenAI for DALL-E 3');
-                result = await generateWithOpenAI(data.content, 'image');
-              } else {
-                console.log('Calling generateWithGemini for Imagen 3');
-                result = await generateWithGemini(data.content, 'image');
-              }
-              
-              console.log('Image generation result:', { url: result.url, metadata: result.metadata });
-              
-              // Save generated content
-              await storage.createGeneratedContent({
-                userId: req.user!.id,
-                type: 'image',
-                prompt: data.content,
-                model,
-                url: result.url,
-                metadata: result.metadata
-              });
-              
-              aiResponse = `Изображение создано успешно с использованием ${model}`;
-              metadata = { imageUrl: result.url, model, contentType: 'image' };
-              console.log('Image generation completed successfully');
-            } catch (imageError) {
-              console.error('Image generation failed:', imageError);
-              throw imageError; // Re-throw to be caught by outer try-catch
+            if (model === 'dall-e-3') {
+              console.log('🤖 Using DALL-E 3 for image generation');
+              result = await generateWithOpenAI(enhancedPrompt, 'image');
+            } else {
+              console.log('🎨 Using Imagen 3 for image generation');
+              result = await generateWithGemini(enhancedPrompt, 'image');
             }
-          } else if (req.body.mediaType === 'video') {
-            const model = req.body.model || 'veo-3';
-            const result = await generateWithGemini(data.content, 'video');
             
+            // Save generated content with both original and enhanced prompts
+            await storage.createGeneratedContent({
+              userId: req.user!.id,
+              type: 'image',
+              prompt: data.content,
+              model,
+              url: result.url,
+              metadata: {
+                ...result.metadata,
+                originalPrompt: data.content,
+                enhancedPrompt: enhancedPrompt,
+                twoStepProcess: true
+              }
+            });
+            
+            aiResponse = `✨ Изображение создано успешно с использованием ${model}\n\n` +
+                        `📝 Ваш запрос: "${data.content}"\n` +
+                        `🎯 Улучшенный промпт: "${enhancedPrompt}"\n\n` +
+                        `🎨 Изображение сгенерировано с высококачественными деталями и профессиональным подходом.`;
+            metadata = { 
+              imageUrl: result.url, 
+              model, 
+              contentType: 'image',
+              originalPrompt: data.content,
+              enhancedPrompt: enhancedPrompt,
+              twoStepProcess: true
+            };
+            
+          } else if (req.body.mediaType === 'video') {
+            console.log('🎥 Step 1/2: Enhancing prompt for video generation');
+            // Step 1: Enhance prompt using GPT-5 as prompt expert
+            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'video');
+            
+            console.log('🎬 Step 2/2: Generating video with enhanced prompt');
+            const model = req.body.model || 'veo-3';
+            const result = await generateWithGemini(enhancedPrompt, 'video');
+            
+            // Save generated content with both original and enhanced prompts
             await storage.createGeneratedContent({
               userId: req.user!.id,
               type: 'video',
               prompt: data.content,
               model,
               url: result.url,
-              metadata: result.metadata
+              metadata: {
+                ...result.metadata,
+                originalPrompt: data.content,
+                enhancedPrompt: enhancedPrompt,
+                twoStepProcess: true
+              }
             });
             
-            aiResponse = `Видео создано успешно с использованием ${model}`;
-            metadata = { videoUrl: result.url, model, contentType: 'video' };
+            aiResponse = `🎬 Видео создано успешно с использованием ${model}\n\n` +
+                        `📝 Ваш запрос: "${data.content}"\n` +
+                        `🎯 Улучшенный промпт: "${enhancedPrompt}"\n\n` +
+                        `🎥 Видео генерируется с профессиональной кинематографией и вниманием к деталям.`;
+            metadata = { 
+              videoUrl: result.url, 
+              model, 
+              contentType: 'video',
+              originalPrompt: data.content,
+              enhancedPrompt: enhancedPrompt,
+              twoStepProcess: true
+            };
+            
           } else {
             // Default to GPT-5 for text generation
+            console.log('📝 Fallback: Default text generation with GPT-5');
             aiResponse = await analyzeWithGPT(data.content, session.agentType);
             metadata = { model: 'gpt-5', contentType: 'text' };
           }
+          
+          console.log('🎉 Media Studio - Two-Step Generation Process Completed');
         } else {
           // Use GPT-5 for creative and text-focused tasks
           aiResponse = await analyzeWithGPT(data.content, session.agentType);

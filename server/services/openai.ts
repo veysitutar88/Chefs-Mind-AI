@@ -33,6 +33,52 @@ export async function analyzeWithGPT(text: string, agentType: string): Promise<s
   }
 }
 
+export async function enhancePromptForMediaGeneration(userPrompt: string, mediaType: 'image' | 'video'): Promise<string> {
+  const systemPrompt = mediaType === 'image' 
+    ? `Du bist ein Experte für Bildgenerierung und arbeitest mit AI-Bildgeneratoren wie DALL-E 3 und Imagen 3. 
+       Deine Aufgabe ist es, einfache Benutzeranfragen in detaillierte, professionelle Prompts für die Bildgenerierung zu verwandeln.
+       
+       Transformiere den einfachen Benutzertext in einen reichen, detaillierten Prompt, der folgende Aspekte berücksichtigt:
+       - Visueller Stil und Ästhetik
+       - Beleuchtung und Atmosphäre  
+       - Farben und Materialien
+       - Komposition und Perspektive
+       - Spezifische Details für Berlin/deutsche Restaurantszene wenn relevant
+       
+       Gib NUR den verbesserten englischen Prompt zurück, ohne Erklärungen oder zusätzlichen Text.`
+    : `Du bist ein Experte für Videogenerierung und arbeitest mit AI-Videogeneratoren wie Veo 3.
+       Deine Aufgabe ist es, einfache Benutzeranfragen in detaillierte, professionelle Prompts für die Videogenerierung zu verwandeln.
+       
+       Transformiere den einfachen Benutzertext in einen reichen, detaillierten Prompt, der folgende Aspekte berücksichtigt:
+       - Kamerabewegung und Perspektive
+       - Beleuchtung und Atmosphäre
+       - Bewegungsabläufe und Dynamik
+       - Visueller Stil und Qualität
+       - Audio-relevante Beschreibungen
+       - Spezifische Details für Berlin/deutsche Restaurantszene wenn relevant
+       
+       Gib NUR den verbesserten englischen Prompt zurück, ohne Erklärungen oder zusätzlichen Text.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.8,
+      max_tokens: 500
+    });
+
+    const enhancedPrompt = response.choices[0].message.content?.trim() || userPrompt;
+    console.log(`Prompt enhanced for ${mediaType}:`, { original: userPrompt, enhanced: enhancedPrompt });
+    return enhancedPrompt;
+  } catch (error) {
+    console.error("Prompt enhancement failed, using original:", error);
+    return userPrompt; // Fallback to original prompt if enhancement fails
+  }
+}
+
 export async function generateWithOpenAI(prompt: string, type: 'image'): Promise<{url: string, metadata: any}> {
   if (type === 'image') {
     try {
@@ -45,7 +91,7 @@ export async function generateWithOpenAI(prompt: string, type: 'image'): Promise
       });
 
       return {
-        url: response.data[0]?.url || '',
+        url: response.data?.[0]?.url || '',
         metadata: {
           model: "dall-e-3",
           prompt,

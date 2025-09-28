@@ -49,24 +49,11 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings }:
       // For Media Studio agent, include media settings in the request
       let finalMetadata = metadata || {};
       if (selectedAgent.id === 'media-studio' && mediaStudioSettings) {
-        // Map content type to backend expected values
-        const mediaTypeMap = {
-          'text': 'text',
-          'images': 'image', 
-          'video': 'video'
-        };
-        
-        // Map model names to backend expected values
-        const modelMap = {
-          'DALL·E 3 (OpenAI)': 'dall-e-3',
-          'Imagen 3 (Google)': 'imagen-3',
-          'Veo 3 (Google)': 'veo-3'
-        };
-        
+        // Media Studio settings already contain the correct values
         finalMetadata = {
           ...finalMetadata,
-          mediaType: mediaTypeMap[mediaStudioSettings.contentType as keyof typeof mediaTypeMap],
-          model: modelMap[mediaStudioSettings.selectedModel as keyof typeof modelMap]
+          mediaType: mediaStudioSettings.contentType, // Already correct: 'text', 'image', 'video'
+          model: mediaStudioSettings.selectedModel     // Already correct: 'dall-e-3', 'imagen-3', 'veo-3'
         };
         console.log('Media Studio request:', { 
           agent: selectedAgent.id, 
