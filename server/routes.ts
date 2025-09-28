@@ -81,7 +81,7 @@ export function registerRoutes(app: Express): Server {
       try {
         if (session.agentType === 'accountant') {
           // Get available tables for Gemini context
-          const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'imported_%'");
+          const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices'))");
           const availableTables = tablesQuery.rows.map(row => row.table_name);
           
           // Use Gemini for data analysis and SQL generation
