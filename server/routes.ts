@@ -30,11 +30,12 @@ export function registerRoutes(app: Express): Server {
       const data = insertChatSessionSchema.parse(req.body);
       const session = await storage.createChatSession({
         ...data,
-        userId: req.user.id
+        userId: req.user!.id
       });
       res.json(session);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -43,7 +44,8 @@ export function registerRoutes(app: Express): Server {
       const sessions = await storage.getChatSessions(req.user.id);
       res.json(sessions);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -52,7 +54,8 @@ export function registerRoutes(app: Express): Server {
       const messages = await storage.getMessages(req.params.id);
       res.json(messages);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -92,7 +95,8 @@ export function registerRoutes(app: Express): Server {
               metadata.queryResults = queryResults;
               metadata.debugSql = result.metadata.sqlQuery;
             } catch (sqlError) {
-              metadata.sqlError = sqlError.message;
+              const sqlErrorMessage = sqlError instanceof Error ? sqlError.message : 'SQL execution error';
+              metadata.sqlError = sqlErrorMessage;
             }
           }
         } else if (session.agentType === 'media-studio') {
@@ -109,7 +113,7 @@ export function registerRoutes(app: Express): Server {
             
             // Save generated content
             await storage.createGeneratedContent({
-              userId: req.user.id,
+              userId: req.user!.id,
               type: 'image',
               prompt: data.content,
               model,
@@ -123,7 +127,7 @@ export function registerRoutes(app: Express): Server {
             const result = await generateWithGemini(data.content, 'video');
             
             await storage.createGeneratedContent({
-              userId: req.user.id,
+              userId: req.user!.id,
               type: 'video',
               prompt: data.content,
               model: 'veo-3',
@@ -142,8 +146,9 @@ export function registerRoutes(app: Express): Server {
           metadata = { model: 'gpt-5' };
         }
       } catch (aiError) {
-        aiResponse = `Ошибка при обработке запроса: ${aiError.message}`;
-        metadata = { error: aiError.message };
+        const aiErrorMessage = aiError instanceof Error ? aiError.message : 'Unknown error';
+        aiResponse = `Ошибка при обработке запроса: ${aiErrorMessage}`;
+        metadata = { error: aiErrorMessage };
       }
 
       // Save AI response
@@ -159,7 +164,8 @@ export function registerRoutes(app: Express): Server {
         assistantMessage
       });
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -171,7 +177,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       const uploadData = {
-        userId: req.user.id,
+        userId: req.user!.id,
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
@@ -202,7 +208,8 @@ export function registerRoutes(app: Express): Server {
         processed: true
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -212,7 +219,8 @@ export function registerRoutes(app: Express): Server {
       const uploads = await storage.getUploads(req.user.id);
       res.json(uploads);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -222,7 +230,8 @@ export function registerRoutes(app: Express): Server {
       const content = await storage.getGeneratedContent(req.user.id);
       res.json(content);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
     }
   });
 
@@ -233,7 +242,8 @@ export function registerRoutes(app: Express): Server {
       const result = validateSQL(query);
       res.json(result);
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(400).json({ message: errorMessage });
     }
   });
 

@@ -42,11 +42,11 @@ export interface IStorage {
   createGeneratedContent(content: InsertGeneratedContent & { userId: string }): Promise<GeneratedContent>;
   getGeneratedContent(userId: string): Promise<GeneratedContent[]>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 

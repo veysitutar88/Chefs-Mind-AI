@@ -58,9 +58,10 @@ export async function analyzeWithGemini(text: string, agentType: string): Promis
     };
   } catch (error) {
     console.error("Gemini API error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       response: "Es gab einen Fehler bei der Verarbeitung Ihrer Anfrage.",
-      metadata: { error: error.message }
+      metadata: { error: errorMessage }
     };
   }
 }
