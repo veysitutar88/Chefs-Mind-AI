@@ -8,6 +8,7 @@ import { processCSVFile, processXLSXFile } from "./services/fileProcessor";
 import { validateSQL, executeReadOnlySQL } from "./services/sqlValidator";
 import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
 import { generateWithOpenAI, analyzeWithGPT } from "./services/openai";
+import { analyzeWithPerplexity } from "./services/perplexity";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema } from "@shared/schema";
 import { pool } from "./db";
 
@@ -78,7 +79,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       try {
-        if (session.agentType === 'accountant' || session.agentType === 'analyst') {
+        if (session.agentType === 'accountant') {
           // Get available tables for Gemini context
           const tablesQuery = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name LIKE 'imported_%'");
           const availableTables = tablesQuery.rows.map(row => row.table_name);
@@ -88,7 +89,7 @@ export function registerRoutes(app: Express): Server {
           aiResponse = result.response;
           metadata = result.metadata;
           
-          // If SQL query is generated, validate and execute it
+          // If SQL query is generated for accountant, validate and execute it
           if (result.metadata?.sqlQuery) {
             console.log('Generated SQL Query:', result.metadata.sqlQuery);
             const validationResult = validateSQL(result.metadata.sqlQuery);
@@ -106,6 +107,11 @@ export function registerRoutes(app: Express): Server {
               metadata.sqlError = sqlErrorMessage;
             }
           }
+        } else if (session.agentType === 'analyst') {
+          // Use Perplexity for market analysis and research
+          const result = await analyzeWithPerplexity(data.content, session.agentType);
+          aiResponse = result.response;
+          metadata = result.metadata;
         } else if (session.agentType === 'media-studio') {
           // Handle media generation requests
           if (req.body.mediaType === 'image') {
