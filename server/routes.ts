@@ -315,6 +315,47 @@ export function registerRoutes(app: Express): Server {
   });
 
   // File upload and processing
+  // Whisper transcription endpoint
+  app.post("/api/transcribe", requireAuth, upload.single('audio'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      console.log('🎙️ Transcribing audio with OpenAI Whisper...');
+      
+      // Use OpenAI Whisper API for transcription
+      const formData = new FormData();
+      const audioBlob = new Blob([req.file.buffer], { type: req.file.mimetype });
+      formData.append('file', audioBlob, req.file.originalname || 'audio.wav');
+      formData.append('model', 'whisper-1');
+      formData.append('language', 'ru'); // Russian language for better accuracy
+
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenAI Whisper API error:', errorText);
+        throw new Error(`Whisper API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Transcription successful:', result.text);
+
+      res.json({ text: result.text });
+    } catch (error) {
+      console.error('Transcription error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: `Transcription failed: ${errorMessage}` });
+    }
+  });
+
   app.post("/api/upload", requireAuth, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
