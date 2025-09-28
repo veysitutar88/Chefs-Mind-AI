@@ -64,11 +64,6 @@ export function registerRoutes(app: Express): Server {
   // Chat messages and AI processing
   app.post("/api/chat/messages", requireAuth, async (req, res) => {
     try {
-      // Debug: Log the complete request body to understand parameter passing
-      console.log('🔍 DEBUG - Complete request body:', JSON.stringify(req.body, null, 2));
-      console.log('🔍 DEBUG - mediaType:', req.body.mediaType);
-      console.log('🔍 DEBUG - model:', req.body.model);
-      
       const data = insertMessageSchema.parse(req.body);
       
       // Save user message

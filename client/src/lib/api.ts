@@ -29,9 +29,6 @@ export const api = {
       ...metadata  // Spread mediaType, model to top level
     };
     
-    console.log('🚀 API.ts - Sending request body:', JSON.stringify(requestBody, null, 2));
-    console.log('🚀 API.ts - Metadata received:', metadata);
-    
     const res = await apiRequest("POST", "/api/chat/messages", requestBody);
     return res.json();
   },
