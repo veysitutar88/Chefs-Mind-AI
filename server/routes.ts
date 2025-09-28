@@ -12,7 +12,48 @@ import { analyzeWithPerplexity } from "./services/perplexity";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema } from "@shared/schema";
 import { pool } from "./db";
 
-const upload = multer({ dest: 'uploads/' });
+// Different storage configurations for different endpoints
+const uploadToStorage = multer({ 
+  dest: 'uploads/',
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB limit per file
+    files: 5 // Max 5 files per request
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow only specific file types
+    const allowedMimeTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf',
+      'text/csv', 'application/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.csv', '.xls', '.xlsx'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(fileExtension)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type. Allowed: images, PDF, CSV, Excel files. Received: ${file.mimetype}`), false);
+    }
+  }
+}); // For file uploads that need persistence
+const uploadToMemory = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB limit for audio files
+    files: 1
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow audio files for transcription
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed for transcription'), false);
+    }
+  }
+});
 
 export function registerRoutes(app: Express): Server {
   // Setup authentication routes
@@ -316,7 +357,7 @@ export function registerRoutes(app: Express): Server {
 
   // File upload and processing
   // Whisper transcription endpoint
-  app.post("/api/transcribe", requireAuth, upload.single('audio'), async (req, res) => {
+  app.post("/api/transcribe", requireAuth, uploadToMemory.single('audio'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No audio file provided" });
@@ -356,7 +397,23 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/upload", requireAuth, upload.single('file'), async (req, res) => {
+  app.post("/api/upload", requireAuth, (req, res, next) => {
+    uploadToStorage.single('file')(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: 'File too large. Maximum size is 20MB.' });
+        }
+        if (err.code === 'LIMIT_FILE_COUNT') {
+          return res.status(400).json({ message: 'Too many files. Maximum 5 files allowed.' });
+        }
+        if (err.message.includes('Invalid file type')) {
+          return res.status(400).json({ message: err.message });
+        }
+        return res.status(400).json({ message: 'File upload failed: ' + err.message });
+      }
+      next();
+    });
+  }, async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -404,6 +461,26 @@ export function registerRoutes(app: Express): Server {
     try {
       const uploads = await storage.getUploads(req.user.id);
       res.json(uploads);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
+    }
+  });
+
+  // Get single upload by ID
+  app.get("/api/uploads/:id", requireAuth, async (req, res) => {
+    try {
+      const upload = await storage.getUpload(req.params.id);
+      if (!upload) {
+        return res.status(404).json({ message: "Upload not found" });
+      }
+      
+      // Ensure user owns the upload
+      if (upload.userId !== req.user.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      res.json(upload);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ message: errorMessage });

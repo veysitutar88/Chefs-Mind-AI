@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateWithOpenAI } from './openai';
 
 // Initialize the Google AI client with the API key from Google AI Studio
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
@@ -122,8 +123,16 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
     if (type === 'image') {
       console.log('🎨 Generating image with Imagen 3 via Vertex AI...');
       
-      // Import Vertex AI for Imagen 3
-      const { VertexAI } = await import('@google-cloud/vertexai');
+      // Import Vertex AI for Imagen 3 with error handling
+      let VertexAI;
+      try {
+        const vertexModule = await import('@google-cloud/vertexai');
+        VertexAI = vertexModule.VertexAI;
+      } catch (importError) {
+        console.warn('⚠️ Vertex AI module not available:', importError.message);
+        console.warn('🔄 Falling back to DALL-E 3 for image generation');
+        return await generateWithOpenAI(prompt, 'image');
+      }
       
       // Check required environment variables
       if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
@@ -138,8 +147,13 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
       let credentials;
       try {
         credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || '{}');
+        if (!credentials.project_id) {
+          throw new Error('Invalid credentials: missing project_id');
+        }
       } catch (error) {
-        throw new Error('Invalid GOOGLE_APPLICATION_CREDENTIALS JSON format');
+        console.warn('⚠️ Vertex AI credentials issue:', error.message);
+        console.warn('🔄 Falling back to DALL-E 3 for image generation');
+        return await generateWithOpenAI(prompt, 'image');
       }
 
       // Initialize Vertex AI client with explicit credentials
@@ -223,6 +237,24 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
     console.error(`Vertex AI ${type} generation error:`, error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
+    // Check for specific permission/service errors
+    if (errorMessage.includes('PERMISSION_DENIED') || 
+        errorMessage.includes('SERVICE_DISABLED') ||
+        errorMessage.includes('Vertex AI API has not been used')) {
+      console.warn('⚠️ Vertex AI API not enabled or permission denied for this project');
+      console.warn('💡 To enable Vertex AI: Visit Google Cloud Console -> APIs & Services -> Enable Vertex AI API');
+      
+      // For image generation, try fallback to DALL-E 3
+      if (type === 'image') {
+        console.log('🔄 Falling back to DALL-E 3...');
+        try {
+          return await generateWithOpenAI(prompt, 'image');
+        } catch (dalleError) {
+          console.error('DALL-E 3 fallback also failed:', dalleError);
+        }
+      }
+    }
+    
     // Fallback to placeholder if Vertex AI fails
     const placeholderData = "data:text/plain;base64," + Buffer.from(`${type === 'image' ? 'Imagen 3' : 'Veo 3'} generation failed: ${errorMessage}`).toString('base64');
     
@@ -235,7 +267,9 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
         generated: false,
         timestamp: new Date().toISOString(),
         error: errorMessage,
-        note: `Fehler bei der ${type === 'image' ? 'Bild' : 'Video'}-Generierung mit Vertex AI. Bitte überprüfen Sie Ihre Google Cloud Konfiguration.`
+        note: type === 'image' ? 
+          'Vertex AI не настроен. Изображение будет создано через DALL-E 3.' :
+          'Veo 3 недоступен в данном регионе. Попробуйте создать изображение.'
       }
     };
   }

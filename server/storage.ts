@@ -36,6 +36,7 @@ export interface IStorage {
   getMessages(sessionId: string): Promise<Message[]>;
   
   createUpload(upload: InsertUpload & { userId: string }): Promise<Upload>;
+  getUpload(id: string): Promise<Upload | undefined>;
   getUploads(userId: string): Promise<Upload[]>;
   updateUpload(id: string, data: Partial<Upload>): Promise<Upload | undefined>;
   
@@ -116,6 +117,11 @@ export class DatabaseStorage implements IStorage {
       .values(upload)
       .returning();
     return uploadRecord;
+  }
+
+  async getUpload(id: string): Promise<Upload | undefined> {
+    const [upload] = await db.select().from(uploads).where(eq(uploads.id, id));
+    return upload || undefined;
   }
 
   async getUploads(userId: string): Promise<Upload[]> {
