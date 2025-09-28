@@ -13,13 +13,18 @@ export interface SQLValidationResult {
 
 export function validateSQL(query: string): SQLValidationResult {
   // Remove comments and normalize whitespace
-  const cleanQuery = query.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
+  let cleanQuery = query.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
   
-  // Check for semicolons (not allowed)
+  // Auto-remove trailing semicolons instead of rejecting the query
+  if (cleanQuery.endsWith(';')) {
+    cleanQuery = cleanQuery.slice(0, -1).trim();
+  }
+  
+  // Check for semicolons in the middle of the query (still dangerous)
   if (cleanQuery.includes(';')) {
     return {
       isValid: false,
-      error: "Semicolons are not allowed in SQL queries"
+      error: "Multiple statements (semicolons in middle) are not allowed"
     };
   }
   
