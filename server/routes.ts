@@ -9,7 +9,7 @@ import { validateSQL, executeReadOnlySQL } from "./services/sqlValidator";
 import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
 import { generateWithOpenAI, analyzeWithGPT, enhancePromptForMediaGeneration } from "./services/openai";
 import { analyzeWithPerplexity } from "./services/perplexity";
-import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema } from "@shared/schema";
+import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema, insertAgentSettingsSchema, updateAgentSettingsSchema } from "@shared/schema";
 import { pool } from "./db";
 
 // Different storage configurations for different endpoints
@@ -492,6 +492,45 @@ export function registerRoutes(app: Express): Server {
       const { query } = req.body;
       const result = validateSQL(query);
       res.json(result);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(400).json({ message: errorMessage });
+    }
+  });
+
+  // Agent settings endpoints
+  app.get("/api/agent-settings", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getAgentSettings(req.user.id);
+      res.json(settings);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: errorMessage });
+    }
+  });
+
+  app.post("/api/agent-settings", requireAuth, async (req, res) => {
+    try {
+      const data = insertAgentSettingsSchema.parse(req.body);
+      const settings = await storage.createAgentSettings({
+        ...data,
+        userId: req.user!.id
+      });
+      res.json(settings);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(400).json({ message: errorMessage });
+    }
+  });
+
+  app.put("/api/agent-settings/:id", requireAuth, async (req, res) => {
+    try {
+      const data = updateAgentSettingsSchema.parse(req.body);
+      const settings = await storage.updateAgentSettings(req.params.id, data);
+      if (!settings) {
+        return res.status(404).json({ message: "Agent settings not found" });
+      }
+      res.json(settings);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.status(400).json({ message: errorMessage });

@@ -4,6 +4,7 @@ import {
   messages, 
   uploads, 
   generatedContent,
+  agentSettings,
   type User, 
   type InsertUser,
   type ChatSession,
@@ -13,10 +14,13 @@ import {
   type Upload,
   type InsertUpload,
   type GeneratedContent,
-  type InsertGeneratedContent
+  type InsertGeneratedContent,
+  type AgentSettings,
+  type InsertAgentSettings,
+  type UpdateAgentSettings
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -42,6 +46,11 @@ export interface IStorage {
   
   createGeneratedContent(content: InsertGeneratedContent & { userId: string }): Promise<GeneratedContent>;
   getGeneratedContent(userId: string): Promise<GeneratedContent[]>;
+  
+  createAgentSettings(settings: InsertAgentSettings & { userId: string }): Promise<AgentSettings>;
+  getAgentSettings(userId: string): Promise<AgentSettings[]>;
+  getAgentSettingsByType(userId: string, agentType: string): Promise<AgentSettings | undefined>;
+  updateAgentSettings(id: string, data: UpdateAgentSettings): Promise<AgentSettings | undefined>;
   
   sessionStore: session.Store;
 }
@@ -155,6 +164,39 @@ export class DatabaseStorage implements IStorage {
       .from(generatedContent)
       .where(eq(generatedContent.userId, userId))
       .orderBy(desc(generatedContent.createdAt));
+  }
+
+  async createAgentSettings(settings: InsertAgentSettings & { userId: string }): Promise<AgentSettings> {
+    const [agentSetting] = await db
+      .insert(agentSettings)
+      .values(settings)
+      .returning();
+    return agentSetting;
+  }
+
+  async getAgentSettings(userId: string): Promise<AgentSettings[]> {
+    return await db
+      .select()
+      .from(agentSettings)
+      .where(eq(agentSettings.userId, userId))
+      .orderBy(agentSettings.agentType);
+  }
+
+  async getAgentSettingsByType(userId: string, agentType: string): Promise<AgentSettings | undefined> {
+    const [setting] = await db
+      .select()
+      .from(agentSettings)
+      .where(and(eq(agentSettings.userId, userId), eq(agentSettings.agentType, agentType)));
+    return setting || undefined;
+  }
+
+  async updateAgentSettings(id: string, data: UpdateAgentSettings): Promise<AgentSettings | undefined> {
+    const [updated] = await db
+      .update(agentSettings)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(agentSettings.id, id))
+      .returning();
+    return updated || undefined;
   }
 }
 
