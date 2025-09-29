@@ -4,12 +4,37 @@ import { generateWithOpenAI } from './openai';
 // Initialize the Google AI client with the API key from Google AI Studio
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
 
-export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[], modelName?: string): Promise<{response: string, metadata: any}> {
+export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[], modelName?: string, customSystemPrompt?: string): Promise<{response: string, metadata: any}> {
   let systemPrompt = "";
   // Default to appropriate model based on agent type, but allow override
   let model = modelName || (agentType === 'accountant' ? "gemini-2.5-pro" : "gemini-2.5-flash");
   
-  switch (agentType) {
+  // Use custom system prompt if provided, otherwise fall back to default behavior
+  if (customSystemPrompt) {
+    systemPrompt = customSystemPrompt;
+    
+    // For accountant agent, append available tables information if provided
+    if (agentType === 'accountant' && availableTables && availableTables.length > 0) {
+      systemPrompt += ` Verfügbare Tabellen in der Datenbank: ${availableTables.join(', ')}. `;
+    }
+    
+    // For structured responses (accountant/analyst), append JSON format requirement
+    if (agentType === 'accountant' || agentType === 'analyst') {
+      systemPrompt += `
+
+WICHTIG: SQL-Abfragen NIEMALS mit Semikolon beenden. Wenn SQL erforderlich ist, füge es in das Metadatenfeld ein. Antworte auf Deutsch.
+
+Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
+{
+  "response": "Deine Antwort hier",
+  "sqlQuery": "SELECT statement ohne Semikolon" oder null,
+  "chartType": "bar|line|pie|doughnut" oder null,
+  "confidence": 0.95
+}`;
+    }
+  } else {
+    // Fall back to original switch statement for default prompts
+    switch (agentType) {
     case 'accountant':
       let tablesInfo = '';
       if (availableTables && availableTables.length > 0) {
@@ -69,6 +94,7 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
   "chartType": null,
   "confidence": 0.95
 }`;
+    }
   }
 
   try {

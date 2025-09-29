@@ -19,19 +19,25 @@ interface PerplexityResponse {
   };
 }
 
-export async function analyzeWithPerplexity(text: string, agentType: string): Promise<{response: string, metadata: any}> {
+export async function analyzeWithPerplexity(text: string, agentType: string, customSystemPrompt?: string): Promise<{response: string, metadata: any}> {
   if (!process.env.PERPLEXITY_API_KEY) {
     throw new Error('PERPLEXITY_API_KEY is not configured');
   }
 
   let systemPrompt = '';
   
-  switch (agentType) {
-    case 'analyst':
-      systemPrompt = `Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein Datenanalyst. Führe gründliche Marktanalysen durch, suche nach aktuellen Trends und erstelle datenbasierte Insights. Antworte auf Deutsch.`;
-      break;
-    default:
-      systemPrompt = `Du bist ein hilfreicher KI-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Antworte auf Deutsch und sei präzise und informativ.`;
+  // Use custom system prompt if provided, otherwise fall back to default behavior
+  if (customSystemPrompt) {
+    systemPrompt = customSystemPrompt;
+  } else {
+    // Fall back to original switch statement for default prompts
+    switch (agentType) {
+      case 'analyst':
+        systemPrompt = `Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein Datenanalyst. Führe gründliche Marktanalysen durch, suche nach aktuellen Trends und erstelle datenbasierte Insights. Antworte auf Deutsch.`;
+        break;
+      default:
+        systemPrompt = `Du bist ein hilfreicher KI-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Antworte auf Deutsch und sei präzise und informativ.`;
+    }
   }
 
   // Configure request with extended timeout and retry logic
