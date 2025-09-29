@@ -50,6 +50,7 @@ export interface IStorage {
   createAgentSettings(settings: InsertAgentSettings & { userId: string }): Promise<AgentSettings>;
   getAgentSettings(userId: string): Promise<AgentSettings[]>;
   getAgentSettingsByType(userId: string, agentType: string): Promise<AgentSettings | undefined>;
+  getAgentSettingsById(id: string, userId: string): Promise<AgentSettings | undefined>;
   updateAgentSettings(id: string, data: UpdateAgentSettings): Promise<AgentSettings | undefined>;
   
   sessionStore: session.Store;
@@ -187,6 +188,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(agentSettings)
       .where(and(eq(agentSettings.userId, userId), eq(agentSettings.agentType, agentType)));
+    return setting || undefined;
+  }
+
+  async getAgentSettingsById(id: string, userId: string): Promise<AgentSettings | undefined> {
+    const [setting] = await db
+      .select()
+      .from(agentSettings)
+      .where(and(eq(agentSettings.id, id), eq(agentSettings.userId, userId)));
     return setting || undefined;
   }
 

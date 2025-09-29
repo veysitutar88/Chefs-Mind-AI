@@ -11,6 +11,7 @@ import { generateWithOpenAI, analyzeWithGPT, enhancePromptForMediaGeneration } f
 import { analyzeWithPerplexity } from "./services/perplexity";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema, insertAgentSettingsSchema, updateAgentSettingsSchema } from "@shared/schema";
 import { pool } from "./db";
+import { getAgentSystemPrompt } from "./utils/agentPrompts";
 
 // Different storage configurations for different endpoints
 const uploadToStorage = multer({ 
@@ -135,13 +136,16 @@ export function registerRoutes(app: Express): Server {
           if (req.body.mediaType === 'text') {
             // Direct text generation with GPT-5 (no prompt enhancement needed)
             console.log('📝 Step 1/1: Direct text generation with GPT-5');
-            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            // Load custom system prompt for the agent
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
             metadata = { model: 'gpt-5', contentType: 'text' };
             
           } else if (req.body.mediaType === 'image') {
             console.log('🖼️ Step 1/2: Enhancing prompt for image generation');
-            // Step 1: Enhance prompt using GPT-5 as prompt expert
-            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'image');
+            // Step 1: Enhance prompt using GPT-5 as prompt expert with custom Media Studio prompt
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'image', customPrompt);
             
             console.log('🎯 Step 2/2: Generating image with enhanced prompt');
             const model = req.body.model || 'imagen-3';
@@ -185,8 +189,9 @@ export function registerRoutes(app: Express): Server {
             
           } else if (req.body.mediaType === 'video') {
             console.log('🎥 Step 1/2: Enhancing prompt for video generation');
-            // Step 1: Enhance prompt using GPT-5 as prompt expert
-            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'video');
+            // Step 1: Enhance prompt using GPT-5 as prompt expert with custom Media Studio prompt
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            const enhancedPrompt = await enhancePromptForMediaGeneration(data.content, 'video', customPrompt);
             
             console.log('🎬 Step 2/2: Generating video with enhanced prompt');
             const model = req.body.model || 'veo-3';
@@ -223,7 +228,9 @@ export function registerRoutes(app: Express): Server {
           } else {
             // Default to GPT-5 for text generation
             console.log('📝 Fallback: Default text generation with GPT-5');
-            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            // Load custom system prompt for the agent
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
             metadata = { model: 'gpt-5', contentType: 'text' };
           }
           
@@ -240,16 +247,22 @@ export function registerRoutes(app: Express): Server {
               // Use Gemini for analytical tasks, GPT-5 for creative tasks
               const isAnalytical = /\b(анализ|данные|таблица|статистика|график|отчет|sql|query)\b/i.test(data.content);
               if (isAnalytical) {
-                const result = await analyzeWithGemini(data.content, session.agentType, undefined, 'gemini-2.5-flash');
+                // Load custom system prompt for the agent
+                const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+                const result = await analyzeWithGemini(data.content, session.agentType, undefined, 'gemini-2.5-flash', customPrompt);
                 aiResponse = result.response;
                 metadata = { ...result.metadata, autoRouted: 'gemini-2.5-flash' };
               } else {
-                aiResponse = await analyzeWithGPT(data.content, session.agentType);
+                // Load custom system prompt for the agent
+                const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+                aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
                 metadata = { model: 'gpt-5', autoRouted: 'gpt' };
               }
             } else {
               // Fallback to GPT-5
-              aiResponse = await analyzeWithGPT(data.content, session.agentType);
+              // Load custom system prompt for the agent
+              const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+              aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
               metadata = { model: 'gpt-5' };
             }
           } else if (selectedModel === 'gemini-2.5-pro' || selectedModel === 'gemini-2.5-flash') {
@@ -263,7 +276,10 @@ export function registerRoutes(app: Express): Server {
               availableTables = tablesQuery.rows.map(row => row.table_name);
             }
             
-            const result = await analyzeWithGemini(data.content, session.agentType, availableTables, selectedModel);
+            // Load custom system prompt for the agent
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            
+            const result = await analyzeWithGemini(data.content, session.agentType, availableTables, selectedModel, customPrompt);
             aiResponse = result.response;
             metadata = result.metadata;
             
@@ -289,22 +305,30 @@ export function registerRoutes(app: Express): Server {
             console.log('🔵 Gemini response metadata:', JSON.stringify(metadata, null, 2));
           } else if (selectedModel === 'gpt-5') {
             // Use GPT-5
-            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            // Load custom system prompt for the agent
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
             metadata = { model: 'gpt-5' };
           } else if (selectedModel === 'perplexity') {
             // Use Perplexity (mainly for analyst)
             try {
-              const result = await analyzeWithPerplexity(data.content, session.agentType);
+              // Load custom system prompt for the agent
+              const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+              const result = await analyzeWithPerplexity(data.content, session.agentType, customPrompt);
               aiResponse = result.response;
               metadata = result.metadata;
             } catch (perplexityError) {
               console.error('Perplexity failed, falling back to GPT-5:', perplexityError);
-              aiResponse = await analyzeWithGPT(data.content, session.agentType);
+              // Load custom system prompt for the agent
+              const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+              aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
               metadata = { model: 'gpt-5-fallback', error: 'Perplexity API unavailable' };
             }
           } else {
             // Default to GPT-5 for unknown models
-            aiResponse = await analyzeWithGPT(data.content, session.agentType);
+            // Load custom system prompt for the agent
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, session.agentType);
+            aiResponse = await analyzeWithGPT(data.content, session.agentType, customPrompt);
             metadata = { model: 'gpt-5', note: `Unknown model ${selectedModel}, using GPT-5` };
           }
         }
@@ -525,10 +549,16 @@ export function registerRoutes(app: Express): Server {
 
   app.put("/api/agent-settings/:id", requireAuth, async (req, res) => {
     try {
+      // First, verify that the agent settings belong to the current user
+      const existingSettings = await storage.getAgentSettingsById(req.params.id, req.user!.id);
+      if (!existingSettings) {
+        return res.status(404).json({ message: "Agent settings not found" });
+      }
+
       const data = updateAgentSettingsSchema.parse(req.body);
       const settings = await storage.updateAgentSettings(req.params.id, data);
       if (!settings) {
-        return res.status(404).json({ message: "Agent settings not found" });
+        return res.status(404).json({ message: "Failed to update agent settings" });
       }
       res.json(settings);
     } catch (error) {
