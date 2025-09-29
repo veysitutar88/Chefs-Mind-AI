@@ -67,5 +67,21 @@ export const api = {
   async validateSQL(query: string) {
     const res = await apiRequest("POST", "/api/validate-sql", { query });
     return res.json();
+  },
+
+  // Agent settings
+  async getAgentSettings() {
+    const res = await apiRequest("GET", "/api/agent-settings");
+    return res.json();
+  },
+
+  async createAgentSettings(data: { agentType: string; systemPrompt: string }) {
+    const res = await apiRequest("POST", "/api/agent-settings", data);
+    return res.json();
+  },
+
+  async updateAgentSettings(id: string, data: { systemPrompt: string }) {
+    const res = await apiRequest("PUT", `/api/agent-settings/${id}`, data);
+    return res.json();
   }
 };
