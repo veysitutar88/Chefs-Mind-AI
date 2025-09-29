@@ -6,6 +6,7 @@ import { AgentSelector } from "@/components/sidebar/agent-selector";
 import { FileUpload } from "@/components/sidebar/file-upload";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { MediaStudioPanel } from "@/components/media-studio/media-studio-panel";
+import { AgentPromptsSettings } from "@/components/settings/agent-prompts-settings";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/lib/api";
 import type { Agent } from "@/types";
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent>(agents[0]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Media Studio state
   const [mediaStudioSettings, setMediaStudioSettings] = useState({
@@ -111,6 +113,15 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setIsSettingsOpen(true)}
+              data-testid="button-settings"
+            >
+              <i className="fas fa-cog text-muted-foreground"></i>
+            </Button>
+            
             <Button 
               variant="ghost" 
               size="sm" 
@@ -217,6 +228,12 @@ export default function DashboardPage() {
           </div>
         </aside>
       </div>
+      
+      {/* Agent Settings Modal */}
+      <AgentPromptsSettings 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }
