@@ -95,6 +95,15 @@ export const invoices = pgTable("invoices", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const agentSettings = pgTable("agent_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  agentType: text("agent_type").notNull(), // 'Accountant' | 'Chef' | 'Analyst' | 'Media Studio'
+  systemPrompt: text("system_prompt").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -146,6 +155,16 @@ export const insertInvoiceSchema = createInsertSchema(invoices).omit({
   updatedAt: true,
 });
 
+export const insertAgentSettingsSchema = createInsertSchema(agentSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateAgentSettingsSchema = createInsertSchema(agentSettings).pick({
+  systemPrompt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
@@ -162,3 +181,6 @@ export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type Invoice = typeof invoices.$inferSelect;
+export type InsertAgentSettings = z.infer<typeof insertAgentSettingsSchema>;
+export type UpdateAgentSettings = z.infer<typeof updateAgentSettingsSchema>;
+export type AgentSettings = typeof agentSettings.$inferSelect;
