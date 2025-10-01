@@ -567,6 +567,190 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Universal Ask endpoint - unified dispatcher for all agent roles
+  app.post("/api/universal-ask", requireAuth, async (req, res) => {
+    try {
+      const { role, query, context } = req.body;
+      
+      if (!role || !query) {
+        return res.status(400).json({ message: "Missing required fields: role, query" });
+      }
+
+      const validRoles = ['Chef', 'Accountant', 'Media', 'Research'];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
+      }
+
+      let response: any = {};
+
+      switch (role) {
+        case 'Chef': {
+          // Chef role: Use GPT-5, check for visual_brief in context
+          if (context?.visual_brief) {
+            // Redirect to Media generation (image)
+            console.log('🍳 Chef detected visual_brief, redirecting to Media generation');
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, 'media-studio');
+            const enhancedPrompt = await enhancePromptForMediaGeneration(query, 'image', customPrompt);
+            const result = await generateWithGemini(enhancedPrompt, 'image');
+            
+            response = {
+              role: 'Chef→Media',
+              type: 'image',
+              url: result.url,
+              prompt: query,
+              enhancedPrompt,
+              metadata: result.metadata
+            };
+          } else {
+            // Standard Chef text response via GPT-5
+            console.log('🍳 Chef text response via GPT-5');
+            const customPrompt = await getAgentSystemPrompt(req.user!.id, 'chef');
+            const aiResponse = await analyzeWithGPT(query, 'chef', customPrompt);
+            
+            response = {
+              role: 'Chef',
+              type: 'text',
+              answer: aiResponse,
+              model: 'gpt-5'
+            };
+          }
+          break;
+        }
+
+        case 'Accountant': {
+          // Accountant: Gemini generates SELECT, validate, execute on RO-DB, return markdown + debug.sql
+          console.log('💰 Accountant SQL generation via Gemini');
+          
+          // Get available tables for context
+          const tablesQuery = await pool.query(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices', 'users', 'chat_sessions', 'messages'))"
+          );
+          const availableTables = tablesQuery.rows.map(row => row.table_name);
+          
+          const customPrompt = await getAgentSystemPrompt(req.user!.id, 'accountant');
+          const geminiResult = await analyzeWithGemini(
+            query, 
+            'accountant', 
+            availableTables, 
+            'gemini-2.5-pro',
+            customPrompt
+          );
+          
+          let queryResults: any[] = [];
+          let debugSql = '';
+          let sqlError = null;
+
+          if (geminiResult.metadata?.sqlQuery) {
+            const sqlQuery = geminiResult.metadata.sqlQuery;
+            debugSql = sqlQuery;
+            
+            const validationResult = validateSQL(sqlQuery);
+            if (!validationResult.isValid) {
+              sqlError = `SQL Validation Error: ${validationResult.error}`;
+            } else {
+              try {
+                queryResults = await executeReadOnlySQL(validationResult.sanitizedQuery || sqlQuery);
+                debugSql = validationResult.sanitizedQuery || sqlQuery;
+              } catch (execError) {
+                sqlError = execError instanceof Error ? execError.message : 'SQL execution error';
+              }
+            }
+          }
+
+          // Format as markdown
+          let markdownResponse = `## 💰 Accountant Analysis\n\n${geminiResult.response}\n\n`;
+          
+          if (queryResults.length > 0) {
+            markdownResponse += `### Query Results (${queryResults.length} rows)\n\n`;
+            markdownResponse += '```json\n' + JSON.stringify(queryResults, null, 2) + '\n```\n\n';
+          }
+          
+          if (sqlError) {
+            markdownResponse += `### ⚠️ SQL Error\n\n${sqlError}\n\n`;
+          }
+
+          response = {
+            role: 'Accountant',
+            type: 'sql_analysis',
+            markdown: markdownResponse,
+            debug_sql: debugSql,
+            results: queryResults,
+            error: sqlError,
+            metadata: geminiResult.metadata
+          };
+          break;
+        }
+
+        case 'Media': {
+          // Media: Generate image (Imagen 3, fallback DALL-E 3), video = 501
+          if (context?.mediaType === 'video') {
+            return res.status(501).json({ 
+              message: "Video generation not implemented yet",
+              role: 'Media',
+              type: 'video'
+            });
+          }
+
+          console.log('🎨 Media image generation');
+          const customPrompt = await getAgentSystemPrompt(req.user!.id, 'media-studio');
+          const enhancedPrompt = await enhancePromptForMediaGeneration(query, 'image', customPrompt);
+          
+          let result;
+          const model = context?.model || 'imagen-3';
+          
+          if (model === 'dall-e-3') {
+            result = await generateWithOpenAI(enhancedPrompt, 'image');
+          } else {
+            result = await generateWithGemini(enhancedPrompt, 'image');
+          }
+
+          response = {
+            role: 'Media',
+            type: 'image',
+            url: result.url,
+            prompt: query,
+            enhancedPrompt,
+            model,
+            metadata: result.metadata
+          };
+          break;
+        }
+
+        case 'Research': {
+          // Research: Perplexity query → brief summary + reference metadata
+          console.log('🔍 Research via Perplexity');
+          const customPrompt = await getAgentSystemPrompt(req.user!.id, 'analyst');
+          const perplexityResult = await analyzeWithPerplexity(query, 'analyst', customPrompt);
+          
+          response = {
+            role: 'Research',
+            type: 'research',
+            summary: perplexityResult.response,
+            metadata: perplexityResult.metadata,
+            citations: perplexityResult.metadata?.citations || [],
+            model: 'perplexity-sonar'
+          };
+          break;
+        }
+      }
+
+      res.json({
+        success: true,
+        ...response,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Universal Ask error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ 
+        success: false,
+        message: errorMessage,
+        role: req.body.role 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
