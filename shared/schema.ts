@@ -50,6 +50,19 @@ export const generatedContent = pgTable("generated_content", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const mediaJobs = pgTable("media_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  kind: text("kind").notNull(), // 'image' | 'video' | 'video-from-image'
+  provider: text("provider").notNull(), // 'imagen-3' | 'veo-3' | etc
+  status: text("status").notNull().default('queued'), // 'queued' | 'running' | 'done' | 'failed'
+  inputHash: text("input_hash"), // For caching/deduplication
+  resultUrl: text("result_url"),
+  error: text("error"),
+  metadata: jsonb("metadata"), // prompt, modelHints, etc
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const ingredients = pgTable("ingredients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -137,6 +150,12 @@ export const insertGeneratedContentSchema = createInsertSchema(generatedContent)
   metadata: true,
 });
 
+export const insertMediaJobSchema = createInsertSchema(mediaJobs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertIngredientSchema = createInsertSchema(ingredients).omit({
   id: true,
   createdAt: true,
@@ -175,6 +194,8 @@ export type InsertUpload = z.infer<typeof insertUploadSchema>;
 export type Upload = typeof uploads.$inferSelect;
 export type InsertGeneratedContent = z.infer<typeof insertGeneratedContentSchema>;
 export type GeneratedContent = typeof generatedContent.$inferSelect;
+export type InsertMediaJob = z.infer<typeof insertMediaJobSchema>;
+export type MediaJob = typeof mediaJobs.$inferSelect;
 export type InsertIngredient = z.infer<typeof insertIngredientSchema>;
 export type Ingredient = typeof ingredients.$inferSelect;
 export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
