@@ -18,6 +18,9 @@ import { getAvailableTables } from "./utils/tableCache";
 import { generateMediaPrompt } from './lib/mediaPrompter';
 import { generateImageImagen3, getJob } from './lib/mediaProviders';
 import { STTStreamHandler, transcribeAudioBuffer, checkSTTHealth, normalizeMimeType } from './services/stt';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
 
 // Different storage configurations for different endpoints
 const uploadToStorage = multer({ 
@@ -143,6 +146,78 @@ export function registerRoutes(app: Express): Server {
       requestId: req.requestId 
     });
   };
+
+  // Database backup endpoint - requires auth and confirmation
+  app.get("/api/db/backup", requireAuth, requireWriteConfirm, async (req, res) => {
+    const execAsync = promisify(exec);
+    let tempFilePath: string | null = null;
+
+    try {
+      console.log('📦 Database backup requested...');
+      
+      // Generate timestamp for backup filename
+      const now = new Date();
+      const timestamp = now.toISOString()
+        .replace(/[-:]/g, '')
+        .replace(/\.\d{3}Z/, '')
+        .replace('T', '_');
+      const filename = `backup_${timestamp}.dump`;
+      tempFilePath = `/tmp/${filename}`;
+      
+      // Use pg_dump with environment variables from DATABASE_URL or PG* vars
+      const pgHost = process.env.PGHOST || 'localhost';
+      const pgPort = process.env.PGPORT || '5432';
+      const pgDatabase = process.env.PGDATABASE || 'postgres';
+      const pgUser = process.env.PGUSER || 'postgres';
+      const pgPassword = process.env.PGPASSWORD || '';
+      
+      // Build pg_dump command with connection parameters
+      const dumpCommand = `PGPASSWORD="${pgPassword}" pg_dump -h ${pgHost} -p ${pgPort} -U ${pgUser} -F c -f ${tempFilePath} ${pgDatabase}`;
+      
+      console.log(`📦 Running pg_dump to ${tempFilePath}...`);
+      const { stdout, stderr } = await execAsync(dumpCommand);
+      
+      if (stderr && !stderr.includes('pg_dump:')) {
+        console.warn('pg_dump stderr:', stderr);
+      }
+      
+      console.log('✅ Database backup created successfully');
+      
+      // Send the file
+      res.download(tempFilePath, filename, async (err) => {
+        // Clean up temp file after download
+        if (tempFilePath) {
+          try {
+            await fs.unlink(tempFilePath);
+            console.log('🗑️  Temporary backup file deleted');
+          } catch (cleanupError) {
+            console.error('Failed to delete temp backup file:', cleanupError);
+          }
+        }
+        
+        if (err) {
+          console.error('Error sending backup file:', err);
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Database backup failed:', error);
+      
+      // Clean up temp file on error
+      if (tempFilePath) {
+        try {
+          await fs.unlink(tempFilePath);
+        } catch {}
+      }
+      
+      res.status(500).json({
+        success: false,
+        error: 'Database backup failed',
+        detail: error.message,
+        requestId: req.requestId
+      });
+    }
+  });
 
   // Chat sessions
   app.post("/api/chat/sessions", requireAuth, requireWriteConfirm, async (req, res, next) => {
