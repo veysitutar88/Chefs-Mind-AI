@@ -69,3 +69,60 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
   });
 })();
+
+// --- PATCH Sprint A ---
+import healthRouter from "./routes/health";
+import rateLimit from "express-rate-limit";
+import morgan from "morgan";
+
+// логирование запросов
+app.use(morgan("dev"));
+
+// rate-limit для /auth/login
+app.use("/auth/login", rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 минута
+  max: 5,
+  message: { error: "Too many login attempts, try again later" }
+}));
+
+// health-check
+app.use(healthRouter);
+
+// централизованный error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("Error handler:", err);
+  res.status(err.status || 500).json({ error: err.message || "Internal error" });
+});
+
+// --- PATCH Sprint A ---
+import healthRouter from "./routes/health";
+import rateLimit from "express-rate-limit";
+import morgan from "morgan";
+
+// логирование запросов
+app.use(morgan("dev"));
+
+// rate-limit для /auth/login
+app.use("/auth/login", rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 минута
+  max: 5,
+  message: { error: "Too many login attempts, try again later" }
+}));
+
+// health-check
+app.use(healthRouter);
+
+// централизованный error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("Error handler:", err);
+  res.status(err.status || 500).json({ error: err.message || "Internal error" });
+});
+
+// --- PATCH Sprint B (safe import + ddl) ---
+import dbAdminRouter from "./routes/dbadmin";
+import importerRouter from "./routes/importer";
+import safeRouter from "./routes/safe";
+app.use(dbAdminRouter);
+app.use("/api/import", importerRouter);
+app.use(safeRouter);
+
