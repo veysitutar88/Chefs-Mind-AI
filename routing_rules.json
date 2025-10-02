@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "test_date": "2025-10-02T20:24:00Z",
+  "description": "Model routing rules based on latency measurements",
+  "rules": {
+    "Chef": {
+      "primary_model": "gpt-5",
+      "fallback_model": null,
+      "avg_latency_ms": 30794,
+      "routing_logic": "Always use GPT-5 for text responses",
+      "special_cases": {
+        "visual_brief_detected": "Redirect to Media role (Imagen-3)"
+      }
+    },
+    "Accountant": {
+      "primary_model": "gemini-2.5-pro",
+      "fallback_model": null,
+      "avg_latency_ms": 15351,
+      "routing_logic": "Use Gemini 2.5 Pro for SQL generation and analytics",
+      "notes": "Optimized for structured data and database queries"
+    },
+    "Research": {
+      "primary_model": "perplexity-sonar",
+      "fallback_model": "gpt-5",
+      "avg_latency_ms": 10938,
+      "routing_logic": "Primary: Perplexity for web search. Fallback: GPT-5 on API errors",
+      "notes": "Fastest response, includes citations from web sources"
+    },
+    "Media": {
+      "primary_model": "imagen-3",
+      "fallback_model": "dall-e-3",
+      "avg_latency_ms": 1713,
+      "routing_logic": "Async job creation with Imagen-3, returns jobId immediately",
+      "notes": "1.7s for job creation (not full generation). Fastest async workflow."
+    }
+  },
+  "performance_summary": {
+    "fastest_role": "Media",
+    "slowest_role": "Chef",
+    "optimization_opportunities": [
+      "Chef role could benefit from streaming responses to reduce perceived latency",
+      "Accountant role SQL execution time not included in latency (query-dependent)",
+      "Research role has built-in retry logic (3 attempts) for reliability"
+    ]
+  },
+  "implementation_notes": {
+    "endpoint": "/api/universal-ask",
+    "auth_required": true,
+    "safe_mode": "Temporarily disabled requireWriteConfirm for testing",
+    "request_format": {
+      "role": "Chef | Accountant | Research | Media",
+      "query": "string",
+      "context": "optional object"
+    }
+  }
+}
