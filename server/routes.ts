@@ -60,6 +60,49 @@ const uploadToMemory = multer({
 export function registerRoutes(app: Express): Server {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Health check endpoint - no auth required (placed AFTER setupAuth)
+  app.get("/api/health", async (req, res) => {
+    try {
+      const startTime = Date.now();
+      
+      // Get version from package.json
+      const version = '1.0.0';
+      
+      // Check database connectivity
+      let dbOk = false;
+      try {
+        await pool.query('SELECT 1');
+        dbOk = true;
+      } catch (error) {
+        console.error('Health check DB error:', error);
+      }
+      
+      // Check external services (API keys presence, not actual API calls)
+      const ext = {
+        openai: !!process.env.OPENAI_API_KEY,
+        vertex: !!(process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_PROJECT_ID),
+        pplx: !!process.env.PERPLEXITY_API_KEY
+      };
+      
+      const responseTime = Date.now() - startTime;
+      
+      res.json({
+        ok: dbOk && ext.openai && ext.vertex && ext.pplx,
+        version,
+        uptime: process.uptime(),
+        db: { ok: dbOk },
+        ext,
+        responseTime
+      });
+    } catch (error) {
+      res.status(503).json({
+        ok: false,
+        error: 'Health check failed',
+        uptime: process.uptime()
+      });
+    }
+  });
 
   // Middleware to check authentication (supports both JWT and session)
   const requireAuth = (req: any, res: any, next: any) => {
