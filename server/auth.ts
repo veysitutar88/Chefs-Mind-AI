@@ -8,6 +8,7 @@ import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { requireWriteConfirm } from "./middleware/safeMode";
 import { generateToken, sanitizeUser } from "./utils/jwt";
+import { jwtAuthMiddleware } from "./middleware/jwtAuth";
 
 declare global {
   namespace Express {
@@ -42,6 +43,7 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(jwtAuthMiddleware);
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
