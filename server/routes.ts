@@ -66,46 +66,47 @@ export function registerRoutes(app: Express): Server {
     if (req.user || req.isAuthenticated()) {
       return next();
     }
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ 
+      success: false, 
+      error: "Unauthorized",
+      requestId: req.requestId 
+    });
   };
 
   // Chat sessions
-  app.post("/api/chat/sessions", requireAuth, requireWriteConfirm, async (req, res) => {
+  app.post("/api/chat/sessions", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
       const data = insertChatSessionSchema.parse(req.body);
       const session = await storage.createChatSession({
         ...data,
         userId: req.user!.id
       });
-      res.json(session);
+      res.json({ success: true, data: session, requestId: req.requestId });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(400).json({ message: errorMessage });
+      next(error);
     }
   });
 
-  app.get("/api/chat/sessions", requireAuth, async (req, res) => {
+  app.get("/api/chat/sessions", requireAuth, async (req, res, next) => {
     try {
-      const sessions = await storage.getChatSessions(req.user.id);
-      res.json(sessions);
+      const sessions = await storage.getChatSessions(req.user!.id);
+      res.json({ success: true, data: sessions, requestId: req.requestId });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
-  app.get("/api/chat/sessions/:id/messages", requireAuth, async (req, res) => {
+  app.get("/api/chat/sessions/:id/messages", requireAuth, async (req, res, next) => {
     try {
       const messages = await storage.getMessages(req.params.id);
-      res.json(messages);
+      res.json({ success: true, data: messages, requestId: req.requestId });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // Chat messages and AI processing
-  app.post("/api/chat/messages", requireAuth, requireWriteConfirm, async (req, res) => {
+  app.post("/api/chat/messages", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
       const data = insertMessageSchema.parse(req.body);
       
@@ -118,7 +119,11 @@ export function registerRoutes(app: Express): Server {
       
       const session = await storage.getChatSession(data.sessionId!);
       if (!session) {
-        return res.status(404).json({ message: "Session not found" });
+        return res.status(404).json({ 
+          success: false, 
+          error: "Session not found",
+          requestId: req.requestId 
+        });
       }
 
       try {
@@ -334,8 +339,8 @@ export function registerRoutes(app: Express): Server {
           }
         }
 
-        // Helper function to get default model for each agent
-        function getDefaultModelForAgent(agentType: string): string {
+        // Helper: get default model for each agent
+        const getDefaultModelForAgent = (agentType: string): string => {
           switch (agentType) {
             case 'universal': return 'auto';
             case 'accountant': return 'gemini-2.5-pro';
@@ -343,7 +348,7 @@ export function registerRoutes(app: Express): Server {
             case 'analyst': return 'perplexity';
             default: return 'gpt-5';
           }
-        }
+        };
       } catch (aiError) {
         const aiErrorMessage = aiError instanceof Error ? aiError.message : 'Unknown error';
         aiResponse = `Ошибка при обработке запроса: ${aiErrorMessage}`;
@@ -363,17 +368,20 @@ export function registerRoutes(app: Express): Server {
         assistantMessage
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(400).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // File upload and processing
   // Whisper transcription endpoint
-  app.post("/api/transcribe", requireAuth, requireWriteConfirm, uploadToMemory.single('audio'), async (req, res) => {
+  app.post("/api/transcribe", requireAuth, requireWriteConfirm, uploadToMemory.single('audio'), async (req, res, next) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "No audio file provided" });
+        return res.status(400).json({ 
+          success: false, 
+          error: "No audio file provided",
+          requestId: req.requestId 
+        });
       }
 
       console.log('🎙️ Transcribing audio with OpenAI Whisper...');
@@ -406,11 +414,15 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error('Transcription error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: `Transcription failed: ${errorMessage}` });
+      res.status(500).json({ 
+        success: false, 
+        error: `Transcription failed: ${errorMessage}`,
+        requestId: req.requestId 
+      });
     }
   });
 
-  app.post("/api/upload", requireAuth, requireWriteConfirm, (req, res, next) => {
+  app.post("/api/upload", requireAuth, requireWriteConfirm, (req, res, next: any) => {
     uploadToStorage.single('file')(req, res, (err) => {
       if (err) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -464,77 +476,79 @@ export function registerRoutes(app: Express): Server {
         processed: true
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // Get uploads
-  app.get("/api/uploads", requireAuth, async (req, res) => {
+  app.get("/api/uploads", requireAuth, async (req, res, next) => {
     try {
-      const uploads = await storage.getUploads(req.user.id);
+      const uploads = await storage.getUploads(req.user!.id);
       res.json(uploads);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // Get single upload by ID
-  app.get("/api/uploads/:id", requireAuth, async (req, res) => {
+  app.get("/api/uploads/:id", requireAuth, async (req, res, next) => {
     try {
       const upload = await storage.getUpload(req.params.id);
       if (!upload) {
-        return res.status(404).json({ message: "Upload not found" });
+        return res.status(404).json({ 
+          success: false, 
+          error: "Upload not found",
+          requestId: req.requestId 
+        });
       }
       
       // Ensure user owns the upload
-      if (upload.userId !== req.user.id) {
-        return res.status(403).json({ message: "Access denied" });
+      if (upload.userId !== req.user!.id) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied",
+          requestId: req.requestId 
+        });
       }
       
       res.json(upload);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // Get generated content
-  app.get("/api/generated-content", requireAuth, async (req, res) => {
+  app.get("/api/generated-content", requireAuth, async (req, res, next) => {
     try {
-      const content = await storage.getGeneratedContent(req.user.id);
+      const content = await storage.getGeneratedContent(req.user!.id);
       res.json(content);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // SQL validation endpoint
-  app.post("/api/validate-sql", requireAuth, async (req, res) => {
+  app.post("/api/validate-sql", requireAuth, async (req, res, next) => {
     try {
       const { query } = req.body;
       const result = validateSQL(query);
       res.json(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(400).json({ message: errorMessage });
+      next(error);
     }
   });
 
   // Agent settings endpoints
-  app.get("/api/agent-settings", requireAuth, async (req, res) => {
+  app.get("/api/agent-settings", requireAuth, async (req, res, next) => {
     try {
-      const settings = await storage.getAgentSettings(req.user.id);
+      const settings = await storage.getAgentSettings(req.user!.id);
       res.json(settings);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ message: errorMessage });
+      next(error);
     }
   });
 
-  app.post("/api/agent-settings", requireAuth, requireWriteConfirm, async (req, res) => {
+  app.post("/api/agent-settings", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
       const data = insertAgentSettingsSchema.parse(req.body);
       const settings = await storage.createAgentSettings({
@@ -543,28 +557,34 @@ export function registerRoutes(app: Express): Server {
       });
       res.json(settings);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(400).json({ message: errorMessage });
+      next(error);
     }
   });
 
-  app.put("/api/agent-settings/:id", requireAuth, requireWriteConfirm, async (req, res) => {
+  app.put("/api/agent-settings/:id", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
       // First, verify that the agent settings belong to the current user
       const existingSettings = await storage.getAgentSettingsById(req.params.id, req.user!.id);
       if (!existingSettings) {
-        return res.status(404).json({ message: "Agent settings not found" });
+        return res.status(404).json({ 
+          success: false, 
+          error: "Agent settings not found",
+          requestId: req.requestId 
+        });
       }
 
       const data = updateAgentSettingsSchema.parse(req.body);
       const settings = await storage.updateAgentSettings(req.params.id, data);
       if (!settings) {
-        return res.status(404).json({ message: "Failed to update agent settings" });
+        return res.status(404).json({ 
+          success: false, 
+          error: "Failed to update agent settings",
+          requestId: req.requestId 
+        });
       }
       res.json(settings);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(400).json({ message: errorMessage });
+      next(error);
     }
   });
 

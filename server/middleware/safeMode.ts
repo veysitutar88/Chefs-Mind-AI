@@ -14,9 +14,11 @@ export function requireWriteConfirm(req: Request, res: Response, next: NextFunct
   const provided = req.header("x-confirm-code") || req.body?.confirm_code || req.query?.confirm_code;
   if (!code || provided !== code) {
     return res.status(403).json({
+      success: false,
       error: "Write operation requires confirmation",
       how_to_confirm: "Add header X-Confirm-Code: <CONFIRM_CODE>",
-      detail: "SAFE_MODE is ON. Reads are allowed, writes require confirmation."
+      detail: "SAFE_MODE is ON. Reads are allowed, writes require confirmation.",
+      requestId: req.requestId
     });
   }
   return next();

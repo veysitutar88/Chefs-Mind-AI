@@ -1,10 +1,12 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { requestIdMiddleware, errorHandler, notFoundHandler } from "./middleware/errorHandler";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(requestIdMiddleware);
 
 // Middleware to mark API/auth requests - must come BEFORE routes
 app.use((req, res, next) => {
@@ -47,33 +49,21 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // 404 handler for API/auth routes - must come BEFORE Vite/static
-  app.use((req, res, next) => {
-    if ((res as any).isApiRequest && !res.headersSent) {
-      return res.status(404).json({ 
-        message: "Not Found",
-        path: req.path 
-      });
-    }
-    next();
-  });
+  // 404 handler for API/auth routes
+  app.use(notFoundHandler);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Centralized error handler
+  app.use(errorHandler);
 
   // Guard middleware: prevent Vite from serving HTML for /api/* and /auth/* routes
   app.use((req, res, next) => {
     if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
-      // If we get here, no API route handled the request, return JSON 404
       if (!res.headersSent) {
         return res.status(404).json({
-          message: "Not Found",
-          path: req.path
+          success: false,
+          error: "Not Found",
+          path: req.path,
+          requestId: req.requestId
         });
       }
     }
