@@ -49,12 +49,6 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // 404 handler for API/auth routes
-  app.use(notFoundHandler);
-
-  // Centralized error handler
-  app.use(errorHandler);
-
   // Guard middleware: prevent Vite from serving HTML for /api/* and /auth/* routes
   app.use((req, res, next) => {
     if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
@@ -78,6 +72,9 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Centralized error handler (must be last)
+  app.use(errorHandler);
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
