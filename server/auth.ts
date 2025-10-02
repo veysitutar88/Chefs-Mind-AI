@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { requireWriteConfirm } from "./middleware/safeMode";
+import { generateToken, sanitizeUser } from "./utils/jwt";
 
 declare global {
   namespace Express {
@@ -77,7 +78,9 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+    const token = generateToken(req.user!);
+    const user = sanitizeUser(req.user!);
+    res.status(200).json({ ...user, token });
   });
 
   app.post("/api/logout", requireWriteConfirm, (req, res, next) => {
@@ -89,6 +92,11 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+    res.json(sanitizeUser(req.user!));
+  });
+
+  app.get("/api/whoami", (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    res.json(sanitizeUser(req.user!));
   });
 }

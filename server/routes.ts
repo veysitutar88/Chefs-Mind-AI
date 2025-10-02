@@ -61,12 +61,12 @@ export function registerRoutes(app: Express): Server {
   // Setup authentication routes
   setupAuth(app);
 
-  // Middleware to check authentication
+  // Middleware to check authentication (supports both JWT and session)
   const requireAuth = (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (req.user || req.isAuthenticated()) {
+      return next();
     }
-    next();
+    return res.status(401).json({ message: "Unauthorized" });
   };
 
   // Chat sessions
