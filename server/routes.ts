@@ -242,6 +242,17 @@ export function registerRoutes(app: Express): Server {
           
           console.log('🎉 Media Studio - Two-Step Generation Process Completed');
         } else {
+          // Helper: get default model for each agent
+          const getDefaultModelForAgent = (agentType: string): string => {
+            switch (agentType) {
+              case 'universal': return 'auto';
+              case 'accountant': return 'gemini-2.5-pro';
+              case 'chef': return 'gpt-5';
+              case 'analyst': return 'perplexity';
+              default: return 'gpt-5';
+            }
+          };
+
           // Handle regular agents with AI model selection
           const selectedModel = req.body.aiModel || getDefaultModelForAgent(session.agentType);
           
@@ -338,17 +349,6 @@ export function registerRoutes(app: Express): Server {
             metadata = { model: 'gpt-5', note: `Unknown model ${selectedModel}, using GPT-5` };
           }
         }
-
-        // Helper: get default model for each agent
-        const getDefaultModelForAgent = (agentType: string): string => {
-          switch (agentType) {
-            case 'universal': return 'auto';
-            case 'accountant': return 'gemini-2.5-pro';
-            case 'chef': return 'gpt-5';
-            case 'analyst': return 'perplexity';
-            default: return 'gpt-5';
-          }
-        };
       } catch (aiError) {
         const aiErrorMessage = aiError instanceof Error ? aiError.message : 'Unknown error';
         aiResponse = `Ошибка при обработке запроса: ${aiErrorMessage}`;
@@ -426,22 +426,42 @@ export function registerRoutes(app: Express): Server {
     uploadToStorage.single('file')(req, res, (err) => {
       if (err) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({ message: 'File too large. Maximum size is 20MB.' });
+          return res.status(400).json({ 
+            success: false, 
+            error: 'File too large. Maximum size is 20MB.',
+            requestId: req.requestId 
+          });
         }
         if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ message: 'Too many files. Maximum 5 files allowed.' });
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Too many files. Maximum 5 files allowed.',
+            requestId: req.requestId 
+          });
         }
         if (err.message.includes('Invalid file type')) {
-          return res.status(400).json({ message: err.message });
+          return res.status(400).json({ 
+            success: false, 
+            error: err.message,
+            requestId: req.requestId 
+          });
         }
-        return res.status(400).json({ message: 'File upload failed: ' + err.message });
+        return res.status(400).json({ 
+          success: false, 
+          error: 'File upload failed: ' + err.message,
+          requestId: req.requestId 
+        });
       }
       next();
     });
-  }, async (req, res) => {
+  }, async (req, res, next) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({ 
+          success: false, 
+          error: "No file uploaded",
+          requestId: req.requestId 
+        });
       }
 
       const uploadData = {
@@ -461,7 +481,11 @@ export function registerRoutes(app: Express): Server {
       } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
         tableName = await processXLSXFile(req.file.path, req.file.originalname);
       } else {
-        return res.status(400).json({ message: "Unsupported file type. Only CSV and XLSX files are supported." });
+        return res.status(400).json({ 
+          success: false, 
+          error: "Unsupported file type. Only CSV and XLSX files are supported.",
+          requestId: req.requestId 
+        });
       }
 
       // Update upload record with table name
@@ -589,17 +613,25 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Universal Ask endpoint - unified dispatcher for all agent roles
-  app.post("/api/universal-ask", requireAuth, requireWriteConfirm, async (req, res) => {
+  app.post("/api/universal-ask", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
       const { role, query, context } = req.body;
       
       if (!role || !query) {
-        return res.status(400).json({ message: "Missing required fields: role, query" });
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: role, query",
+          requestId: req.requestId 
+        });
       }
 
       const validRoles = ['Chef', 'Accountant', 'Media', 'Research'];
       if (!validRoles.includes(role)) {
-        return res.status(400).json({ message: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
+        return res.status(400).json({ 
+          success: false, 
+          error: `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+          requestId: req.requestId 
+        });
       }
 
       let response: any = {};
