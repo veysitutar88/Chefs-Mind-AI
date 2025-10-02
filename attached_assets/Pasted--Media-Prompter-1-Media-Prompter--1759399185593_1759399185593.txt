@@ -1,0 +1,64 @@
+Подключи «Media Prompter» и тонкий слой над провайдерами изображений/видео.
+
+1) Media Prompter (без побочных эффектов):
+POST /api/media/prompter → вход { goal:"image|video|video-from-image", promptDraft, refs?, style?, aspect?, durationSec? }
+Возврат (строго JSON):
+{ success:true, prompt, negativePrompt?, modelHints:{provider, model, safety, aspect, durationSec}, requestId }
+Правила:
+
+Язык вывода = язык запроса (RU/EN autodetect).
+
+Нормализуй стиль (photoreal/illustration/logo/food-styled), добавляй безопасные запреты (NSFW-guard).
+
+Для video-from-image — добавь подсказки по камере/движению, сохрани композицию.
+
+Быстрый ответ ≤1200 токенов; без сохранений, без записи в БД.
+
+2) Генерация (тонкие обёртки, с job-метаданными):
+Эндпоинты (все читают из внешних API; запись метаданных — только через SAFE_MODE и с X-Confirm-Code):
+
+POST /api/media/image/generate → вход { prompt, modelHints? } → возврат { success:true, jobId, provider, etaSec?, requestId }
+
+POST /api/media/video/generate → вход { prompt, durationSec?, aspect?, modelHints? } → возврат { success:true, jobId, provider, etaSec?, requestId }
+
+POST /api/media/video/from-image → вход { imageUrl|assetId, prompt, durationSec?, aspect?, modelHints? } → возврат { success:true, jobId, provider, etaSec?, requestId }
+
+GET /api/media/job/:id → { success:true, status:queued|running|done|failed, url?, error? }
+
+3) Провайдеры (эконом-включение):
+
+Изображения: Google Imagen-3 (через Vertex или прямой Gemini-Images API — выбирай доступный ключ).
+
+Видео: если Veo-3 недоступен — верни 501 Not Implemented с подсказкой {"success":false,"error":"Video provider unavailable"}. Подготовь адаптер (интерфейс) так, чтобы включить Veo/альтернативу одной строчкой.
+
+Все внешние вызовы — с измерением latency, retry (3x, exp backoff), лимит 30s.
+
+4) Хранилище job-метаданных (минимум):
+Таблица media_jobs(id, kind, provider, status, input_hash, result_url, error, created_at, updated_at); запись/обновление — только при наличии X-Confirm-Code (SAFE_MODE). Если кода нет — работай в «volatile-режиме» (без сохранения), но генерация должна возвращать результат через GET /job/:id (in-memory map).
+
+5) Связка с Router:
+
+Если intent=media.* → Router вызывает /api/media/prompter, затем соответствующий /api/media/... и возвращает клиенту сводный JSON:
+{ success:true, intent, routedTo, jobId, promptPreview, requestId }.
+
+Если неуверенность (needClarification) — верни вопрос пользователю, ничего не генерируй.
+
+6) Smoke-проверки (выполни и приложи вывод):
+
+POST /api/route {"text":"сгенерируй иллюстрацию суши для меню, 16:9"} → jobId + promptPreview.
+
+POST /api/media/prompter {"goal":"video-from-image", "..."} → валидный prompt + modelHints.
+
+При отключённом видео-провайдере POST /api/media/video/generate → 501 (единый формат ошибки).
+
+GET /api/media/job/:id → корректные статусы.
+
+Требования общие:
+
+Строгий JSON-формат ответов (как в A5).
+
+Никаких секретов в логах.
+
+SAFE_MODE не трогать. Запись в БД/файлы — только с X-Confirm-Code.
+
+Документация: 1 README-блок «Как подключить Veo/альтернативу» + curl-примеры.
