@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer } from 'ws';
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
@@ -16,6 +17,7 @@ import { requireWriteConfirm } from "./middleware/safeMode";
 import { getAvailableTables } from "./utils/tableCache";
 import { generateMediaPrompt } from './lib/mediaPrompter';
 import { generateImageImagen3, getJob } from './lib/mediaProviders';
+import { STTStreamHandler, transcribeAudioBuffer, checkSTTHealth, normalizeMimeType } from './services/stt';
 
 // Different storage configurations for different endpoints
 const uploadToStorage = multer({ 
@@ -103,6 +105,29 @@ export function registerRoutes(app: Express): Server {
         ok: false,
         error: 'Health check failed',
         uptime: process.uptime()
+      });
+    }
+  });
+
+  // STT Health check endpoint - no auth required
+  app.get("/api/health/stt", async (req, res) => {
+    try {
+      const sttHealth = await checkSTTHealth();
+      
+      res.json({
+        success: true,
+        data: {
+          ok: sttHealth.ok,
+          provider: sttHealth.provider,
+          error: sttHealth.error,
+        },
+        requestId: req.requestId
+      });
+    } catch (error) {
+      res.status(503).json({
+        success: false,
+        error: 'STT health check failed',
+        requestId: req.requestId
       });
     }
   });
@@ -423,7 +448,55 @@ export function registerRoutes(app: Express): Server {
   });
 
   // File upload and processing
-  // Whisper transcription endpoint
+  // STT: One-shot transcription endpoint (REST)
+  app.post("/api/stt/once", requireAuth, uploadToMemory.single('audio'), async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "No audio file provided",
+          requestId: req.requestId 
+        });
+      }
+
+      console.log('🎙️ STT: One-shot transcription with OpenAI Whisper...');
+      const startTime = Date.now();
+      
+      const language = req.body.language || 'ru';
+      const normalizedMimeType = normalizeMimeType(req.file.mimetype);
+      
+      const text = await transcribeAudioBuffer(
+        req.file.buffer,
+        normalizedMimeType,
+        language
+      );
+
+      const duration = Date.now() - startTime;
+      console.log(`✅ STT: Transcription successful in ${duration}ms`);
+
+      res.json({ 
+        success: true, 
+        data: { 
+          text,
+          metrics: {
+            duration_ms: duration,
+            audio_size_bytes: req.file.size
+          }
+        },
+        requestId: req.requestId 
+      });
+    } catch (error) {
+      console.error('STT transcription error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ 
+        success: false, 
+        error: `Transcription failed: ${errorMessage}`,
+        requestId: req.requestId 
+      });
+    }
+  });
+
+  // Legacy Whisper transcription endpoint (for backward compatibility)
   app.post("/api/transcribe", requireAuth, requireWriteConfirm, uploadToMemory.single('audio'), async (req, res, next) => {
     try {
       if (!req.file) {
@@ -434,35 +507,24 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      console.log('🎙️ Transcribing audio with OpenAI Whisper...');
+      console.log('🎙️ Transcribing audio with OpenAI Whisper (legacy)...');
+      const startTime = Date.now();
       
-      // Use OpenAI Whisper API for transcription
-      const formData = new FormData();
-      const audioBlob = new Blob([req.file.buffer], { type: req.file.mimetype });
-      formData.append('file', audioBlob, req.file.originalname || 'audio.wav');
-      formData.append('model', 'whisper-1');
-      formData.append('language', 'ru'); // Russian language for better accuracy
+      const language = req.body.language || 'ru';
+      const normalizedMimeType = normalizeMimeType(req.file.mimetype);
+      
+      const text = await transcribeAudioBuffer(
+        req.file.buffer,
+        normalizedMimeType,
+        language
+      );
 
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenAI Whisper API error:', errorText);
-        throw new Error(`Whisper API error: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('✅ Transcription successful:', result.text);
+      const duration = Date.now() - startTime;
+      console.log(`✅ Transcription successful in ${duration}ms:`, text);
 
       res.json({ 
         success: true, 
-        data: { text: result.text },
+        data: { text },
         requestId: req.requestId 
       });
     } catch (error) {
@@ -1033,5 +1095,130 @@ export function registerRoutes(app: Express): Server {
   });
 
   const httpServer = createServer(app);
+  
+  // Setup WebSocket server for STT streaming
+  const wss = new WebSocketServer({ 
+    server: httpServer,
+    path: '/ws/stt'
+  });
+
+  wss.on('connection', (ws, req) => {
+    console.log('🎙️ STT WebSocket connection established');
+    
+    const handler = new STTStreamHandler(ws);
+    let partialTimer: NodeJS.Timeout | null = null;
+    let isFinalized = false;
+
+    ws.on('message', async (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+
+        switch (message.type) {
+          case 'config':
+            // Set language and MIME type configuration with validation
+            const language = message.language || 'ru';
+            const mimeType = message.mimeType || 'audio/webm';
+            
+            // Validate MIME type (allow codec suffixes, they will be normalized)
+            const baseMimeType = mimeType.split(';')[0].trim();
+            const validBaseMimeTypes = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav', 'audio/mpeg', 'audio/m4a', 'audio/x-m4a'];
+            
+            if (!validBaseMimeTypes.includes(baseMimeType)) {
+              ws.send(JSON.stringify({
+                success: false,
+                error: `Invalid MIME type: ${baseMimeType}. Supported: ${validBaseMimeTypes.join(', ')}`,
+                requestId: `config-error-${Date.now()}`
+              }));
+              break;
+            }
+            
+            handler.setLanguage(language);
+            handler.setMimeType(normalizeMimeType(mimeType)); // Normalize before storing
+            
+            ws.send(JSON.stringify({
+              success: true,
+              data: { 
+                configured: true, 
+                language,
+                mimeType
+              },
+              requestId: `config-${Date.now()}`
+            }));
+            break;
+
+          case 'audio':
+            // Receive audio chunk
+            if (message.data) {
+              const audioBuffer = Buffer.from(message.data, 'base64');
+              handler.addAudioChunk(audioBuffer);
+
+              // Process partial results periodically (every 2 seconds)
+              if (!partialTimer) {
+                partialTimer = setInterval(() => {
+                  handler.processPartial().catch(console.error);
+                }, 2000);
+              }
+            }
+            break;
+
+          case 'finalize':
+            // Finalize and get final transcription
+            if (partialTimer) {
+              clearInterval(partialTimer);
+              partialTimer = null;
+            }
+            
+            if (!isFinalized) {
+              isFinalized = true;
+              await handler.finalize();
+            }
+            break;
+
+          default:
+            ws.send(JSON.stringify({
+              success: false,
+              error: `Unknown message type: ${message.type}`,
+              requestId: `error-${Date.now()}`
+            }));
+        }
+      } catch (error) {
+        console.error('STT WebSocket message error:', error);
+        ws.send(JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          requestId: `error-${Date.now()}`
+        }));
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('🎙️ STT WebSocket connection closed');
+      if (partialTimer) {
+        clearInterval(partialTimer);
+      }
+      handler.close();
+    });
+
+    ws.on('error', (error) => {
+      console.error('STT WebSocket error:', error);
+      if (partialTimer) {
+        clearInterval(partialTimer);
+      }
+      handler.close();
+    });
+
+    // Send initial connection success message
+    ws.send(JSON.stringify({
+      success: true,
+      data: { 
+        connected: true,
+        message: 'STT WebSocket ready. Send audio chunks with type="audio"'
+      },
+      requestId: `connect-${Date.now()}`
+    }));
+  });
+
+  console.log('✅ WebSocket STT server ready at /ws/stt');
+  
   return httpServer;
 }
