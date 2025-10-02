@@ -147,6 +147,16 @@ export function registerRoutes(app: Express): Server {
     });
   };
 
+  // Debug endpoint for SAFE_MODE status (temporary)
+  app.get("/api/debug/safe-mode", requireAuth, (req, res) => {
+    res.json({
+      safe_mode: process.env.SAFE_MODE || "not set (defaults to 'on')",
+      confirm_code_set: !!process.env.CONFIRM_CODE,
+      confirm_code_length: process.env.CONFIRM_CODE?.length || 0,
+      provided_header: req.header("x-confirm-code") || "not provided"
+    });
+  });
+
   // Database backup endpoint - requires auth and confirmation
   app.get("/api/db/backup", requireAuth, requireWriteConfirm, async (req, res) => {
     const execAsync = promisify(exec);
