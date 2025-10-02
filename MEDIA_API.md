@@ -475,3 +475,466 @@ while true; do
   sleep 2
 done
 ```
+
+---
+
+## Speech-to-Text (STT) API
+
+### Overview
+
+STT API provides real-time speech-to-text transcription using OpenAI Whisper with support for:
+
+- **WebSocket Streaming**: Real-time transcription with partial and final results
+- **REST API**: One-shot audio file transcription
+- **Web Speech API Fallback**: Browser-based fallback for unsupported environments
+- **Metrics**: Performance tracking with t_first_partial and t_final timestamps
+
+### Architecture
+
+#### Components
+
+1. **WebSocket Streaming** (`/ws/stt`)
+   - Real-time audio chunk processing
+   - Partial results every 2 seconds
+   - Final transcription on finalize
+   - Automatic reconnection support
+
+2. **REST Endpoint** (`/api/stt/once`)
+   - Single audio file transcription
+   - Supports WebM, OGG, MP4, WAV formats
+   - Returns full transcription with metrics
+
+3. **Web Speech API Fallback** (Frontend)
+   - Browser-native speech recognition
+   - Automatic fallback on WebSocket errors
+   - Supports Chrome, Edge, Safari
+
+4. **Legacy Endpoint** (`/api/transcribe`)
+   - Backward compatibility
+   - Same functionality as /api/stt/once
+   - Requires SAFE_MODE confirmation
+
+### Endpoints
+
+#### 1. Health Check
+
+Check STT service availability.
+
+```bash
+GET /api/health/stt
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "ok": true,
+    "provider": "openai-whisper",
+    "error": null
+  },
+  "requestId": "health-123"
+}
+```
+
+**Example:**
+```bash
+curl http://localhost:5000/api/health/stt | jq
+```
+
+---
+
+#### 2. REST: One-Shot Transcription
+
+Upload an audio file for transcription.
+
+```bash
+POST /api/stt/once
+```
+
+**Request (multipart/form-data):**
+- `audio` (file): Audio file (WebM, OGG, MP4, WAV)
+- `language` (optional): Language code (default: "ru")
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "text": "Привет, это тестовая запись",
+    "metrics": {
+      "duration_ms": 1234,
+      "audio_size_bytes": 45678
+    }
+  },
+  "requestId": "stt-123"
+}
+```
+
+**Example:**
+```bash
+# Requires authentication
+curl -X POST http://localhost:5000/api/stt/once \
+  -H "Cookie: connect.sid=YOUR_SESSION" \
+  -F "audio=@recording.webm" \
+  -F "language=ru"
+```
+
+**Supported Audio Formats:**
+- WebM (recommended for browser recording)
+- OGG Opus
+- MP4/M4A
+- WAV
+
+**Language Codes:**
+- `ru` - Russian (default)
+- `de` - German
+- `en` - English
+- Any ISO 639-1 code
+
+---
+
+#### 3. WebSocket: Streaming Transcription
+
+Real-time audio streaming with partial results.
+
+```bash
+WebSocket: /ws/stt
+```
+
+**Connection:**
+```javascript
+const ws = new WebSocket('ws://localhost:5000/ws/stt');
+```
+
+**Message Types:**
+
+1. **Configure Language**
+```json
+{
+  "type": "config",
+  "language": "ru"
+}
+```
+
+2. **Send Audio Chunk**
+```json
+{
+  "type": "audio",
+  "data": "base64_encoded_audio_chunk"
+}
+```
+
+3. **Finalize Transcription**
+```json
+{
+  "type": "finalize"
+}
+```
+
+**Response Types:**
+
+1. **Connection Established**
+```json
+{
+  "success": true,
+  "data": {
+    "connected": true,
+    "message": "STT WebSocket ready. Send audio chunks with type=\"audio\""
+  },
+  "requestId": "connect-123"
+}
+```
+
+2. **Language Configured**
+```json
+{
+  "success": true,
+  "data": {
+    "configured": true,
+    "language": "ru"
+  },
+  "requestId": "config-123"
+}
+```
+
+3. **Partial Result**
+```json
+{
+  "success": true,
+  "data": {
+    "type": "partial",
+    "text": "Привет это",
+    "metrics": {
+      "t_first_partial": 1234
+    }
+  },
+  "requestId": "stt-123"
+}
+```
+
+4. **Final Result**
+```json
+{
+  "success": true,
+  "data": {
+    "type": "final",
+    "text": "Привет это тестовая запись для демонстрации",
+    "metrics": {
+      "t_first_partial": 1234,
+      "t_final": 3456,
+      "audio_duration_ms": 5000
+    }
+  },
+  "requestId": "stt-123"
+}
+```
+
+**Example (Node.js):**
+```javascript
+import WebSocket from 'ws';
+
+const ws = new WebSocket('ws://localhost:5000/ws/stt');
+
+ws.on('open', () => {
+  // Configure language
+  ws.send(JSON.stringify({
+    type: 'config',
+    language: 'ru'
+  }));
+
+  // Send audio chunks
+  const audioChunk = getAudioChunk(); // Your audio data
+  ws.send(JSON.stringify({
+    type: 'audio',
+    data: audioChunk.toString('base64')
+  }));
+
+  // Finalize after sending all chunks
+  setTimeout(() => {
+    ws.send(JSON.stringify({
+      type: 'finalize'
+    }));
+  }, 5000);
+});
+
+ws.on('message', (data) => {
+  const response = JSON.parse(data.toString());
+  if (response.success && response.data.type === 'final') {
+    console.log('Transcription:', response.data.text);
+    ws.close();
+  }
+});
+```
+
+---
+
+### Frontend Integration
+
+The frontend includes a React hook for STT with automatic fallback:
+
+```typescript
+import { useSTT } from '@/hooks/use-stt';
+
+function MyComponent() {
+  const { 
+    isRecording, 
+    toggleRecording,
+    useWebSpeech 
+  } = useSTT({
+    language: 'ru',
+    onPartialResult: (text) => {
+      console.log('Partial:', text);
+    },
+    onFinalResult: (text, metrics) => {
+      console.log('Final:', text);
+      console.log('Metrics:', metrics);
+    },
+    onError: (error) => {
+      console.error('Error:', error);
+    }
+  });
+
+  return (
+    <button onClick={toggleRecording}>
+      {isRecording ? 'Stop' : 'Start'} Recording
+      {useWebSpeech ? ' (Web Speech)' : ' (WebSocket)'}
+    </button>
+  );
+}
+```
+
+**Features:**
+- Automatic WebSocket streaming
+- Web Speech API fallback on errors
+- Partial and final result callbacks
+- Error handling with graceful degradation
+
+---
+
+### Testing
+
+#### Run Smoke Tests
+
+```bash
+# All STT tests
+bash scripts/smoke-stt.sh
+
+# WebSocket demo
+node scripts/ws-stt-demo.js
+
+# With audio file
+node scripts/ws-stt-demo.js recording.webm
+```
+
+#### Manual Testing
+
+1. **Health Check:**
+```bash
+curl http://localhost:5000/api/health/stt | jq
+```
+
+2. **REST API (requires login):**
+```bash
+# Login first
+curl -c /tmp/cookie.txt -X POST http://localhost:5000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+# Transcribe audio
+curl -b /tmp/cookie.txt -X POST http://localhost:5000/api/stt/once \
+  -F "audio=@recording.webm" \
+  -F "language=ru"
+```
+
+3. **WebSocket (using wscat):**
+```bash
+# Install wscat
+npm install -g wscat
+
+# Connect
+wscat -c ws://localhost:5000/ws/stt
+
+# Send messages
+> {"type":"config","language":"ru"}
+> {"type":"finalize"}
+```
+
+---
+
+### Performance Metrics
+
+STT provides the following timing metrics:
+
+- **t_first_partial**: Time to first partial result (ms)
+- **t_final**: Total time to final result (ms)
+- **audio_duration_ms**: Estimated audio duration (ms)
+- **duration_ms**: Processing time for REST endpoint (ms)
+
+**Example Metrics:**
+```json
+{
+  "t_first_partial": 1234,
+  "t_final": 3456,
+  "audio_duration_ms": 5000
+}
+```
+
+This indicates:
+- First partial result after 1.2 seconds
+- Final result after 3.5 seconds
+- Audio was ~5 seconds long
+
+---
+
+### Error Handling
+
+**Common Errors:**
+
+1. **Missing Audio File (400)**
+```json
+{
+  "success": false,
+  "error": "No audio file provided",
+  "requestId": "stt-123"
+}
+```
+
+2. **Transcription Failed (500)**
+```json
+{
+  "success": false,
+  "error": "Transcription failed: API error",
+  "requestId": "stt-123"
+}
+```
+
+3. **WebSocket Error**
+```json
+{
+  "success": false,
+  "error": "Unknown message type: invalid",
+  "requestId": "error-123"
+}
+```
+
+**Fallback Behavior:**
+
+1. WebSocket connection fails → Auto-switch to Web Speech API
+2. Whisper API unavailable → Graceful error with retry suggestion
+3. Browser doesn't support audio → Show error message
+
+---
+
+### Configuration
+
+**Environment Variables:**
+
+- `OPENAI_API_KEY`: Required for Whisper API
+- No additional configuration needed for Web Speech API (browser-native)
+
+**SAFE_MODE:**
+
+Legacy `/api/transcribe` endpoint requires `X-Confirm-Code` header in SAFE_MODE.
+
+```bash
+curl -X POST http://localhost:5000/api/transcribe \
+  -H "X-Confirm-Code: SAFE_MODE_CODE" \
+  -F "audio=@recording.webm"
+```
+
+---
+
+### Best Practices
+
+1. **Audio Format**: Use WebM for browser recordings (best compatibility)
+2. **Chunk Size**: Send 8KB chunks every 500ms for WebSocket streaming
+3. **Language**: Always specify language for better accuracy
+4. **Error Handling**: Implement fallback to Web Speech API
+5. **Metrics**: Monitor t_first_partial for real-time feedback UX
+
+---
+
+### Troubleshooting
+
+**Issue: WebSocket not connecting**
+- Check if server is running on correct port
+- Verify WebSocket path: `/ws/stt`
+- Check browser console for CORS issues
+
+**Issue: No transcription results**
+- Verify OPENAI_API_KEY is set
+- Check audio format (must be valid audio/*) 
+- Check audio file size (<25MB)
+
+**Issue: Partial results not appearing**
+- Ensure audio chunks are large enough (>8KB)
+- Check that chunks are being sent frequently
+- Verify WebSocket connection is stable
+
+**Issue: Web Speech API not working**
+- Only works in Chrome, Edge, Safari
+- Requires HTTPS (or localhost for development)
+- Check microphone permissions
+
+---

@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useSTT } from "@/hooks/use-stt";
 
 interface ChatInputProps {
   onSendMessage: (content: string, metadata?: any) => void;
@@ -13,10 +14,37 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // STT hook with Web Speech API fallback
+  const { 
+    isRecording, 
+    toggleRecording, 
+    useWebSpeech 
+  } = useSTT({
+    language: 'ru',
+    onPartialResult: (text) => {
+      // Update message with partial results (optional, can be removed if too distracting)
+      console.log('Partial result:', text);
+    },
+    onFinalResult: (text) => {
+      // Append final result to message
+      setMessage(prev => prev + (prev ? ' ' : '') + text);
+      toast({
+        title: "Голосовой ввод",
+        description: "Аудио успешно преобразовано в текст",
+      });
+    },
+    onError: (error) => {
+      console.error('STT error:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось преобразовать аудио в текст",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,84 +107,6 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
     }
   };
 
-  const handleVoiceInput = async () => {
-    if (isRecording) {
-      // Stop recording
-      if (mediaRecorder) {
-        mediaRecorder.stop();
-        setIsRecording(false);
-      }
-    } else {
-      // Start recording
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
-        const audioChunks: Blob[] = [];
-
-        recorder.ondataavailable = (event) => {
-          audioChunks.push(event.data);
-        };
-
-        recorder.onstop = async () => {
-          // Use the actual MIME type from MediaRecorder
-          const mimeType = recorder.mimeType || 'audio/webm';
-          const audioBlob = new Blob(audioChunks, { type: mimeType });
-          
-          // Convert audio to text using Whisper API
-          try {
-            const formData = new FormData();
-            // Use proper extension based on MIME type
-            const extension = mimeType.includes('webm') ? '.webm' : 
-                            mimeType.includes('ogg') ? '.ogg' : 
-                            mimeType.includes('mp4') ? '.mp4' : '.wav';
-            formData.append('audio', audioBlob, `recording${extension}`);
-            
-            const response = await fetch('/api/transcribe', {
-              method: 'POST',
-              body: formData,
-            });
-
-            if (response.ok) {
-              const { text } = await response.json();
-              setMessage(prev => prev + (prev ? ' ' : '') + text);
-              toast({
-                title: "Голосовой ввод",
-                description: "Аудио успешно преобразовано в текст",
-              });
-            } else {
-              throw new Error('Transcription failed');
-            }
-          } catch (error) {
-            console.error('Transcription error:', error);
-            toast({
-              title: "Ошибка",
-              description: "Не удалось преобразовать аудио в текст",
-              variant: "destructive",
-            });
-          }
-
-          // Clean up stream
-          stream.getTracks().forEach(track => track.stop());
-        };
-
-        recorder.start();
-        setMediaRecorder(recorder);
-        setIsRecording(true);
-        
-        toast({
-          title: "Запись началась",
-          description: "Говорите в микрофон. Нажмите кнопку еще раз для остановки.",
-        });
-      } catch (error) {
-        console.error('Microphone access error:', error);
-        toast({
-          title: "Ошибка доступа",
-          description: "Не удалось получить доступ к микрофону",
-          variant: "destructive",
-        });
-      }
-    }
-  };
 
   const getPlaceholder = () => {
     switch (agentType) {
@@ -214,9 +164,9 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
             variant={isRecording ? "destructive" : "secondary"}
             size="sm"
             className="p-3"
-            title={isRecording ? "Остановить запись" : "Голосовой ввод"}
+            title={isRecording ? "Остановить запись" : `Голосовой ввод${useWebSpeech ? ' (Web Speech)' : ' (WebSocket)'}`}
             data-testid="button-voice-input"
-            onClick={handleVoiceInput}
+            onClick={toggleRecording}
           >
             <i className={`fas ${isRecording ? 'fa-stop' : 'fa-microphone'}`}></i>
           </Button>
