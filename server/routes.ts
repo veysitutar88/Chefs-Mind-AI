@@ -695,6 +695,144 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Media Prompter - AI-powered prompt enhancement (no DB write, fast response)
+  app.post("/api/media/prompter", requireAuth, async (req, res, next) => {
+    try {
+      const { goal, promptDraft, refs, style, aspect, durationSec } = req.body;
+      
+      if (!goal || !promptDraft) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields: goal, promptDraft",
+          requestId: req.requestId
+        });
+      }
+
+      const validGoals = ['image', 'video', 'video-from-image'];
+      if (!validGoals.includes(goal)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid goal. Must be one of: ${validGoals.join(', ')}`,
+          requestId: req.requestId
+        });
+      }
+
+      const { generateMediaPrompt } = await import('./lib/mediaPrompter');
+      const result = await generateMediaPrompt({
+        goal,
+        promptDraft,
+        refs,
+        style,
+        aspect,
+        durationSec
+      });
+
+      res.json({
+        success: true,
+        prompt: result.prompt,
+        negativePrompt: result.negativePrompt,
+        modelHints: result.modelHints,
+        requestId: req.requestId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Image generation endpoint
+  app.post("/api/media/image/generate", requireAuth, async (req, res, next) => {
+    try {
+      const { prompt, negativePrompt, aspect, modelHints } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required field: prompt",
+          requestId: req.requestId
+        });
+      }
+
+      const { generateImageImagen3, saveJobToDatabase } = await import('./lib/mediaProviders');
+      const job = await generateImageImagen3({
+        prompt,
+        negativePrompt,
+        aspect,
+        modelHints
+      });
+
+      // Optionally save to DB if SAFE_MODE confirmation provided
+      const confirmCode = req.headers['x-confirm-code'] as string;
+      if (confirmCode) {
+        await saveJobToDatabase(job, confirmCode);
+      }
+
+      res.json({
+        success: true,
+        jobId: job.id,
+        provider: job.provider,
+        etaSec: 10, // Estimated time
+        requestId: req.requestId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Video generation endpoint (stub - returns 501)
+  app.post("/api/media/video/generate", requireAuth, async (req, res, next) => {
+    try {
+      return res.status(501).json({
+        success: false,
+        error: "Video provider unavailable",
+        detail: "Veo-3 is not configured. To enable, set up Google Veo API credentials.",
+        requestId: req.requestId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Video from image endpoint (stub - returns 501)
+  app.post("/api/media/video/from-image", requireAuth, async (req, res, next) => {
+    try {
+      return res.status(501).json({
+        success: false,
+        error: "Video provider unavailable",
+        detail: "Veo-3 is not configured. To enable, set up Google Veo API credentials.",
+        requestId: req.requestId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Job status endpoint
+  app.get("/api/media/job/:id", requireAuth, async (req, res, next) => {
+    try {
+      const { getJob } = await import('./lib/mediaProviders');
+      const job = getJob(req.params.id);
+      
+      if (!job) {
+        return res.status(404).json({
+          success: false,
+          error: "Job not found",
+          requestId: req.requestId
+        });
+      }
+
+      res.json({
+        success: true,
+        status: job.status,
+        url: job.resultUrl,
+        error: job.error,
+        provider: job.provider,
+        requestId: req.requestId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Universal Ask endpoint - unified dispatcher for all agent roles
   app.post("/api/universal-ask", requireAuth, requireWriteConfirm, async (req, res, next) => {
     try {
@@ -818,36 +956,51 @@ export function registerRoutes(app: Express): Server {
         }
 
         case 'Media': {
-          // Media: Generate image (Imagen 3, fallback DALL-E 3), video = 501
-          if (context?.mediaType === 'video') {
+          // Media: Use new media prompter + generation pipeline
+          const goal = context?.goal || 'image'; // 'image' | 'video' | 'video-from-image'
+          
+          console.log(`🎨 Media generation: ${goal}`);
+          
+          // Step 1: Generate enhanced prompt via media prompter
+          const { generateMediaPrompt } = await import('./lib/mediaPrompter');
+          const prompterResult = await generateMediaPrompt({
+            goal: goal as 'image' | 'video' | 'video-from-image',
+            promptDraft: query,
+            refs: context?.refs,
+            style: context?.style,
+            aspect: context?.aspect,
+            durationSec: context?.durationSec
+          });
+          
+          // Step 2: Route to appropriate provider
+          if (goal === 'video' || goal === 'video-from-image') {
             return res.status(501).json({ 
-              message: "Video generation not implemented yet",
-              role: 'Media',
-              type: 'video'
+              success: false,
+              error: "Video provider unavailable",
+              detail: "Veo-3 is not configured. To enable, set up Google Veo API credentials.",
+              promptPreview: prompterResult.prompt,
+              requestId: req.requestId
             });
           }
-
-          console.log('🎨 Media image generation');
-          const customPrompt = await getAgentSystemPrompt(req.user!.id, 'media-studio');
-          const enhancedPrompt = await enhancePromptForMediaGeneration(query, 'image', customPrompt);
           
-          let result;
-          const model = context?.model || 'imagen-3';
-          
-          if (model === 'dall-e-3') {
-            result = await generateWithOpenAI(enhancedPrompt, 'image');
-          } else {
-            result = await generateWithGemini(enhancedPrompt, 'image');
-          }
+          // Step 3: Generate image via Imagen-3
+          const { generateImageImagen3 } = await import('./lib/mediaProviders');
+          const job = await generateImageImagen3({
+            prompt: prompterResult.prompt,
+            negativePrompt: prompterResult.negativePrompt,
+            aspect: prompterResult.modelHints.aspect,
+            modelHints: prompterResult.modelHints
+          });
 
           response = {
             role: 'Media',
-            type: 'image',
-            url: result.url,
-            prompt: query,
-            enhancedPrompt,
-            model,
-            metadata: result.metadata
+            intent: 'media.generate',
+            routedTo: '/api/media/image/generate',
+            jobId: job.id,
+            promptPreview: prompterResult.prompt,
+            provider: job.provider,
+            etaSec: 10,
+            modelHints: prompterResult.modelHints
           };
           break;
         }
