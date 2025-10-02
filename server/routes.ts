@@ -12,6 +12,7 @@ import { analyzeWithPerplexity } from "./services/perplexity";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema, insertAgentSettingsSchema, updateAgentSettingsSchema } from "@shared/schema";
 import { pool } from "./db";
 import { getAgentSystemPrompt } from "./utils/agentPrompts";
+import { requireWriteConfirm } from "./middleware/safeMode";
 
 // Different storage configurations for different endpoints
 const uploadToStorage = multer({ 
@@ -69,7 +70,7 @@ export function registerRoutes(app: Express): Server {
   };
 
   // Chat sessions
-  app.post("/api/chat/sessions", requireAuth, async (req, res) => {
+  app.post("/api/chat/sessions", requireAuth, requireWriteConfirm, async (req, res) => {
     try {
       const data = insertChatSessionSchema.parse(req.body);
       const session = await storage.createChatSession({
@@ -104,7 +105,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Chat messages and AI processing
-  app.post("/api/chat/messages", requireAuth, async (req, res) => {
+  app.post("/api/chat/messages", requireAuth, requireWriteConfirm, async (req, res) => {
     try {
       const data = insertMessageSchema.parse(req.body);
       
@@ -369,7 +370,7 @@ export function registerRoutes(app: Express): Server {
 
   // File upload and processing
   // Whisper transcription endpoint
-  app.post("/api/transcribe", requireAuth, uploadToMemory.single('audio'), async (req, res) => {
+  app.post("/api/transcribe", requireAuth, requireWriteConfirm, uploadToMemory.single('audio'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No audio file provided" });
@@ -409,7 +410,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/upload", requireAuth, (req, res, next) => {
+  app.post("/api/upload", requireAuth, requireWriteConfirm, (req, res, next) => {
     uploadToStorage.single('file')(req, res, (err) => {
       if (err) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -533,7 +534,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.post("/api/agent-settings", requireAuth, async (req, res) => {
+  app.post("/api/agent-settings", requireAuth, requireWriteConfirm, async (req, res) => {
     try {
       const data = insertAgentSettingsSchema.parse(req.body);
       const settings = await storage.createAgentSettings({
@@ -547,7 +548,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.put("/api/agent-settings/:id", requireAuth, async (req, res) => {
+  app.put("/api/agent-settings/:id", requireAuth, requireWriteConfirm, async (req, res) => {
     try {
       // First, verify that the agent settings belong to the current user
       const existingSettings = await storage.getAgentSettingsById(req.params.id, req.user!.id);
@@ -568,7 +569,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Universal Ask endpoint - unified dispatcher for all agent roles
-  app.post("/api/universal-ask", requireAuth, async (req, res) => {
+  app.post("/api/universal-ask", requireAuth, requireWriteConfirm, async (req, res) => {
     try {
       const { role, query, context } = req.body;
       
