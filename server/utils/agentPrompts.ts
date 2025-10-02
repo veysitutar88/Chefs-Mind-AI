@@ -1,5 +1,14 @@
 import { storage } from '../storage';
 
+// Simple in-memory cache for system prompts (5 minute TTL)
+interface CacheEntry {
+  value: string;
+  expiresAt: number;
+}
+
+const promptCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 // Default system prompts for each agent type
 const defaultPrompts = {
   'Accountant': `Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein Experte für Finanzanalyse und Buchhaltung. Analysiere Daten, erstelle SQL-Abfragen für PostgreSQL und gib strukturierte Antworten zurück.
@@ -27,21 +36,34 @@ export async function getAgentSystemPrompt(userId: string, agentType: string): P
     const normalizedAgentType = agentType === 'media-studio' ? 'Media Studio' : 
                                agentType.charAt(0).toUpperCase() + agentType.slice(1);
 
+    // Check cache first
+    const cacheKey = `${userId}:${normalizedAgentType}`;
+    const cached = promptCache.get(cacheKey);
+    
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.value;
+    }
+
     // Try to get custom prompt from database
     const agentSetting = await storage.getAgentSettingsByType(userId, normalizedAgentType);
     
+    let prompt: string;
     if (agentSetting && agentSetting.systemPrompt) {
-      console.log(`📝 Using custom system prompt for ${normalizedAgentType} agent`);
-      return agentSetting.systemPrompt;
+      prompt = agentSetting.systemPrompt;
+    } else {
+      prompt = defaultPrompts[normalizedAgentType as keyof typeof defaultPrompts] || 
+               defaultPrompts['universal'];
     }
 
-    // Fall back to default prompt
-    console.log(`📝 Using default system prompt for ${normalizedAgentType} agent`);
-    return defaultPrompts[normalizedAgentType as keyof typeof defaultPrompts] || 
-           defaultPrompts['universal'];
+    // Cache the result
+    promptCache.set(cacheKey, {
+      value: prompt,
+      expiresAt: Date.now() + CACHE_TTL_MS
+    });
+
+    return prompt;
   } catch (error) {
     console.error('Error loading agent system prompt:', error);
-    // Fallback to default prompts on error
     const normalizedAgentType = agentType === 'media-studio' ? 'Media Studio' : 
                                agentType.charAt(0).toUpperCase() + agentType.slice(1);
     return defaultPrompts[normalizedAgentType as keyof typeof defaultPrompts] || 
