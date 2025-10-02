@@ -110,7 +110,11 @@ export function setupAuth(app: Express) {
   app.post("/api/logout", requireWriteConfirm, (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
-      res.json({ success: true, message: "Logged out", requestId: req.requestId });
+      res.json({ 
+        success: true, 
+        data: { message: "Logged out" }, 
+        requestId: req.requestId 
+      });
     });
   });
 

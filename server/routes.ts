@@ -364,8 +364,12 @@ export function registerRoutes(app: Express): Server {
       });
 
       res.json({
-        userMessage,
-        assistantMessage
+        success: true,
+        data: {
+          userMessage,
+          assistantMessage
+        },
+        requestId: req.requestId
       });
     } catch (error) {
       next(error);
@@ -410,7 +414,11 @@ export function registerRoutes(app: Express): Server {
       const result = await response.json();
       console.log('✅ Transcription successful:', result.text);
 
-      res.json({ text: result.text });
+      res.json({ 
+        success: true, 
+        data: { text: result.text },
+        requestId: req.requestId 
+      });
     } catch (error) {
       console.error('Transcription error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -495,9 +503,13 @@ export function registerRoutes(app: Express): Server {
       });
 
       res.json({
-        ...uploadRecord,
-        tableName,
-        processed: true
+        success: true,
+        data: {
+          ...uploadRecord,
+          tableName,
+          processed: true
+        },
+        requestId: req.requestId
       });
     } catch (error) {
       next(error);
@@ -508,7 +520,11 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/uploads", requireAuth, async (req, res, next) => {
     try {
       const uploads = await storage.getUploads(req.user!.id);
-      res.json(uploads);
+      res.json({
+        success: true,
+        data: uploads,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -535,7 +551,11 @@ export function registerRoutes(app: Express): Server {
         });
       }
       
-      res.json(upload);
+      res.json({
+        success: true,
+        data: upload,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -545,7 +565,11 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/generated-content", requireAuth, async (req, res, next) => {
     try {
       const content = await storage.getGeneratedContent(req.user!.id);
-      res.json(content);
+      res.json({
+        success: true,
+        data: content,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -556,7 +580,11 @@ export function registerRoutes(app: Express): Server {
     try {
       const { query } = req.body;
       const result = validateSQL(query);
-      res.json(result);
+      res.json({
+        success: true,
+        data: result,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -566,7 +594,11 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/agent-settings", requireAuth, async (req, res, next) => {
     try {
       const settings = await storage.getAgentSettings(req.user!.id);
-      res.json(settings);
+      res.json({
+        success: true,
+        data: settings,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -579,7 +611,11 @@ export function registerRoutes(app: Express): Server {
         ...data,
         userId: req.user!.id
       });
-      res.json(settings);
+      res.json({
+        success: true,
+        data: settings,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -606,7 +642,11 @@ export function registerRoutes(app: Express): Server {
           requestId: req.requestId 
         });
       }
-      res.json(settings);
+      res.json({
+        success: true,
+        data: settings,
+        requestId: req.requestId
+      });
     } catch (error) {
       next(error);
     }
@@ -789,18 +829,13 @@ export function registerRoutes(app: Express): Server {
 
       res.json({
         success: true,
-        ...response,
-        timestamp: new Date().toISOString()
+        data: response,
+        timestamp: new Date().toISOString(),
+        requestId: req.requestId
       });
 
     } catch (error) {
-      console.error('Universal Ask error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ 
-        success: false,
-        message: errorMessage,
-        role: req.body.role 
-      });
+      next(error);
     }
   });
 
