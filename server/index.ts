@@ -6,6 +6,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Middleware to mark API/auth requests - must come BEFORE routes
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
+    (res as any).isApiRequest = true;
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -39,6 +47,17 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // 404 handler for API/auth routes - must come BEFORE Vite/static
+  app.use((req, res, next) => {
+    if ((res as any).isApiRequest && !res.headersSent) {
+      return res.status(404).json({ 
+        message: "Not Found",
+        path: req.path 
+      });
+    }
+    next();
+  });
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -70,59 +89,4 @@ app.use((req, res, next) => {
   });
 })();
 
-// --- PATCH Sprint A ---
-import healthRouter from "./routes/health";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
-
-// логирование запросов
-app.use(morgan("dev"));
-
-// rate-limit для /auth/login
-app.use("/auth/login", rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 минута
-  max: 5,
-  message: { error: "Too many login attempts, try again later" }
-}));
-
-// health-check
-app.use(healthRouter);
-
-// централизованный error handler
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error("Error handler:", err);
-  res.status(err.status || 500).json({ error: err.message || "Internal error" });
-});
-
-// --- PATCH Sprint A ---
-import healthRouter from "./routes/health";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
-
-// логирование запросов
-app.use(morgan("dev"));
-
-// rate-limit для /auth/login
-app.use("/auth/login", rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 минута
-  max: 5,
-  message: { error: "Too many login attempts, try again later" }
-}));
-
-// health-check
-app.use(healthRouter);
-
-// централизованный error handler
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error("Error handler:", err);
-  res.status(err.status || 500).json({ error: err.message || "Internal error" });
-});
-
-// --- PATCH Sprint B (safe import + ddl) ---
-import dbAdminRouter from "./routes/dbadmin";
-import importerRouter from "./routes/importer";
-import safeRouter from "./routes/safe";
-app.use(dbAdminRouter);
-app.use("/api/import", importerRouter);
-app.use(safeRouter);
 
