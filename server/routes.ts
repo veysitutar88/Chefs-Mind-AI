@@ -13,6 +13,9 @@ import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, inser
 import { pool } from "./db";
 import { getAgentSystemPrompt } from "./utils/agentPrompts";
 import { requireWriteConfirm } from "./middleware/safeMode";
+import { getAvailableTables } from "./utils/tableCache";
+import { generateMediaPrompt } from './lib/mediaPrompter';
+import { generateImageImagen3, getJob } from './lib/mediaProviders';
 
 // Different storage configurations for different endpoints
 const uploadToStorage = multer({ 
@@ -37,7 +40,7 @@ const uploadToStorage = multer({
     if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error(`Invalid file type. Allowed: images, PDF, CSV, Excel files. Received: ${file.mimetype}`), false);
+      cb(new Error(`Invalid file type. Allowed: images, PDF, CSV, Excel files. Received: ${file.mimetype}`));
     }
   }
 }); // For file uploads that need persistence
@@ -52,7 +55,7 @@ const uploadToMemory = multer({
     if (file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only audio files are allowed for transcription'), false);
+      cb(new Error('Only audio files are allowed for transcription'));
     }
   }
 });
@@ -809,7 +812,6 @@ export function registerRoutes(app: Express): Server {
   // Job status endpoint
   app.get("/api/media/job/:id", requireAuth, async (req, res, next) => {
     try {
-      const { getJob } = await import('./lib/mediaProviders');
       const job = getJob(req.params.id);
       
       if (!job) {
@@ -895,11 +897,8 @@ export function registerRoutes(app: Express): Server {
           // Accountant: Gemini generates SELECT, validate, execute on RO-DB, return markdown + debug.sql
           console.log('💰 Accountant SQL generation via Gemini');
           
-          // Get available tables for context
-          const tablesQuery = await pool.query(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices', 'users', 'chat_sessions', 'messages'))"
-          );
-          const availableTables = tablesQuery.rows.map(row => row.table_name);
+          // Get available tables for context (cached)
+          const availableTables = await getAvailableTables();
           
           const customPrompt = await getAgentSystemPrompt(req.user!.id, 'accountant');
           const geminiResult = await analyzeWithGemini(
@@ -962,7 +961,6 @@ export function registerRoutes(app: Express): Server {
           console.log(`🎨 Media generation: ${goal}`);
           
           // Step 1: Generate enhanced prompt via media prompter
-          const { generateMediaPrompt } = await import('./lib/mediaPrompter');
           const prompterResult = await generateMediaPrompt({
             goal: goal as 'image' | 'video' | 'video-from-image',
             promptDraft: query,
@@ -984,7 +982,6 @@ export function registerRoutes(app: Express): Server {
           }
           
           // Step 3: Generate image via Imagen-3
-          const { generateImageImagen3 } = await import('./lib/mediaProviders');
           const job = await generateImageImagen3({
             prompt: prompterResult.prompt,
             negativePrompt: prompterResult.negativePrompt,
