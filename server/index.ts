@@ -66,6 +66,20 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Guard middleware: prevent Vite from serving HTML for /api/* and /auth/* routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
+      // If we get here, no API route handled the request, return JSON 404
+      if (!res.headersSent) {
+        return res.status(404).json({
+          message: "Not Found",
+          path: req.path
+        });
+      }
+    }
+    next();
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
