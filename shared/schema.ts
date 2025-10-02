@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb, boolean, decimal, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, boolean, decimal, integer, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,7 +16,10 @@ export const chatSessions = pgTable("chat_sessions", {
   agentType: text("agent_type").notNull(),
   title: text("title"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("chat_sessions_user_id_idx").on(table.userId),
+  createdAtIdx: index("chat_sessions_created_at_idx").on(table.createdAt),
+}));
 
 export const messages = pgTable("messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -25,7 +28,10 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   metadata: jsonb("metadata"), // For SQL queries, model used, etc.
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  sessionIdIdx: index("messages_session_id_idx").on(table.sessionId),
+  createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+}));
 
 export const uploads = pgTable("uploads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -37,7 +43,10 @@ export const uploads = pgTable("uploads", {
   tableName: text("table_name"), // Name of created table
   processed: boolean("processed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("uploads_user_id_idx").on(table.userId),
+  createdAtIdx: index("uploads_created_at_idx").on(table.createdAt),
+}));
 
 export const generatedContent = pgTable("generated_content", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -48,7 +57,10 @@ export const generatedContent = pgTable("generated_content", {
   url: text("url"),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("generated_content_user_id_idx").on(table.userId),
+  createdAtIdx: index("generated_content_created_at_idx").on(table.createdAt),
+}));
 
 export const mediaJobs = pgTable("media_jobs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -61,7 +73,10 @@ export const mediaJobs = pgTable("media_jobs", {
   metadata: jsonb("metadata"), // prompt, modelHints, etc
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  statusIdx: index("media_jobs_status_idx").on(table.status),
+  inputHashIdx: index("media_jobs_input_hash_idx").on(table.inputHash),
+}));
 
 export const ingredients = pgTable("ingredients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -115,7 +130,10 @@ export const agentSettings = pgTable("agent_settings", {
   systemPrompt: text("system_prompt").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userIdIdx: index("agent_settings_user_id_idx").on(table.userId),
+  userAgentIdx: index("agent_settings_user_agent_idx").on(table.userId, table.agentType),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
