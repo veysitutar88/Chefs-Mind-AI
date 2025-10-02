@@ -1,12 +1,13 @@
 {
   "version": "1.0.0",
   "test_date": "2025-10-02T20:24:00Z",
-  "description": "Model routing rules based on latency measurements",
+  "description": "Model routing rules based on latency measurements (2 test runs)",
   "rules": {
     "Chef": {
       "primary_model": "gpt-5",
       "fallback_model": null,
-      "avg_latency_ms": 30794,
+      "avg_latency_ms": 45643,
+      "latency_range": "30-60s",
       "routing_logic": "Always use GPT-5 for text responses",
       "special_cases": {
         "visual_brief_detected": "Redirect to Media role (Imagen-3)"
@@ -15,33 +16,57 @@
     "Accountant": {
       "primary_model": "gemini-2.5-pro",
       "fallback_model": null,
-      "avg_latency_ms": 15351,
+      "avg_latency_ms": 12497,
+      "latency_range": "9-15s",
       "routing_logic": "Use Gemini 2.5 Pro for SQL generation and analytics",
       "notes": "Optimized for structured data and database queries"
     },
     "Research": {
       "primary_model": "perplexity-sonar",
       "fallback_model": "gpt-5",
-      "avg_latency_ms": 10938,
+      "avg_latency_ms": 8454,
+      "latency_range": "6-11s",
       "routing_logic": "Primary: Perplexity for web search. Fallback: GPT-5 on API errors",
       "notes": "Fastest response, includes citations from web sources"
     },
     "Media": {
       "primary_model": "imagen-3",
       "fallback_model": "dall-e-3",
-      "avg_latency_ms": 1713,
+      "avg_latency_ms": 1745,
+      "latency_range": "1.7-1.8s",
       "routing_logic": "Async job creation with Imagen-3, returns jobId immediately",
-      "notes": "1.7s for job creation (not full generation). Fastest async workflow."
+      "notes": "< 2s for job creation (not full generation). Fastest async workflow."
     }
   },
   "performance_summary": {
     "fastest_role": "Media",
     "slowest_role": "Chef",
+    "ranking_by_speed": [
+      "Media (1.7s)",
+      "Research (8.5s)",
+      "Accountant (12.5s)",
+      "Chef (45.6s)"
+    ],
     "optimization_opportunities": [
       "Chef role could benefit from streaming responses to reduce perceived latency",
       "Accountant role SQL execution time not included in latency (query-dependent)",
-      "Research role has built-in retry logic (3 attempts) for reliability"
+      "Research role has built-in retry logic (3 attempts) for reliability",
+      "All roles show latency variation (±50%), likely due to API response times"
     ]
+  },
+  "test_results": {
+    "test_1": {
+      "Chef": 30794,
+      "Accountant": 15351,
+      "Research": 10938,
+      "Media": 1713
+    },
+    "test_2": {
+      "Chef": 60493,
+      "Accountant": 9643,
+      "Research": 5970,
+      "Media": 1777
+    }
   },
   "implementation_notes": {
     "endpoint": "/api/universal-ask",
@@ -51,6 +76,7 @@
       "role": "Chef | Accountant | Research | Media",
       "query": "string",
       "context": "optional object"
-    }
+    },
+    "smoke_test_script": "scripts/smoke-routing.sh"
   }
 }
