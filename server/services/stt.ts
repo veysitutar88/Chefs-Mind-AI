@@ -1,5 +1,8 @@
 import OpenAI, { toFile } from 'openai';
 import type { WebSocket } from 'ws';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -50,6 +53,8 @@ export async function transcribeAudioBuffer(
   mimeType: string,
   language: string = 'ru'
 ): Promise<string> {
+  let tempFilePath: string | null = null;
+  
   try {
     // Normalize MIME type for Whisper compatibility
     const normalizedMimeType = normalizeMimeType(mimeType);
@@ -62,13 +67,17 @@ export async function transcribeAudioBuffer(
                      normalizedMimeType.includes('wav') ? 'wav' : 
                      normalizedMimeType.includes('mpeg') ? 'mp3' : 'webm';
     
-    // Use OpenAI's toFile helper to create a proper file upload from Buffer
-    const file = await toFile(audioBuffer, `audio.${extension}`, { 
-      type: normalizedMimeType 
-    });
+    // Create temporary file path
+    tempFilePath = path.join(os.tmpdir(), `whisper-${Date.now()}.${extension}`);
+    
+    // Write buffer to temporary file
+    fs.writeFileSync(tempFilePath, audioBuffer);
+    
+    // Create file stream for OpenAI
+    const fileStream = fs.createReadStream(tempFilePath);
     
     const response = await openai.audio.transcriptions.create({
-      file,
+      file: fileStream as any,
       model: 'whisper-1',
       language,
     });
@@ -77,6 +86,15 @@ export async function transcribeAudioBuffer(
   } catch (error) {
     console.error('Whisper transcription error:', error);
     throw new Error(`Transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    // Clean up temporary file
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (cleanupError) {
+        console.error('Failed to cleanup temp file:', cleanupError);
+      }
+    }
   }
 }
 
