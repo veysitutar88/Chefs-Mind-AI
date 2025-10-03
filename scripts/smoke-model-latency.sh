@@ -63,7 +63,7 @@ latency_4o_moderate=$(test_model "gpt-4o" "$MODERATE_QUERY" "moderate")
 
 echo -e "${BLUE}=== COMPLEX QUERY TEST ===${NC}\n"
 latency_mini_complex=$(test_model "gpt-4o-mini" "$COMPLEX_QUERY" "complex")
-latency_perplexity_complex=$(test_model "perplexity" "$COMPLEX_QUERY" "complex")
+latency_sonar_complex=$(test_model "sonar" "$COMPLEX_QUERY" "complex")
 latency_4o_complex=$(test_model "gpt-4o" "$COMPLEX_QUERY" "complex")
 
 echo -e "${BLUE}=== AUTO-ROUTER TEST ===${NC}\n"
@@ -91,7 +91,7 @@ echo ""
 echo -e "Complex Query:"
 echo -e "  gpt-4o-mini: ${latency_mini_complex}ms"
 echo -e "  gpt-4o:      ${latency_4o_complex}ms"
-echo -e "  perplexity:  ${latency_perplexity_complex}ms"
+echo -e "  sonar:       ${latency_sonar_complex}ms"
 echo -e "  auto:        ${latency_auto_complex}ms"
 echo ""
 
