@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 import type { WebSocket } from 'ws';
 
 const openai = new OpenAI({
@@ -62,8 +62,10 @@ export async function transcribeAudioBuffer(
                      normalizedMimeType.includes('wav') ? 'wav' : 
                      normalizedMimeType.includes('mpeg') ? 'mp3' : 'webm';
     
-    const audioBlob = new Blob([audioBuffer], { type: normalizedMimeType });
-    const file = new File([audioBlob], `audio.${extension}`, { type: normalizedMimeType });
+    // Use OpenAI's toFile helper to create a proper file upload from Buffer
+    const file = await toFile(audioBuffer, `audio.${extension}`, { 
+      type: normalizedMimeType 
+    });
     
     const response = await openai.audio.transcriptions.create({
       file,
