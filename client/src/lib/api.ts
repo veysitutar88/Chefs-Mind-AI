@@ -7,17 +7,20 @@ export const api = {
       agentType,
       title
     });
-    return res.json();
+    const json = await res.json();
+    return json; // Returns full response with .data property
   },
 
   async getChatSessions() {
     const res = await apiRequest("GET", "/api/chat/sessions");
-    return res.json();
+    const json = await res.json();
+    return json; // Returns full response with .data property
   },
 
   async getMessages(sessionId: string) {
     const res = await apiRequest("GET", `/api/chat/sessions/${sessionId}/messages`);
-    return res.json();
+    const json = await res.json();
+    return json; // Returns full response with .data property
   },
 
   async sendMessage(sessionId: string, content: string, metadata?: any) {
@@ -30,7 +33,8 @@ export const api = {
     };
     
     const res = await apiRequest("POST", "/api/chat/messages", requestBody);
-    return res.json();
+    const json = await res.json();
+    return json; // Returns full response with .data property
   },
 
   // File operations

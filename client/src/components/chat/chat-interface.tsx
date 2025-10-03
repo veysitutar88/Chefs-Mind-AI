@@ -24,13 +24,13 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings, s
 
   const { data: fetchedMessages, isLoading } = useQuery({
     queryKey: ['/api/chat/sessions', sessionId, 'messages'],
-    queryFn: () => sessionId ? api.getMessages(sessionId) : Promise.resolve([]),
+    queryFn: () => sessionId ? api.getMessages(sessionId) : Promise.resolve({data: []}),
     enabled: !!sessionId,
   });
 
   useEffect(() => {
-    if (fetchedMessages) {
-      setMessages(fetchedMessages);
+    if (fetchedMessages?.data) {
+      setMessages(fetchedMessages.data);
     } else {
       setMessages([]);
     }
@@ -72,8 +72,8 @@ export function ChatInterface({ selectedAgent, sessionId, mediaStudioSettings, s
       // Replace optimistic message with real ones
       setMessages(prev => [
         ...prev.slice(0, -1), // Remove optimistic message
-        result.userMessage,
-        result.assistantMessage
+        result.data.userMessage,
+        result.data.assistantMessage
       ]);
     } catch (error) {
       console.error('Failed to send message:', error);
