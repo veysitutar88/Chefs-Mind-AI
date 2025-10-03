@@ -48,6 +48,12 @@ Preferred communication style: Simple, everyday language.
 - **Specialized Agents**: Five dedicated agents (Accountant, Chef, Analyst, Visualizer, Media Studio)
 - **Model Selection**: Context-aware model routing based on task requirements
 - **SQL Safety**: Comprehensive SQL validation with read-only enforcement
+- **MODELS-SPEED-ROUTER**: Intelligent model selection system
+  - Auto-routing based on query complexity analysis (simple/moderate/complex/research)
+  - 8 model registry: gpt-5, gpt-4-turbo, gpt-4o, gpt-4o-mini, o3-mini, gemini-1.5-pro, gemini-1.5-flash, sonar (Perplexity)
+  - Manual model override available through UI selector
+  - SSE streaming support via /api/ask/stream endpoint
+  - Performance-optimized model selection (fast models for simple queries, powerful models for complex analysis)
 
 ### Security Architecture
 - **SQL Validation**: Multi-layer protection against SQL injection
