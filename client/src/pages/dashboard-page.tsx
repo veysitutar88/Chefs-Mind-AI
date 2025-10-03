@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,33 @@ export default function DashboardPage() {
     queryKey: ['/api/chat/sessions'],
     queryFn: () => api.getChatSessions()
   });
+
+  // Auto-initialize session on page load
+  useEffect(() => {
+    const initializeSession = async () => {
+      if (sessions?.data && sessions.data.length > 0) {
+        // Use the most recent existing session
+        const latestSession = sessions.data[0];
+        setCurrentSessionId(latestSession.id);
+        
+        // Find matching agent
+        const matchingAgent = agents.find(a => a.id === latestSession.agentType);
+        if (matchingAgent) {
+          setSelectedAgent(matchingAgent);
+        }
+      } else if (!currentSessionId) {
+        // Create a new session for the default agent
+        try {
+          const session = await api.createChatSession(selectedAgent.id, `${selectedAgent.name} Session`);
+          setCurrentSessionId(session.id);
+        } catch (error) {
+          console.error('Failed to initialize session:', error);
+        }
+      }
+    };
+
+    initializeSession();
+  }, [sessions]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
