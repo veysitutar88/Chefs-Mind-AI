@@ -32,18 +32,11 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
     onFinalResult: (text) => {
       // Append final result to message
       setMessage(prev => prev + (prev ? ' ' : '') + text);
-      toast({
-        title: "Голосовой ввод",
-        description: "Аудио успешно преобразовано в текст",
-      });
+      // No toast notification - button color and "Recording..." indicator are enough
     },
     onError: (error) => {
       console.error('STT error:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось преобразовать аудио в текст",
-        variant: "destructive",
-      });
+      // No toast notification for errors - they're logged to console
     },
   });
 
