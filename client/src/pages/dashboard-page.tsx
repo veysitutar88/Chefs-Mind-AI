@@ -87,8 +87,12 @@ export default function DashboardPage() {
     try {
       const session = await api.createChatSession(agent.id, `${agent.name} Session`);
       setCurrentSessionId(session.id);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create chat session:', error);
+      // Show error notification but don't block UI
+      if (error.message && error.message.includes('403')) {
+        console.warn('Session creation blocked by SAFE_MODE, but chat may still work with existing sessions');
+      }
     }
   };
 
