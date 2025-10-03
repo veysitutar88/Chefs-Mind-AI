@@ -17,13 +17,14 @@ export function ChatInput({ onSendMessage, disabled, agentType }: ChatInputProps
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // STT hook with Web Speech API fallback
+  // STT hook with Web Speech API by default
   const { 
     isRecording, 
     toggleRecording, 
     useWebSpeech 
   } = useSTT({
     language: 'ru',
+    useWebSpeech: true, // Use browser's Web Speech API by default
     onPartialResult: (text) => {
       // Update message with partial results (optional, can be removed if too distracting)
       console.log('Partial result:', text);
