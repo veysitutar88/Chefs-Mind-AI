@@ -1,0 +1,75 @@
+Принял. Это не «безопасное предупреждение» — у тебя реально лезет **невалидный WebSocket URL** из Vite dev-клиента:
+`wss://localhost:undefined/?token=…` → это ломает ввод и любые WS-фичи (в т.ч. STT).
+
+Вот одна короткая **команда для Replit-агента (v3)**, которую просто целиком вставляешь. Она закрывает баг и настраивает WS правильно.
+
+---
+
+## TASK: FIX-HMR-WS-AND-STT
+
+**Цель:** убрать ошибку `WebSocket: URL ... localhost:undefined`, починить стриминг WS и голосовой ввод. Ничего руками не делаю — всё правишь сам, с авто-тестами.
+
+**Сделай:**
+
+1. **Убрать dev-вставки в проде**
+
+* В `index.html`/шаблоне удалить любые хардкоды:
+
+  * `<script type="module" src="/@vite/client">`
+  * `@react-refresh`, `eruda`, dev-баннеры.
+* Оставить их только при `import.meta.env.DEV`.
+
+2. **Правильная конфигурация Vite HMR (dev-только)**
+   В `vite.config.ts`:
+
+```ts
+server: {
+  hmr: {
+    protocol: 'wss',
+    host: process.env.HMR_HOST ?? 'localhost',
+    clientPort: Number(process.env.HMR_PORT ?? 443),
+  }
+}
+```
+
+Исключить HMR целиком при `NODE_ENV=production`.
+
+3. **Нормальный базовый WS URL для фронта (STT и др.)**
+
+* Утилита `buildWsUrl(path: string)`:
+
+  * в браузере: `const base = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host;`
+  * вернуть `${base}${path}` (без `localhost`, без `undefined` портов).
+* Все вызовы WS (например, `/ws/stt`) перевести на `buildWsUrl('/ws/stt')`.
+
+4. **STT поток оживить**
+
+* Проверить `/ws/stt` (стриминг, partial/final), `/api/stt/once` (одноразово).
+* Таймауты, graceful-ошибки, без записи на диск.
+* Включить авто-fallback на Web Speech API, если WS недоступен.
+
+5. **Хэлс/смоук**
+
+* `GET /api/health/stt` → `{ success:true }`.
+* Скрипты: `scripts/smoke-stt.sh` и `scripts/ws-stt-demo.js` (печатают t_first_partial и t_final).
+
+6. **UI-проверки**
+
+* Поле ввода снова активно во всех агентах.
+* Нет ошибок в консоли типа `wss://localhost:undefined`.
+* Кнопка 🎙️ начинает/останавливает запись, появляется текст (partial→final).
+
+7. **Документация**
+
+* `RELEASE_NOTES.md`: что убрано из прод-сборки (dev-клиент), как строится WS URL, как тестировать STT.
+
+**Критерии приёмки:**
+
+* В прод-вкладке **нет** `<script src="/@vite/client">` и ошибок `localhost:undefined`.
+* `curl -sS "$HOST/api/health/stt"` → `{"success":true,...}`.
+* `node scripts/ws-stt-demo.js` показывает `t_first_partial < 1200ms`, `t_final < 2500ms`.
+* Кнопка 🎙️ работает, текст печатается, поле ввода активно.
+
+---
+
+Если хочешь — дам следом объединённую команду, где вместе с этим фиксируем **router-latency + быстрые модели (gpt-4o-mini/… )**. Но сначала закрываем этот WS-баг: он блокирует и ввод, и STT.
