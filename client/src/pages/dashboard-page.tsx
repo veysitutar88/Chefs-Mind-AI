@@ -95,7 +95,7 @@ export default function DashboardPage() {
         // Create a new session for the default agent only if no sessions exist
         try {
           const session = await api.createChatSession(selectedAgent.id, `${selectedAgent.name} Session`);
-          setCurrentSessionId(session.id);
+          setCurrentSessionId(session.data.id);
         } catch (error) {
           console.error('Failed to initialize session:', error);
         }
@@ -116,7 +116,7 @@ export default function DashboardPage() {
     // Create new chat session for selected agent
     try {
       const session = await api.createChatSession(agent.id, `${agent.name} Session`);
-      setCurrentSessionId(session.id);
+      setCurrentSessionId(session.data.id);
     } catch (error: any) {
       console.error('Failed to create chat session:', error);
       // Show error notification but don't block UI
