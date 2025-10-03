@@ -70,7 +70,7 @@ export default function DashboardPage() {
     analyst: 'perplexity'
   });
 
-  const { data: sessions } = useQuery({
+  const { data: sessions, isSuccess } = useQuery({
     queryKey: ['/api/chat/sessions'],
     queryFn: () => api.getChatSessions()
   });
@@ -78,7 +78,10 @@ export default function DashboardPage() {
   // Auto-initialize session on page load
   useEffect(() => {
     const initializeSession = async () => {
-      if (sessions?.data && sessions.data.length > 0) {
+      // Wait for query to complete before initializing
+      if (!isSuccess || !sessions) return;
+
+      if (sessions.data && sessions.data.length > 0) {
         // Use the most recent existing session
         const latestSession = sessions.data[0];
         setCurrentSessionId(latestSession.id);
@@ -89,7 +92,7 @@ export default function DashboardPage() {
           setSelectedAgent(matchingAgent);
         }
       } else if (!currentSessionId) {
-        // Create a new session for the default agent
+        // Create a new session for the default agent only if no sessions exist
         try {
           const session = await api.createChatSession(selectedAgent.id, `${selectedAgent.name} Session`);
           setCurrentSessionId(session.id);
@@ -100,7 +103,7 @@ export default function DashboardPage() {
     };
 
     initializeSession();
-  }, [sessions]);
+  }, [sessions, isSuccess]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
