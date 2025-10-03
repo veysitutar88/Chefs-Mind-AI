@@ -10,6 +10,8 @@ import { validateSQL, executeReadOnlySQL } from "./services/sqlValidator";
 import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
 import { generateWithOpenAI, analyzeWithGPT, enhancePromptForMediaGeneration } from "./services/openai";
 import { analyzeWithPerplexity } from "./services/perplexity";
+import { universalAskStream } from "./services/universal";
+import { MODEL_REGISTRY, selectModelForQuery } from "./config/models";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema, insertAgentSettingsSchema, updateAgentSettingsSchema } from "@shared/schema";
 import { pool } from "./db";
 import { getAgentSystemPrompt } from "./utils/agentPrompts";
@@ -1174,6 +1176,98 @@ export function registerRoutes(app: Express): Server {
         timestamp: new Date().toISOString(),
         requestId: req.requestId
       });
+
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Model registry endpoints
+  app.get("/api/models", requireAuth, async (req, res) => {
+    res.json({
+      success: true,
+      data: Object.values(MODEL_REGISTRY),
+      requestId: req.requestId
+    });
+  });
+
+  app.post("/api/models/select", requireAuth, async (req, res) => {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: "Query is required",
+        requestId: req.requestId
+      });
+    }
+
+    const selectedModel = selectModelForQuery(query);
+    const modelConfig = MODEL_REGISTRY[selectedModel];
+
+    res.json({
+      success: true,
+      data: {
+        selectedModel,
+        config: modelConfig,
+        reasoning: `Selected based on query complexity analysis`
+      },
+      requestId: req.requestId
+    });
+  });
+
+  // Streaming Universal Ask endpoint
+  app.post("/api/ask/stream", requireAuth, async (req, res, next) => {
+    try {
+      const { query, model, systemPrompt } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Query is required",
+          requestId: req.requestId 
+        });
+      }
+
+      // Set headers for Server-Sent Events
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders();
+
+      const startTime = Date.now();
+      let usedModel = '';
+
+      try {
+        for await (const chunk of universalAskStream({ 
+          query, 
+          model: model || 'auto',
+          systemPrompt 
+        })) {
+          if (chunk.model) {
+            usedModel = chunk.model;
+          }
+
+          if (chunk.done) {
+            const latency = Date.now() - startTime;
+            res.write(`data: ${JSON.stringify({ 
+              done: true, 
+              model: usedModel,
+              latency
+            })}\n\n`);
+            res.end();
+            console.log(`✅ Stream completed: model=${usedModel}, latency=${latency}ms`);
+            break;
+          } else {
+            res.write(`data: ${JSON.stringify({ content: chunk.content })}\n\n`);
+          }
+        }
+      } catch (streamError) {
+        console.error('Stream error:', streamError);
+        res.write(`data: ${JSON.stringify({ 
+          error: streamError instanceof Error ? streamError.message : 'Stream error' 
+        })}\n\n`);
+        res.end();
+      }
 
     } catch (error) {
       next(error);
