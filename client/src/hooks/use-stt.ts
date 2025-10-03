@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { buildWsUrl } from '@/lib/ws-utils';
 
 interface STTOptions {
   language?: string;
@@ -46,9 +47,9 @@ export function useSTT(options: STTOptions = {}) {
       });
       mediaRecorderRef.current = recorder;
 
-      // Setup WebSocket
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${protocol}//${window.location.host}/ws/stt`);
+      // Setup WebSocket using buildWsUrl utility
+      const wsUrl = buildWsUrl('/ws/stt');
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
