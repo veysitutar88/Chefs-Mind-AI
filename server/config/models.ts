@@ -30,7 +30,7 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
     capabilities: ['chat', 'analysis', 'coding', 'reasoning'],
     contextWindow: 128000
   },
-  'gpt-4.1': {
+  'gpt-4-turbo': {
     id: 'gpt-4-turbo',
     name: 'GPT-4 Turbo',
     provider: 'openai',
@@ -80,7 +80,7 @@ export const MODEL_REGISTRY: Record<string, ModelConfig> = {
     capabilities: ['chat', 'analysis', 'vision'],
     contextWindow: 1000000
   },
-  'perplexity': {
+  'sonar': {
     id: 'sonar',
     name: 'Perplexity Sonar',
     provider: 'perplexity',
@@ -137,7 +137,7 @@ export function selectModelForQuery(query: string, userPreference?: string): str
   
   switch (complexity.type) {
     case 'research':
-      return 'perplexity';
+      return 'sonar';
     case 'complex':
       return 'gpt-4o'; // Use GPT-4o for complex reasoning
     case 'moderate':

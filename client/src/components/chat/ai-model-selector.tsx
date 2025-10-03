@@ -102,7 +102,7 @@ export function AIModelSelector({ agentType, selectedModel, onModelChange }: AIM
       case 'analyst':
         return 'sonar';
       default:
-        return 'auto';
+        return 'gpt-4o-mini';
     }
   };
 
