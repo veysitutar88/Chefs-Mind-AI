@@ -1,0 +1,114 @@
+Симптомы (репродьюс)
+
+В консоли браузера:
+SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=…' is invalid.
+
+В Network видны загрузки @vite/client / dev-скриптов в проде (Replit).
+
+Поле ввода текста в любом агенте неактивно (курсор 🚫, нельзя ввести/отправить сообщение).
+
+Цель
+
+Правильный WebSocket URL без localhost:undefined (использовать реальный хост).
+
+Продовая сборка без dev-клиента — не грузить @vite/client, eruda, dev-баннер.
+
+Поле ввода всегда доступно, даже если STT/WS недоступен (чат не зависит от HMR/STT).
+
+Сохранить единый JSON-формат ответов {success, data|error, requestId}.
+
+Что сделать (минимальный план)
+(A) Убрать dev-скрипты в проде
+
+Убедись, что Express отдаёт dist/ из Vite-билда.
+
+В итоговом dist/index.html не должно быть тегов для @vite/client, eruda, replit-баннера.
+
+Если в исходном index.html вручную вставлялись dev-скрипты — удалить их.
+
+(B) Нормализовать формирование WS-URL на фронте
+
+Никаких localhost/портов «вручную». Везде, где создаём WebSocket:
+
+const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+const wsBase = `${proto}://${location.host}`; // <— корректный хост (включая порт, если он есть)
+const ws = new WebSocket(`${wsBase}/ws/stt?token=${token}`); // либо другой наш WS-путь
+
+
+Поддержать опционально PUBLIC_WS_BASE (если переменная задана — берём её; иначе вычисляем от location).
+
+(C) HMR в дев-режиме (Replit) — без undefined
+
+В vite.config.(ts|js):
+
+export default defineConfig({
+  server: {
+    host: true,
+    strictPort: true,
+    hmr: {
+      protocol: 'wss',
+      clientPort: 443,
+      host: process.env.PUBLIC_HOST || undefined, // например 7e…riker.replit.dev
+    },
+  },
+});
+
+
+В .env добавить (если нужно):
+PUBLIC_HOST=7e0677e6-…riker.replit.dev
+
+Примечание: в проде HMR не нужен — важна именно раздача dist/.
+
+(D) Поле ввода НЕ должно зависеть от WS/HMR
+
+Найти место, где чат-инпут помечается disabled: обычно что-то вроде disabled={appDisabled || !isOnline || sttBusy}.
+
+Развязать: чат должен зависеть только от готовности API/авторизации (например, health.ok && !sending), но не от STT/HMR.
+
+Если у нас есть «глобальный» useConnectivity() и он падает в offline из-за WS-ошибки — вынести STT в отдельный хук и не блокировать UI.
+
+(E) Проверить SAFE_MODE/авторизацию-баннер
+
+Если поле ввода блокируется логикой «неавторизован/нет X-Confirm-Code», сделать в UI явный баннер (и не скрывать инпут), чтобы пользователь понимал причину. Но по умолчанию инпут активен.
+
+Критерии приёмки (Acceptance)
+
+При открытии приложения:
+
+В консоли нет ошибки wss://localhost:undefined.
+
+В Network нет запросов к @vite/client / eruda в проде.
+
+Чат-инпут активен: можно печатать и отправлять сообщения во всех агентах.
+
+STT:
+
+При нажатии на 🎙️ фронт открывает WS на wss://<наш-хост>/ws/stt?....
+
+Если STT/микрофон запрещён — чат всё равно работает; показывается понятное уведомление.
+
+/api/health и /api/health/stt возвращают {success:true,...}; при ошибке — UI не блокирует чат, но показывает понятный статус.
+
+Все API/WS ответы продолжают соблюдать формат {success, data|error, requestId}.
+
+Быстрая самопроверка (команды)
+# prod-сборка фронта
+npm ci
+npm run build    # vite build
+# перезапуск бекенда, чтобы раздавал dist/
+
+# health
+curl -sS "$HOST/api/health" | jq
+curl -sS "$HOST/api/health/stt" | jq || true
+
+Что приложить в PR
+
+diff по vite.config.*, фронтовые места с new WebSocket(...) (устранение localhost), правки логики disabled у чат-инпута, удаление dev-скриптов.
+
+Скрин консоли без ошибки и с активным инпутом.
+
+Короткий список, где был localhost/порт и что именно изменили.
+
+Почему из-за этого падал инпут
+
+Сейчас WS-ошибка валит глобальный «онлайн-режим», из-за чего инпут становится disabled (появляется «запрещающий» курсор), хотя чат к WS STT не привязан. Развязываем зависимости: WS-стриминг опционален, HMR — только в деве, чат должен работать всегда при живом HTTP API.
