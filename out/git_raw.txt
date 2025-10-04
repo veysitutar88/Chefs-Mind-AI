@@ -1,0 +1,229 @@
+5658b90|2025-10-03 10:21:43 +0000|violatesla|Add core components for the AI-powered restaurant management system
+attached_assets/image_1759486870576.png
+
+ac4ff16|2025-10-03 10:14:06 +0000|violatesla|Improve chat input to better handle voice input feedback
+client/src/components/chat/chat-input.tsx
+
+66ecf60|2025-10-03 10:10:34 +0000|violatesla|Fix issue where voice recording button does not display text in chat
+aa43f56|2025-10-03 10:10:19 +0000|violatesla|Enable voice recording and improve chat input functionality
+client/src/components/chat/chat-input.tsx
+test_router_v3.sh
+
+3a276d2|2025-10-03 09:43:51 +0000|violatesla|Improve audio transcription by writing to a temporary file
+server/services/stt.ts
+
+dacc768|2025-10-03 09:31:32 +0000|violatesla|Improve audio transcription and add testing scripts for AI agents
+.replit
+server/services/stt.ts
+test_router.sh
+test_router_v2.sh
+
+bd0a047|2025-10-03 09:17:01 +0000|violatesla|Improve error handling for image uploads and thumbnail generation
+.replit
+
+0d1a953|2025-10-03 09:12:58 +0000|violatesla|Improve WebSocket URL generation for more reliable connections
+attached_assets/Pasted--WebSocket-URL-Vi-1759482677302_1759482677303.txt
+client/src/hooks/use-stt.ts
+client/src/lib/ws-utils.ts
+
+37f751d|2025-10-03 09:09:44 +0000|violatesla|Improve AI model selection and add streaming support
+replit.md
+server/services/openai.ts
+
+7ca5b56|2025-10-03 09:08:09 +0000|violatesla|Update AI model selection and testing to include Sonar
+client/src/components/chat/ai-model-selector.tsx
+scripts/smoke-model-latency.sh
+server/config/models.ts
+
+8d20bd0|2025-10-03 09:05:19 +0000|violatesla|Update AI model selection to dynamically load available models
+.replit
+client/src/components/chat/ai-model-selector.tsx
+scripts/smoke-model-latency.sh
+
+2589fc3|2025-10-03 09:02:33 +0000|violatesla|Add intelligent model selection and streaming for AI model interactions
+.replit
+server/config/models.ts
+server/routes.ts
+server/services/universal.ts
+
+7c99f2d|2025-10-03 08:21:37 +0000|violatesla|Improve error handling and display for user-facing issues
+.replit
+
+422f301|2025-10-03 08:20:59 +0000|violatesla|Fix issues with displaying chat messages and creating new sessions
+.replit
+client/src/components/chat/chat-interface.tsx
+client/src/lib/api.ts
+client/src/pages/dashboard-page.tsx
+
+f7d2102|2025-10-03 08:10:01 +0000|violatesla|Improve input handling for better user experience
+.replit
+
+d587298|2025-10-03 08:09:27 +0000|violatesla|Improve dashboard initialization logic for user sessions
+client/src/pages/dashboard-page.tsx
+
+fd80b71|2025-10-03 08:07:20 +0000|violatesla|Improve dashboard initialization by automatically creating or selecting a chat session
+client/src/pages/dashboard-page.tsx
+
+61cff58|2025-10-03 08:06:04 +0000|violatesla|Improve system stability and fix bugs for smoother operation
+.replit
+
+0ed9ff6|2025-10-03 07:55:38 +0000|violatesla|Add user authentication and authorization for secure access
+.replit
+
+7c86a38|2025-10-03 07:55:01 +0000|violatesla|Add automated tests for core user interactions and system health
+scripts/smoke-ui.sh
+
+8f850f9|2025-10-03 07:53:04 +0000|violatesla|Improve error handling for chat session creation
+client/src/pages/dashboard-page.tsx
+
+98c0ea9|2025-10-03 07:52:12 +0000|violatesla|Fix WebSocket connection errors and improve input field functionality
+.replit
+attached_assets/Pasted--SyntaxError-Failed-to-construct-WebSocket-The-URL-wss-1759477804894_1759477804894.txt
+attached_assets/Screenshot 2025-10-03 092916_1759477827311.png
+attached_assets/content-1759473568918.md
+attached_assets/content-1759473572120.md
+attached_assets/content-1759473574618.md
+attached_assets/content-1759473576750.md
+attached_assets/content-1759473579065.md
+attached_assets/content-1759473581125.md
+attached_assets/content-1759473582458.md
+attached_assets/content-1759473584763.md
+attached_assets/content-1759473698573.md
+attached_assets/content-1759473701028.md
+attached_assets/content-1759473706471.md
+attached_assets/content-1759473710156.md
+attached_assets/content-1759473713640.md
+attached_assets/content-1759473810754.md
+attached_assets/content-1759473815165.md
+attached_assets/screenshot-1759473794388.png
+attached_assets/screenshot-1759473795518.png
+attached_assets/screenshot-1759473804212.png
+attached_assets/screenshot-1759473812192.png
+attached_assets/screenshot-1759473814600.png
+
+11e9606|2025-10-03 06:32:04 +0000|violatesla|Improve handling of user preferences and theme settings
+c658564|2025-10-03 06:31:36 +0000|violatesla|Enable safe mode for database and file operations by default
+.replit
+server/middleware/safeMode.ts
+
+3e427c2|2025-10-03 06:30:32 +0000|violatesla|Fix errors that prevent the system from functioning correctly
+attached_assets/image_1759472896838.png
+
+6b54dee|2025-10-02 20:30:59 +0000|violatesla|Update restaurant information retrieval and data structure
+37b6dba|2025-10-02 20:30:34 +0000|violatesla|Update model routing rules with latency measurements and add smoke tests
+routing_rules.json
+scripts/smoke-routing.sh
+
+a6015e1|2025-10-02 20:28:02 +0000|violatesla|Define AI model routing rules based on latency measurements
+routing_rules.json
+
+631b30c|2025-10-02 20:25:55 +0000|violatesla|Improve model routing by temporarily removing write confirmation
+server/routes.ts
+
+4fc240d|2025-10-02 15:53:42 +0000|violatesla|Implement health check and secure database backup functionality
+.replit
+
+3803aaf|2025-10-02 15:52:33 +0000|violatesla|Add a debug endpoint to check the current SAFE_MODE status
+server/routes.ts
+
+1083b45|2025-10-02 15:48:09 +0000|violatesla|Add health check and secure database backup functionality
+.replit
+
+5fc9cd7|2025-10-02 15:45:38 +0000|violatesla|Add secure database backup functionality with timestamped files
+.replit
+server/routes.ts
+
+170cec4|2025-10-02 11:11:22 +0000|violatesla|Add new data for restaurant menu items
+.replit
+
+4f793cb|2025-10-02 11:10:15 +0000|violatesla|Add speech-to-text functionality for voice input and transcription
+MEDIA_API.md
+client/src/components/chat/chat-input.tsx
+client/src/hooks/use-stt.ts
+scripts/smoke-stt.sh
+scripts/ws-stt-demo.js
+server/routes.ts
+server/services/stt.ts
+
+040e898|2025-10-02 10:54:07 +0000|violatesla|Improve voice input and speech-to-text functionality for user interactions
+.replit
+
+d1227b0|2025-10-02 10:33:16 +0000|violatesla|Boost system speed by optimizing data access and response times
+.replit
+replit.md
+
+37f204a|2025-10-02 10:30:05 +0000|violatesla|Optimize route performance by measuring and reducing request delays
+scripts/benchmark-routes.sh
+
+52243bd|2025-10-02 10:28:36 +0000|violatesla|Improve AI agent performance by optimizing data retrieval and caching
+server/routes.ts
+server/utils/agentPrompts.ts
+server/utils/tableCache.ts
+
+d9b399b|2025-10-02 10:26:03 +0000|violatesla|Optimize route performance and add database indexing
+scripts/profile-routes.sh
+shared/schema.ts
+
+a75e395|2025-10-02 10:16:49 +0000|violatesla|Improve agent communication and data handling for restaurant management
+d425b15|2025-10-02 10:15:55 +0000|violatesla|Add AI-powered media generation and prompt enhancement capabilities
+.replit
+MEDIA_API.md
+scripts/smoke-media-auth.sh
+scripts/smoke-media.sh
+server/lib/mediaPrompter.ts
+server/lib/mediaProviders.ts
+server/routes.ts
+
+6acbeed|2025-10-02 10:02:11 +0000|violatesla|Add system for generating various media types like images and videos
+.replit
+attached_assets/Pasted--Media-Prompter-1-Media-Prompter--1759399185593_1759399185593.txt
+shared/schema.ts
+
+c247c44|2025-10-02 09:46:03 +0000|violatesla|Serve the application interface on all non-API routes
+server/index.ts
+
+2b94c35|2025-10-02 09:35:24 +0000|violatesla|Add a new health check endpoint for system status monitoring
+server/routes.ts
+
+b18180f|2025-10-02 09:22:06 +0000|violatesla|Improve the system's ability to securely manage restaurant data
+.replit
+
+ebba9bf|2025-10-02 09:21:23 +0000|violatesla|Standardize API responses across the application
+server/auth.ts
+server/routes.ts
+
+850c286|2025-10-02 09:16:04 +0000|violatesla|Update AI agent model selection and file upload error handling
+.replit
+server/routes.ts
+
+abeb776|2025-10-02 09:14:03 +0000|violatesla|Standardize error responses across all API routes
+server/auth.ts
+server/index.ts
+server/middleware/errorHandler.ts
+server/middleware/safeMode.ts
+server/routes.ts
+
+087d977|2025-10-02 09:08:42 +0000|violatesla|Update authentication to use JWT tokens exclusively for all requests
+9ef68f4|2025-10-02 09:07:48 +0000|violatesla|Update authentication to use JWT by default for all requests
+server/auth.ts
+server/index.ts
+
+583486e|2025-10-02 09:04:06 +0000|violatesla|Unify authentication flow using JWT for all requests
+server/auth.ts
+server/index.ts
+server/middleware/jwtAuth.ts
+server/routes.ts
+server/utils/jwt.ts
+
+5ec35d0|2025-10-02 08:55:55 +0000|violatesla|Add a smoke test script to verify system functionality and API responses
+.replit
+scripts/smoke.sh
+
+12bf1cf|2025-10-02 08:46:40 +0000|violatesla|Ensure API and auth routes always return JSON, not HTML
+c05b334|2025-10-02 08:46:02 +0000|violatesla|Ensure API and authentication routes always return JSON responses
+.replit
+server/index.ts
+
+c88862e|2025-10-02 08:43:28 +0000|violatesla|Ensure API and authentication requests return JSON, not HTML
+.replit
+server/index.ts

@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "version": "1.0.0",
+  "uptime": 442.440621343,
+  "db": {
+    "ok": true
+  },
+  "ext": {
+    "openai": true,
+    "vertex": true,
+    "pplx": true
+  },
+  "responseTime": 556
+}
