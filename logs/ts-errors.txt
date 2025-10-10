@@ -1,0 +1,41 @@
+server/demo-server.ts(2,18): error TS7016: Could not find a declaration file for module 'cors'. 'e:/Dwloa_ds/Chefs-Mind-AI/node_modules/cors/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/cors` if it exists or add a new declaration (.d.ts) file containing `declare module 'cors';`
+server/enhanced-server.ts(2,18): error TS7016: Could not find a declaration file for module 'cors'. 'e:/Dwloa_ds/Chefs-Mind-AI/node_modules/cors/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/cors` if it exists or add a new declaration (.d.ts) file containing `declare module 'cors';`
+server/graph/enhanced-graph.ts(379,35): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '{ channels: { messages: { reducer: (x: any, y: any) => any; default: () => never[]; }; agentOutcome: { default: () => string; }; currentAgent: { default: () => string; }; usedModel: { default: () => string; }; metadata: { ...; }; correctionLoops: { ...; }; fallbackUsed: { ...; }; provenanceData: { ...; }; confidence...' is not assignable to parameter of type 'never'.
+server/graph/enhanced-graph.ts(402,27): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__" | "__end__"'.
+server/graph/enhanced-graph.ts(404,5): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(417,5): error TS2345: Argument of type '"chef_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(427,5): error TS2345: Argument of type '"accountant_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(435,20): error TS2345: Argument of type '"researcher_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(436,20): error TS2345: Argument of type '"media_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(437,20): error TS2345: Argument of type '"quality_control"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/routes/enhanced-agent-chat.ts(80,54): error TS2345: Argument of type 'EnhancedGraphStateType' is not assignable to parameter of type 'UpdateType<StateDefinition> | CommandInstance | null'.
+  Type 'EnhancedGraphStateType' is not assignable to type 'UpdateType<StateDefinition>'.
+    Index signature for type 'string' is missing in type 'EnhancedGraphStateType'.
+server/routes/enhanced-agent-chat.ts(84,9): error TS2322: Type '{}' is not assignable to type 'string'.
+server/routes/enhanced-agent-chat.ts(85,9): error TS2322: Type '{}' is not assignable to type 'string'.
+server/routes/enhanced-agent-chat.ts(92,13): error TS2698: Spread types may only be created from object types.
+server/routes/enhanced-agent-chat.ts(101,28): error TS2339: Property 'needsGoogleServices' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(105,11): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(117,11): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(125,28): error TS2339: Property 'needsImageGeneration' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(129,11): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(143,13): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(159,46): error TS2339: Property 'length' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(160,29): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+server/routes/enhanced-agent-chat.ts(160,61): error TS2339: Property 'length' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(195,15): error TS2322: Type 'unknown' is not assignable to type 'number | undefined'.
+server/routes/enhanced-agent-chat.ts(249,35): error TS2339: Property 'error' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(251,11): error TS2353: Object literal may only specify known properties, and 'fallbackUsed' does not exist in type 'EnhancedStreamChunk'.
+server/services/enhanced-media.ts(86,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(95,26): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(122,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(152,41): error TS2339: Property 'generateImages' does not exist on type 'GenerativeModel'.
+server/services/enhanced-media.ts(191,41): error TS2339: Property 'generateVideos' does not exist on type 'GenerativeModel'.
+server/services/gemini.ts(158,60): error TS18046: 'importError' is of type 'unknown'.
+server/services/gemini.ts(180,57): error TS18046: 'error' is of type 'unknown'.
+server/services/hallucination-control.ts(336,23): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.

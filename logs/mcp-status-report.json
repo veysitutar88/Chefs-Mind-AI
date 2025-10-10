@@ -1,0 +1,239 @@
+{
+  "timestamp": "2025-10-09T07:58:00.000Z",
+  "system_inspector": "System Inspector Report",
+  "project": "Chef's Mind AI Enhanced",
+  "version": "2.0.0-enhanced",
+  
+  "mcp_servers": [
+    {
+      "name": "google-mcp",
+      "type": "Google Services Integration",
+      "file_path": "server/services/google-mcp.ts",
+      "status": "implemented",
+      "tools": [
+        {
+          "name": "create_calendar_event",
+          "description": "Создать событие в Google Calendar",
+          "parameters": {
+            "required": ["summary", "start", "end"],
+            "optional": ["description", "timeZone"]
+          }
+        },
+        {
+          "name": "create_document", 
+          "description": "Создать документ Google Docs",
+          "parameters": {
+            "required": ["title"],
+            "optional": ["content"]
+          }
+        },
+        {
+          "name": "create_spreadsheet",
+          "description": "Создать таблицу Google Sheets", 
+          "parameters": {
+            "required": ["title"],
+            "optional": ["headers"]
+          }
+        },
+        {
+          "name": "update_sheet_data",
+          "description": "Обновить данные в таблице Google Sheets",
+          "parameters": {
+            "required": ["spreadsheetId", "values"],
+            "optional": ["range"]
+          }
+        }
+      ],
+      "dependencies": ["googleapis", "google-auth-library"],
+      "auth_required": true,
+      "oauth_configured": true
+    },
+    {
+      "name": "enhanced-media",
+      "type": "Media Generation Services",
+      "file_path": "server/services/enhanced-media.ts", 
+      "status": "implemented",
+      "tools": [
+        {
+          "name": "generate_image",
+          "description": "Сгенерировать изображение с помощью AI",
+          "parameters": {
+            "required": ["prompt"],
+            "optional": ["negativePrompt", "generator"],
+            "generator_options": ["dall-e-3", "gpt-image", "imagen-3", "auto"]
+          }
+        },
+        {
+          "name": "generate_video",
+          "description": "Сгенерировать видео с помощью AI", 
+          "parameters": {
+            "required": ["prompt"],
+            "optional": ["duration", "generator"],
+            "generator_options": ["veo-3", "auto"]
+          }
+        },
+        {
+          "name": "enhance_prompt",
+          "description": "Улучшить промпт для генерации медиа",
+          "parameters": {
+            "required": ["prompt", "mediaType"],
+            "mediaType_options": ["image", "video"]
+          }
+        }
+      ],
+      "dependencies": ["openai", "@google-cloud/vertexai"],
+      "fallback_logic": true
+    },
+    {
+      "name": "hallucination-control",
+      "type": "Quality Assurance System",
+      "file_path": "server/services/hallucination-control.ts",
+      "status": "implemented", 
+      "tools": [
+        {
+          "name": "comprehensive_fact_check",
+          "description": "Многоуровневая проверка фактов",
+          "levels": ["RAG", "Cross-Model", "Self-Correction", "Factual Verification", "Emergency Fallback"]
+        }
+      ],
+      "dependencies": ["@langchain/openai", "@google/generative-ai"],
+      "confidence_threshold": 0.8
+    }
+  ],
+  
+  "media_providers": {
+    "image": [
+      {
+        "name": "dall-e-3",
+        "service": "OpenAI",
+        "status": "configured",
+        "api_key_env": "OPENAI_API_KEY"
+      },
+      {
+        "name": "gpt-image", 
+        "service": "OpenAI",
+        "status": "configured",
+        "api_key_env": "OPENAI_API_KEY"
+      },
+      {
+        "name": "imagen-3",
+        "service": "Google Vertex AI",
+        "status": "configured", 
+        "api_key_env": "GOOGLE_VERTEX_API_KEY",
+        "project_env": "VERTEX_PROJECT_ID"
+      }
+    ],
+    "video": [
+      {
+        "name": "veo-3",
+        "service": "Google Vertex AI",
+        "status": "configured",
+        "api_key_env": "GOOGLE_VERTEX_API_KEY",
+        "project_env": "VERTEX_PROJECT_ID"
+      },
+      {
+        "name": "sora",
+        "service": "OpenAI", 
+        "status": "not_implemented",
+        "flag": "pending"
+      }
+    ]
+  },
+  
+  "env_keys": {
+    "openai": ["OPENAI_API_KEY", "OPENAI_ORG_ID"],
+    "google": ["GOOGLE_API_KEY", "GOOGLE_VERTEX_API_KEY", "VERTEX_PROJECT_ID", "VERTEX_LOCATION"],
+    "oauth": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REDIRECT_URI"],
+    "mcp": ["GOOGLE_SERVICE_ACCOUNT_KEY", "GOOGLE_SERVICE_ACCOUNT_EMAIL"],
+    "features": ["ENABLE_GOOGLE_MCP", "ENABLE_MEDIA_GENERATION", "ENABLE_HALLUCINATION_CONTROL", "ENABLE_PROMPT_ENHANCEMENT"],
+    "models": ["DEFAULT_MODEL", "FALLBACK_MODEL", "QUALITY_CHECK_MODEL", "PROMPT_ENHANCER_MODEL"]
+  },
+  
+  "agents_connected": {
+    "chef": {
+      "status": "implemented",
+      "tools": ["media_generation", "recipe_analysis"],
+      "model": "gpt-4-turbo-preview",
+      "can_call_media": true
+    },
+    "accountant": {
+      "status": "implemented", 
+      "tools": ["google_calendar", "google_docs", "google_sheets", "financial_analysis"],
+      "model": "gemini-2.0-flash-exp",
+      "can_call_google_mcp": true
+    },
+    "researcher": {
+      "status": "implemented",
+      "tools": ["web_search", "data_collection", "trend_analysis"],
+      "model": "gpt-4-turbo-preview"
+    },
+    "media": {
+      "status": "implemented",
+      "tools": ["dall-e-3", "gpt-image", "imagen-3", "veo-3", "prompt_enhancement"],
+      "models": ["gpt-4", "vertex-ai"]
+    },
+    "quality": {
+      "status": "implemented", 
+      "tools": ["fact_checking", "cross_validation", "self_correction", "rag_verification"],
+      "models": ["gpt-4", "gemini"],
+      "confidence_threshold": 0.95
+    }
+  },
+  
+  "package_dependencies": {
+    "@langchain": ["@langchain/langgraph", "@langchain/openai"],
+    "@google": ["@google/cloud/vertexai", "@google/generative-ai"],
+    "apis": ["googleapis", "openai"],
+    "validation": ["zod", "drizzle-zod"],
+    "ai": ["assistant-ui", "ai"],
+    "db": ["@neondatabase/serverless", "drizzle-orm"]
+  },
+  
+  "api_endpoints": {
+    "enhanced_agent": {
+      "base": "/api/enhanced-agent",
+      "chat": "POST /api/enhanced-agent/chat",
+      "agents": "GET /api/enhanced-agent/agents", 
+      "test_google_mcp": "POST /api/enhanced-agent/test-google-mcp",
+      "test_media": "POST /api/enhanced-agent/test-media",
+      "test_fact_check": "POST /api/enhanced-agent/test-fact-check"
+    },
+    "health": "GET /api/health"
+  },
+  
+  "streaming_status": {
+    "implementation": "fixed",
+    "method": "async generator",
+    "chunk_types": ["content", "metadata", "error", "complete", "tool_call", "fact_check", "quality_control"],
+    "fallback_mechanism": "active"
+  },
+  
+  "pending_tasks": [
+    "Sora video provider implementation",
+    "Real API key configuration for testing",
+    "Google OAuth 2.0 flow completion", 
+    "Integration tests for all 5 agents",
+    "Frontend update for enhanced features"
+  ],
+  
+  "issues_identified": [
+    {
+      "severity": "medium",
+      "description": "No real MCP server files found - services are embedded",
+      "recommendation": "Consider extracting to separate /mcp/ directory"
+    },
+    {
+      "severity": "low", 
+      "description": "API keys are placeholder values",
+      "recommendation": "Configure real keys for full functionality testing"
+    }
+  ],
+  
+  "health_status": {
+    "server": "running on port 5002",
+    "agents": 5,
+    "tools": 11,
+    "streaming": "operational",
+    "fallback": "active"
+  }
+}

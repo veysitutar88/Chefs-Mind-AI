@@ -1,0 +1,16 @@
+<workflow>
+<workflow_name>Start application</workflow_name>
+<status>RUNNING</status>
+<run_id>vi9XxGUx_1VzyrM1sVfzy</run_id>
+<timestamp>2025-10-04T08:09:58.541978+00:00</timestamp>
+<logs>
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+✅ WebSocket STT server ready at /ws/stt
+8:09:42 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+8:09:45 AM [express] GET /api/user 401 in 2ms :: {"success":false,"error":"Unauthorized","requestId"…
+</logs>
+</workflow>

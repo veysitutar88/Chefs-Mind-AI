@@ -11,6 +11,7 @@ import { analyzeWithGemini, generateWithGemini } from "./services/gemini";
 import { generateWithOpenAI, analyzeWithGPT, enhancePromptForMediaGeneration } from "./services/openai";
 import { analyzeWithPerplexity } from "./services/perplexity";
 import { universalAskStream } from "./services/universal";
+import agentChatRouter from "./routes/agent-chat";
 import { MODEL_REGISTRY, selectModelForQuery } from "./config/models";
 import { insertMessageSchema, insertUploadSchema, insertChatSessionSchema, insertGeneratedContentSchema, insertAgentSettingsSchema, updateAgentSettingsSchema } from "@shared/schema";
 import { pool } from "./db";
@@ -70,6 +71,9 @@ const uploadToMemory = multer({
 export function registerRoutes(app: Express): Server {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Setup agent chat routes
+  app.use('/api/agent', agentChatRouter);
   
   // Health check endpoint - no auth required (placed AFTER setupAuth)
   app.get("/api/health", async (req, res) => {

@@ -2,7 +2,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { generateWithOpenAI } from './openai';
 
 // Initialize the Google AI client with the API key from Google AI Studio
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
+try {
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
+} catch (importError) {
+  console.error('Failed to import GoogleGenerativeAI:', importError instanceof Error ? importError.message : importError);
+  throw new Error('Gemini AI initialization failed');
+}
 
 export async function analyzeWithGemini(text: string, agentType: string, availableTables?: string[], modelName?: string, customSystemPrompt?: string): Promise<{response: string, metadata: any}> {
   let systemPrompt = "";
@@ -43,7 +48,7 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
       systemPrompt = `Du bist ein IA-Assistent in der Anwendung 'Chef's Mind AI' für ein Restaurant in Berlin, Deutschland. Alle Finanzoperationen sollten in Euro (€) sein. Die Sprache für alle Berichte und Dokumente ist standardmäßig Deutsch (DE-DE). Du bist ein Experte für Finanzanalyse und Buchhaltung. Analysiere Daten, erstelle SQL-Abfragen für PostgreSQL und gib strukturierte Antworten zurück.${tablesInfo}
 
 Besondere Fähigkeiten:
-- Bei Anfragen nach "Lagerbeständen", "Beständen auf Lager", "Warenbeständen" oder "Reste auf Lager" erstelle eine SQL-Abfrage zur Tabelle 'ingredients'
+- Bei Anfragen nach "Lagerbeständen", "Bestände auf Lager", "Warenbeständen" oder "Reste auf Lager" erstelle eine SQL-Abfrage zur Tabelle 'ingredients'
 - Zeige current_stock, min_stock, name, unit, category und supplier
 - Markiere Artikel mit geringem Bestand (current_stock <= min_stock) als kritisch
 - Berechne den Gesamtwert des Lagers (current_stock * price_per_unit)
@@ -69,7 +74,7 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
 {
   "response": "Deine Antwort hier",
   "sqlQuery": "SELECT statement ohne Semikolon" oder null,
-  "chartType": "bar|line|pie|doughnut" oder null,
+  "chartType": "bar|line|pie|doughnut" или null,
   "confidence": 0.95
 }`;
       break;
@@ -135,12 +140,8 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
       }
     };
   } catch (error) {
-    console.error("Gemini API error:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return {
-      response: "Es gab einen Fehler bei der Verarbeitung Ihrer Anfrage.",
-      metadata: { error: errorMessage, model: model }
-    };
+    console.error('Gemini model creation failed:', error instanceof Error ? error.message : error);
+    throw new Error('Gemini model creation failed');
   }
 }
 
@@ -155,9 +156,8 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
         const vertexModule = await import('@google-cloud/vertexai');
         VertexAI = vertexModule.VertexAI;
       } catch (importError) {
-        console.warn('⚠️ Vertex AI module not available:', importError.message);
-        console.warn('🔄 Falling back to DALL-E 3 for image generation');
-        return await generateWithOpenAI(prompt, 'image');
+        console.error('Failed to import VertexAI:', importError instanceof Error ? importError.message : importError);
+        throw new Error('Gemini AI initialization failed');
       }
       
       // Check required environment variables
