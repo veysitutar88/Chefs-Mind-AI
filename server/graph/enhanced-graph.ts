@@ -1,6 +1,7 @@
 import { StateGraph, END, START } from '@langchain/langgraph';
 import { ChatOpenAI } from '@langchain/openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { toAsyncIter, handleStreamLike, STREAM_ENABLED } from './stream-utils.js';
 
 // Расширенное состояние графа
 export interface EnhancedGraphStateType {
@@ -47,7 +48,7 @@ const ORCHESTRATOR_PROMPT = `Ты - Оркестратор в системе Che
 2. "accountant" - Учётчик: финансы, отчёты, Google Calendar, Google Docs, Google Sheets
 3. "researcher" - Исследователь: поиск информации, анализ трендов, исследования рынка
 4. "media" - Медиа-продюсер: генерация изображений и видео
-5. "quality" - Контроль качества: проверка фактов, коррекция ошибок
+5. "quality" - Контроль качества: проверка фактов, корrекция ошибок
 
 Проанализируй запрос и верни имя специалиста. Если запрос сложный, выбери основного агента.`;
 
@@ -59,7 +60,7 @@ const RESEARCHER_PROMPT = `Ты - Исследователь. Эксперт п�
 
 const MEDIA_PROMPT = `Ты - Медиа-продюсер. Эксперт по генерации изображений (DALL-E 3, GPT Image) и видео (Imagen 3, Veo 3). Отвечай на русском языке. Запрашивай улучшение промптов при необходимости.`;
 
-const QUALITY_PROMPT = `Ты - Контроль качества. Проверяешь факты, корrектируешь ошибки, обеспечиваешь точность информации. Отвечай на русском языке.`;
+const QUALITY_PROMPT = `Ты - Контроль качества. Проверяешь факты, корректируешь ошибки, обеспечиваешь точность информации. Отвечай на русском языке.`;
 
 // Создание улучшенного графа - временно отключаем из-за проблем с LangGraph API
 export function createEnhancedAgentGraph() {
@@ -74,4 +75,68 @@ export function createEnhancedAgentGraph() {
       return { ...state, agentOutcome: 'complete' };
     }
   };
+}
+
+// Улучшенная функция обработки с поддержкой стриминга
+export async function processWithEnhancedAgents(
+  message: string,
+  options: {
+    enableStreaming?: boolean;
+    onChunk?: (chunk: any) => void;
+  } = {}
+): Promise<{
+  content: string;
+  agent: string;
+  model: string;
+  metadata?: any;
+}> {
+  try {
+    // Инициализация состояния
+    const initialState: EnhancedGraphStateType = {
+      messages: [{ role: 'user', content: message }],
+      agentOutcome: '',
+      currentAgent: '',
+      usedModel: '',
+      metadata: {},
+      correctionLoops: 0,
+      fallbackUsed: false,
+      provenanceData: {},
+      confidence: 0.0
+    };
+
+    if (options.enableStreaming && STREAM_ENABLED && options.onChunk) {
+      // Стриминг режим
+      const streamLike = enhancedAgentGraph.stream(initialState);
+      await handleStreamLike(streamLike, async (chunk) => {
+        options.onChunk!(chunk);
+      });
+      
+      // Возвращаем базовый результат для стриминга
+      return {
+        content: '',
+        agent: 'streaming',
+        model: 'multiple',
+        metadata: { streaming: true }
+      };
+    } else {
+      // Обычный invoke режим
+      const result = await enhancedAgentGraph.invoke(initialState);
+      
+      if (result.agentOutcome === 'error' || !result.messages) {
+        throw new Error(result.metadata?.error || 'Agent processing failed');
+      }
+
+      const lastMessage = result.messages[result.messages.length - 1];
+      return {
+        content: lastMessage?.content || '',
+        agent: lastMessage?.agent || 'unknown',
+        model: lastMessage?.model || 'unknown',
+        metadata: result.metadata
+      };
+    }
+
+  } catch (error) {
+    console.error('Enhanced agent processing error:', error);
+    throw error;
+  }
 }
