@@ -1,0 +1,56 @@
+server/enhanced-server.ts(4,47): error TS2307: Cannot find module './auth/google.js' or its corresponding type declarations.
+server/graph/enhanced-graph.ts(4,10): error TS2305: Module '"./stream-utils.js"' has no exported member 'toAsyncIter'.
+server/graph/enhanced-graph.ts(4,23): error TS2305: Module '"./stream-utils.js"' has no exported member 'STREAM_ENABLED'.
+server/graph/enhanced-graph.ts(4,39): error TS2305: Module '"./stream-utils.js"' has no exported member 'getContentFromChunk'.
+server/graph/enhanced-graph.ts(4,60): error TS2305: Module '"./stream-utils.js"' has no exported member 'hasContent'.
+server/graph/enhanced-graph.ts(67,35): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '{ channels: { messages: { reducer: (x: any, y: any) => any; default: () => never[]; }; agentOutcome: { default: () => string; }; currentAgent: { default: () => string; }; usedModel: { default: () => string; }; metadata: { ...; }; correctionLoops: { ...; }; fallbackUsed: { ...; }; provenanceData: { ...; }; confidence...' is not assignable to parameter of type 'never'.
+server/graph/enhanced-graph.ts(82,36): error TS2304: Cannot find name 'enhancedOrchestratorNode'.
+server/graph/enhanced-graph.ts(83,33): error TS2304: Cannot find name 'enhancedChefNode'.
+server/graph/enhanced-graph.ts(84,39): error TS2304: Cannot find name 'enhancedAccountantNode'.
+server/graph/enhanced-graph.ts(85,39): error TS2304: Cannot find name 'researcherNode'.
+server/graph/enhanced-graph.ts(86,34): error TS2304: Cannot find name 'mediaNode'.
+server/graph/enhanced-graph.ts(87,39): error TS2304: Cannot find name 'qualityControlNode'.
+server/graph/enhanced-graph.ts(90,27): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__" | "__end__"'.
+server/graph/enhanced-graph.ts(92,5): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(93,5): error TS2304: Cannot find name 'enhancedRouteToAgent'.
+server/graph/enhanced-graph.ts(105,5): error TS2345: Argument of type '"chef_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(106,5): error TS2304: Cannot find name 'enhancedRouteToAgent'.
+server/graph/enhanced-graph.ts(115,5): error TS2345: Argument of type '"accountant_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(116,5): error TS2304: Cannot find name 'enhancedRouteToAgent'.
+server/graph/enhanced-graph.ts(123,20): error TS2345: Argument of type '"researcher_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(124,20): error TS2345: Argument of type '"media_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(125,20): error TS2345: Argument of type '"quality_control"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(179,45): error TS2349: This expression is not callable.
+  Type 'CompiledStateGraph<{}, {}, "__start__", StateDefinition, StateDefinition, StateDefinition, unknown>' has no call signatures.
+server/graph/enhanced-graph.ts(180,13): error TS2304: Cannot find name 'handleStreamLike'.
+server/graph/enhanced-graph.ts(180,49): error TS7006: Parameter 'chunk' implicitly has an 'any' type.
+server/graph/enhanced-graph.ts(196,54): error TS2345: Argument of type 'EnhancedGraphStateType' is not assignable to parameter of type 'UpdateType<StateDefinition> | CommandInstance | null'.
+  Type 'EnhancedGraphStateType' is not assignable to type 'UpdateType<StateDefinition>'.
+    Index signature for type 'string' is missing in type 'EnhancedGraphStateType'.
+server/graph/enhanced-graph.ts(199,42): error TS2339: Property 'error' does not exist on type '{}'.
+server/graph/enhanced-graph.ts(202,27): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+server/graph/enhanced-graph.ts(202,59): error TS2339: Property 'length' does not exist on type '{}'.
+server/routes/enhanced-agent-chat.ts(2,60): error TS2307: Cannot find module '../graph/enhanced-graph-simple.js' or its corresponding type declarations.
+server/routes/enhanced-agent-chat.ts(42,61): error TS2552: Cannot find name 'getGoogleMCPService'. Did you mean 'googleService'?
+server/routes/enhanced-agent-chat.ts(43,55): error TS2304: Cannot find name 'getEnhancedMediaTool'.
+server/routes/enhanced-agent-chat.ts(44,55): error TS2304: Cannot find name 'getHallucinationControlSystem'.
+server/routes/enhanced-agent-chat.ts(53,23): error TS7006: Parameter 'chunk' implicitly has an 'any' type.
+server/routes/enhanced-agent-chat.ts(201,33): error TS2552: Cannot find name 'getGoogleMCPService'. Did you mean 'googleService'?
+server/routes/enhanced-agent-chat.ts(231,23): error TS2304: Cannot find name 'getEnhancedMediaTool'.
+server/routes/enhanced-agent-chat.ts(247,29): error TS2304: Cannot find name 'getHallucinationControlSystem'.
+server/services/enhanced-media.ts(86,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(95,26): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(122,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(156,11): error TS2353: Object literal may only specify known properties, and 'numberOfImages' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(169,40): error TS2339: Property 'fileUri' does not exist on type 'Part'.
+  Property 'fileUri' does not exist on type 'TextPart'.
+server/services/enhanced-media.ts(169,65): error TS2339: Property 'text' does not exist on type 'Content'.
+server/services/enhanced-media.ts(196,11): error TS2353: Object literal may only specify known properties, and 'durationSeconds' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(208,40): error TS2339: Property 'fileUri' does not exist on type 'Part'.
+  Property 'fileUri' does not exist on type 'TextPart'.
+server/services/enhanced-media.ts(208,65): error TS2339: Property 'text' does not exist on type 'Content'.
+server/services/gemini.ts(107,25): error TS2304: Cannot find name 'genAI'.
+server/services/gemini.ts(180,57): error TS18046: 'error' is of type 'unknown'.

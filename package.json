@@ -56,6 +56,7 @@
     "@types/multer": "^2.0.0",
     "ai": "^5.0.61",
     "assistant-ui": "^0.0.61",
+    "axios": "^1.7.7",
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",
@@ -80,6 +81,7 @@
     "memorystore": "^1.6.7",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "next": "^14.2.5",
     "next-themes": "^0.4.6",
     "openai": "^5.23.1",
     "passport": "^0.7.0",
@@ -100,7 +102,8 @@
     "ws": "^8.18.0",
     "xlsx": "^0.18.5",
     "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0"
+    "zod-validation-error": "^3.4.0",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.3.1",

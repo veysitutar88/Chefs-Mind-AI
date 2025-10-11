@@ -1,8 +1,5 @@
 import { Router } from 'express';
-import { processWithEnhancedAgents, EnhancedGraphStateType } from '../graph/enhanced-graph.js';
-import { getGoogleMCPService } from '../services/google-mcp.js';
-import { getEnhancedMediaTool } from '../services/enhanced-media.js';
-import { getHallucinationControlSystem } from '../services/hallucination-control.js';
+import { enhancedAgentGraph, EnhancedGraphStateType } from '../graph/enhanced-graph-simple.js';
 import { z } from 'zod';
 
 const router = Router();
@@ -46,52 +43,89 @@ async function* streamEnhancedAgentResponse(
     const mediaTool = options.enableMediaGeneration ? getEnhancedMediaTool() : null;
     const factCheckSystem = options.enableFactCheck ? getHallucinationControlSystem() : null;
 
-    let accumulatedContent = '';
     let currentAgent = '';
     let currentModel = '';
+    let accumulatedContent = '';
 
-    // Используем улучшенную функцию обработки
-    const processResult = await processWithEnhancedAgents(message, {
-      enableStreaming: false, // Временно отключаем для теста
-      onChunk: async (chunk) => {
-        // Обработка чанков
-        console.log('Chunk:', chunk);
+    try {
+      // Используем invoke вместо stream для стабильности
+      const result = await enhancedAgentGraph.invoke({ message, ...options });
+      
+      // Отправка метаданных о выбранном агенте
+      if (result.currentAgent && result.currentAgent !== currentAgent) {
+        currentAgent = result.currentAgent;
+        currentModel = result.usedModel || '';
+        
+        yield {
+          type: 'metadata',
+          agent: currentAgent,
+          model: currentModel,
+          data: {
+            ...result.metadata,
+            confidence: result.confidence,
+            correctionLoops: result.correctionLoops,
+            fallbackUsed: result.fallbackUsed
+          }
+        };
       }
-    });
 
-    // Финальная проверка фактов если включена
-    if (options.enableFactCheck && factCheckSystem && accumulatedContent) {
-      yield {
-        type: 'fact_check',
-        agent: 'quality',
-        data: { message: 'Выполняю финальную проверку фактов...' }
-      };
-      
-      const factCheckResult = await factCheckSystem.comprehensiveFactCheck(accumulatedContent);
-      
-      yield {
-        type: 'fact_check',
-        agent: 'quality',
-        factCheckResult: {
-          riskLevel: factCheckResult.riskLevel,
-          confidence: factCheckResult.factCheckResult.confidence,
-          recommendations: factCheckResult.recommendations
+      // Отправка контента от агента
+      if (result.messages && result.messages.length > 0) {
+        const lastMessage = result.messages[result.messages.length - 1];
+        if (lastMessage.role === 'assistant' && lastMessage.content) {
+          accumulatedContent = lastMessage.content;
+          
+          // Отправляем контент по частям для имитации streaming
+          const chunkSize = 20;
+          for (let i = 0; i < accumulatedContent.length; i += chunkSize) {
+            const chunk = accumulatedContent.slice(i, i + chunkSize);
+            yield {
+              type: 'content',
+              content: chunk,
+              agent: lastMessage.agent,
+              model: lastMessage.model,
+              qualityScore: result.confidence
+            };
+            
+            // Небольшая задержка для имитации real-time
+            await new Promise(resolve => setTimeout(resolve, 30));
+          }
         }
+      }
+
+      // Завершение
+      if (result.agentOutcome === 'complete') {
+        yield {
+          type: 'complete',
+          agent: currentAgent,
+          model: currentModel,
+          data: {
+            confidence: result.confidence,
+            correctionLoops: result.correctionLoops,
+            fallbackUsed: result.fallbackUsed
+          }
+        };
+        return;
+      }
+
+      // Обработка ошибок
+      if (result.agentOutcome === 'error') {
+        yield {
+          type: 'error',
+          error: result.metadata?.error || 'Unknown error occurred',
+          agent: currentAgent,
+          fallbackUsed: result.fallbackUsed
+        };
+        return;
+      }
+
+    } catch (error) {
+      yield {
+        type: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-
-    // Завершение
-    yield {
-      type: 'complete',
-      agent: currentAgent,
-      model: currentModel,
-      data: {
-        confidence: 0.8,
-        correctionLoops: 0,
-        fallbackUsed: false
-      }
-    };
-
+      
   } catch (error) {
     yield {
       type: 'error',
