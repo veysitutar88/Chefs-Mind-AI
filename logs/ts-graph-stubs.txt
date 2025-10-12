@@ -1,0 +1,38 @@
+server/graph/enhanced-graph.ts(7,40): error TS2307: Cannot find module './nodes/accountant' or its corresponding type declarations.
+server/graph/enhanced-graph.ts(8,32): error TS2307: Cannot find module './nodes/researcher' or its corresponding type declarations.
+server/graph/enhanced-graph.ts(10,36): error TS2307: Cannot find module './nodes/quality_control' or its corresponding type declarations.
+server/graph/enhanced-graph.ts(13,10): error TS2305: Module '"./stream-utils"' has no exported member 'toAsyncIter'.
+server/graph/enhanced-graph.ts(13,23): error TS2305: Module '"./stream-utils"' has no exported member 'STREAM_ENABLED'.
+server/graph/enhanced-graph.ts(98,35): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '{ channels: { messages: { reducer: (x: any, y: any) => any; default: () => never[]; }; agentOutcome: { default: () => string; }; currentAgent: { default: () => string; }; usedModel: { default: () => string; }; metadata: { ...; }; correctionLoops: { ...; }; fallbackUsed: { ...; }; provenanceData: { ...; }; confidence...' is not assignable to parameter of type 'never'.
+server/graph/enhanced-graph.ts(121,27): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__" | "__end__"'.
+server/graph/enhanced-graph.ts(123,5): error TS2345: Argument of type '"orchestrator"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(136,5): error TS2345: Argument of type '"chef_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(146,5): error TS2345: Argument of type '"accountant_node"' is not assignable to parameter of type '"__start__"'.
+server/graph/enhanced-graph.ts(154,20): error TS2345: Argument of type '"researcher_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(155,20): error TS2345: Argument of type '"media_node"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/graph/enhanced-graph.ts(156,20): error TS2345: Argument of type '"quality_control"' is not assignable to parameter of type '"__start__" | "__start__"[]'.
+server/routes/auth.google.ts(28,51): error TS2783: 'ok' is specified more than once, so this usage will be overwritten.
+server/routes/enhanced-agent-chat.ts(2,10): error TS2305: Module '"../graph/enhanced-graph-simple.js"' has no exported member 'enhancedAgentGraph'.
+server/routes/enhanced-agent-chat.ts(2,30): error TS2305: Module '"../graph/enhanced-graph-simple.js"' has no exported member 'EnhancedGraphStateType'.
+server/routes/enhanced-agent-chat.ts(42,61): error TS2552: Cannot find name 'getGoogleMCPService'. Did you mean 'googleService'?
+server/routes/enhanced-agent-chat.ts(43,55): error TS2304: Cannot find name 'getEnhancedMediaTool'.
+server/routes/enhanced-agent-chat.ts(44,55): error TS2304: Cannot find name 'getHallucinationControlSystem'.
+server/routes/enhanced-agent-chat.ts(117,11): error TS2353: Object literal may only specify known properties, and 'fallbackUsed' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(238,33): error TS2552: Cannot find name 'getGoogleMCPService'. Did you mean 'googleService'?
+server/routes/enhanced-agent-chat.ts(268,23): error TS2304: Cannot find name 'getEnhancedMediaTool'.
+server/routes/enhanced-agent-chat.ts(284,29): error TS2304: Cannot find name 'getHallucinationControlSystem'.
+server/services/enhanced-media.ts(86,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(95,26): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(122,24): error TS18048: 'response.data' is possibly 'undefined'.
+server/services/enhanced-media.ts(156,11): error TS2353: Object literal may only specify known properties, and 'numberOfImages' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(169,40): error TS2339: Property 'fileUri' does not exist on type 'Part'.
+  Property 'fileUri' does not exist on type 'TextPart'.
+server/services/enhanced-media.ts(169,65): error TS2339: Property 'text' does not exist on type 'Content'.
+server/services/enhanced-media.ts(196,11): error TS2353: Object literal may only specify known properties, and 'durationSeconds' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(208,40): error TS2339: Property 'fileUri' does not exist on type 'Part'.
+  Property 'fileUri' does not exist on type 'TextPart'.
+server/services/enhanced-media.ts(208,65): error TS2339: Property 'text' does not exist on type 'Content'.
+server/services/gemini.ts(107,25): error TS2304: Cannot find name 'genAI'.
+server/services/gemini.ts(180,57): error TS18046: 'error' is of type 'unknown'.
