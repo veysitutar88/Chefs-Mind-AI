@@ -1,0 +1,57 @@
+On branch feat/next15-upgrade
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    .eslintrc.cjs
+	modified:   frontend-enhanced/.next/BUILD_ID
+	modified:   frontend-enhanced/.next/build-manifest.json
+	modified:   frontend-enhanced/.next/cache/.tsbuildinfo
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/0.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/1.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/2.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/3.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/4.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/5.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/6.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/7.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/index.pack
+	modified:   frontend-enhanced/.next/cache/webpack/client-production/index.pack.old
+	modified:   frontend-enhanced/.next/cache/webpack/server-production/0.pack
+	modified:   frontend-enhanced/.next/cache/webpack/server-production/1.pack
+	modified:   frontend-enhanced/.next/cache/webpack/server-production/2.pack
+	modified:   frontend-enhanced/.next/cache/webpack/server-production/index.pack
+	modified:   frontend-enhanced/.next/cache/webpack/server-production/index.pack.old
+	modified:   frontend-enhanced/.next/prerender-manifest.json
+	modified:   frontend-enhanced/.next/server/app/_not-found.html
+	modified:   frontend-enhanced/.next/server/app/_not-found.rsc
+	modified:   frontend-enhanced/.next/server/app/index.html
+	modified:   frontend-enhanced/.next/server/app/index.rsc
+	modified:   frontend-enhanced/.next/server/app/register-test.html
+	modified:   frontend-enhanced/.next/server/app/register-test.rsc
+	modified:   frontend-enhanced/.next/server/pages/404.html
+	modified:   frontend-enhanced/.next/server/pages/500.html
+	deleted:    frontend-enhanced/.next/static/2fYIEuJJNrtpy0M06F43F/_buildManifest.js
+	deleted:    frontend-enhanced/.next/static/2fYIEuJJNrtpy0M06F43F/_ssgManifest.js
+	modified:   frontend-enhanced/.next/trace
+	deleted:    frontend-enhanced/package-lock.json
+	modified:   frontend-enhanced/package.json
+	modified:   frontend-enhanced/tsconfig.tsbuildinfo
+	deleted:    frontend-simple/package-lock.json
+	modified:   package-lock.json
+	modified:   package.json
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.github/workflows/smoke.yml
+	frontend-enhanced/.next/cache/webpack/client-production/8.pack
+	frontend-enhanced/.next/static/EiJHT-yjj5ZSjI9RaCHhk/
+	reports/ci_build.log
+	reports/ci_lint.log
+	reports/ci_tsc.log
+	reports/freeze_git_status_2025_10_19.txt
+	reports/lockfiles_scan_2025_10_19.txt
+	scripts/ci-smoke.bat
+	scripts/smoke-local.sh
+	scripts/smoke.bat
+
+no changes added to commit (use "git add" and/or "git commit -a")

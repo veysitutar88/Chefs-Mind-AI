@@ -1,0 +1,7 @@
+c:\Projects\Chefs-Mind-AI\package-lock.json
+c:\Projects\Chefs-Mind-AI\frontend-enhanced\package-lock.json
+c:\Projects\Chefs-Mind-AI\frontend-enhanced\node_modules\uri-js\yarn.lock
+c:\Projects\Chefs-Mind-AI\frontend-simple\package-lock.json
+c:\Projects\Chefs-Mind-AI\frontend-simple\node_modules\uri-js\yarn.lock
+c:\Projects\Chefs-Mind-AI\node_modules\combined-stream\yarn.lock
+c:\Projects\Chefs-Mind-AI\node_modules\uri-js\yarn.lock
