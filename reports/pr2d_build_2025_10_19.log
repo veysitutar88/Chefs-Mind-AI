@@ -1,0 +1,53 @@
+
+> chefs-mind-ai-enhanced@2.0.0 build
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+ ⨯ ESLint: Invalid Options: - Unknown options: useEslintrc, extensions - 'extensions' has been removed.
+Failed to compile.
+
+./src/app/layout.tsx:1:28
+Type error: Cannot find module '@/components/build-badge' or its corresponding type declarations.
+
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mBuildBadge[39m } [36mfrom[39m [32m'@/components/build-badge'[39m[33m;[39m[0m
+[0m [90m   |[39m                            [31m[1m^[22m[39m[0m
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mexport[39m [36mconst[39m metadata [33m=[39m {[0m
+[0m [90m 4 |[39m   title[33m:[39m [32m'Next.js'[39m[33m,[39m[0m
+
+> chefs-mind-ai-enhanced@2.0.0 build
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+ ⨯ ESLint: Invalid Options: - Unknown options: useEslintrc, extensions - 'extensions' has been removed.
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    15.6 kB         103 kB
+├ ○ /_not-found                          871 B          87.9 kB
+└ ○ /register-test                       720 B          87.7 kB
++ First Load JS shared by all            87 kB
+  ├ chunks/23-82d06da020413398.js        31.5 kB
+  ├ chunks/fd9d1056-4e1a26e2d413ba3c.js  53.6 kB
+  └ other shared chunks (total)          1.86 kB
+
+
+○  (Static)  prerendered as static content
+

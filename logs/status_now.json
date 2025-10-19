@@ -1,0 +1,27 @@
+{
+  "active_checkpoint": "C:\\Projects\\Chefs-Mind-AI\\checkpoints\\master_checkpoint_2025_10_13.json",
+  "server": {
+    "status": "stopped",
+    "database": "connected",
+    "type_errors": 44,
+    "last_check": "2025-06-17T00:00:00Z",
+    "rbac_enabled": true,
+    "metrics_enabled": true,
+    "qa_gate_enabled": true
+  },
+  "db": {
+    "status": "connected",
+    "provider": "Neon (PostgreSQL)",
+    "latency_ms": 624,
+    "url": "postgresql://***:***@ep-fragrant-tree-agk3qhvl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  },
+  "metrics": {
+    "prometheus_client": "installed",
+    "metrics_endpoint": "/metrics",
+    "middleware": "http_request_duration_histogram",
+    "log_file": "logs/metrics_smoke.json",
+    "rbac_log": "logs/rbac_smoke.json",
+    "qa_log": "logs/task_Q1.json"
+  },
+  "next_task": "B1.SMOKE — Trigger /api/db/backup with X-Confirm-Code, verify file exists and hash matches; test /api/db/restore on temp DB. Save results to logs/backup_smoke.json"
+}

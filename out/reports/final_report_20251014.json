@@ -1,0 +1,153 @@
+{
+  "generated_at": "2025-10-14T09:51:00.000Z",
+  "active_checkpoint_pointer": {
+    "file": "checkpoints/LATEST.json",
+    "points_to": "./checkpoints/master_checkpoint_2025_10_14_v2.json"
+  },
+  "checkpoint_summary": {
+    "checkpoint_id": "master_checkpoint_2025_10_14_v2",
+    "timestamp": "2025-10-14T04:28:00Z",
+    "status": "CRITICAL_FIXES_REQUIRED",
+    "notes": "CRITICAL: Project cannot proceed without fixing bootability. All other work is blocked. Focus 100% on Phase 1 (BOOTABILITY_FIRST) before any other tasks.",
+    "completed_tasks": [
+      "TASK R1.RUN — health и media маршруты подключены. Маршруты добавлены в routes.ts",
+      "TASK G1.START — Google OAuth setup (C1→C2→C3) completed successfully. OAuth routes mounted, frontend component added, sheetsClient implemented."
+    ]
+  },
+  "server_status": {
+    "status": "stopped",
+    "health_endpoint_status": "error",
+    "health_endpoint_error": "OPENAI_API_KEY missing",
+    "type_errors": 44,
+    "vite_boot_status": "started"
+  },
+  "db_status": {
+    "status": "connected",
+    "provider": "Neon (PostgreSQL)",
+    "latency_ms": 592,
+    "last_backup": "C:\\Projects\\Chefs-Mind-AI\\out\\backups\\backup_20251013_000000.sql.gz"
+  },
+  "models_status": {
+    "defaults": {
+      "text": "gpt-5",
+      "images": {
+        "primary": "gpt-image-1",
+        "fallback": ["dall-e-3", "imagen-3"]
+      },
+      "video": {
+        "primary": "veo-3",
+        "fallback": ["sora-1"]
+      },
+      "research": {
+        "provider": "perplexity",
+        "models": ["sonar-large", "sonar-pro"],
+        "endpoint": "https://api.perplexity.ai/chat/completions"
+      }
+    },
+    "providers": ["openai", "google", "perplexity"],
+    "routing": {
+      "text_generation": {
+        "creative": "gpt-5",
+        "analytical": "gemini-1.5-pro",
+        "research": "sonar-pro",
+        "coding": "gpt-4o",
+        "simple": "gpt-4o-mini"
+      }
+    },
+    "smoke_test_status": "failed",
+    "smoke_test_reason": "All tests failed due to missing API keys in environment variables"
+  },
+  "metrics_status": {
+    "prometheus_client": "installed",
+    "metrics_endpoint": "/metrics",
+    "middleware": "http_request_duration_histogram",
+    "total_metrics_collected": 0,
+    "status": "configured but not collecting"
+  },
+  "tests_status": {
+    "boot_smoke_status": "failed",
+    "boot_smoke_error": "TypeScript compilation error in server/routes.ts at line 512",
+    "integration_tests": "none found",
+    "smoke_tests": "attempted but failed"
+  },
+  "ci_status": {
+    "ci_file_exists": true
+  },
+  "rbac_status": {
+    "status": "not functional",
+    "details": "All RBAC smoke tests failed with ERROR status",
+    "tested_endpoints": [
+      "/api/db/backup",
+      "/api/db/restore",
+      "/api/media/image/generate",
+      "/api/media/video/generate",
+      "/api/media/job/test"
+    ]
+  },
+  "env_presence": {
+    "SESSION_SECRET": true,
+    "OPENAI_API_KEY": true,
+    "GOOGLE_OAUTH_CLIENT_ID": true,
+    "GOOGLE_OAUTH_CLIENT_SECRET": true,
+    "GOOGLE_OAUTH_REDIRECT_URI": true,
+    "GOOGLE_OAUTH_SCOPES": true,
+    "DATABASE_URL": true,
+    "PORT": false,
+    "VERTEX_PROJECT_ID": true,
+    "PERPLEXITY_API_KEY": true
+  },
+  "source_files": [
+    "checkpoints/LATEST.json",
+    "checkpoints/master_checkpoint_2025_10_14_v2.json",
+    "models.config.json",
+    ".env",
+    "logs/status_now.json",
+    "logs/health_live.json",
+    "logs/db_ping.json",
+    "logs/backup_smoke.json",
+    "logs/models_smoke.json",
+    "logs/metrics_smoke.json",
+    "logs/rbac_smoke.json",
+    "logs/task_BOOT_SMOKE.json",
+    "logs/task_R1.json",
+    "logs/task_G1.json",
+    ".github/workflows/ci.yml"
+  ],
+  "issues": [
+    {
+      "code": "SERVER_NOT_STARTING",
+      "message": "Server fails to start due to missing OPENAI_API_KEY",
+      "impact": "high"
+    },
+    {
+      "code": "TYPESCRIPT_ERRORS",
+      "message": "44 TypeScript errors blocking build and deployment",
+      "impact": "high"
+    },
+    {
+      "code": "DB_LATENCY_HIGH",
+      "message": "Database latency 592ms is above acceptable threshold of 50ms",
+      "impact": "medium"
+    },
+    {
+      "code": "MISSING_METRICS_COLLECTION",
+      "message": "Metrics are configured but not collecting data",
+      "impact": "medium"
+    },
+    {
+      "code": "RBAC_NOT_FUNCTIONAL",
+      "message": "All RBAC smoke tests failed",
+      "impact": "high"
+    },
+    {
+      "code": "MODELS_SMOKE_FAILED",
+      "message": "Model smoke tests failed due to missing API keys",
+      "impact": "medium"
+    },
+    {
+      "code": "BOOT_SMOKE_FAILED",
+      "message": "Boot smoke test failed due to TypeScript compilation error",
+      "impact": "high"
+    }
+  ]
+}

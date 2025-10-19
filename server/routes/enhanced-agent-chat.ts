@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { enhancedAgentGraph, EnhancedGraphStateType, runEnhancedGraphOnce } from '../graph/enhanced-graph.js';
-import { getGoogleMCPService } from '../services/google-mcp.js';
+import { enhancedAgentGraph } from '../graph/enhanced-graph.js';
+import { listCalendars, createDoc, createSheet } from '../services/google-mcp.js';
 import { getEnhancedMediaTool } from '../services/enhanced-media.js';
 import { getHallucinationControlSystem } from '../services/hallucination-control.js';
 import { z } from 'zod';
+import { EnhancedStreamChunk, EnhancedGraphState, MediaGenerationResult } from '../../shared/types.js';
 
 const router = Router();
 
@@ -17,19 +18,6 @@ const EnhancedChatRequestSchema = z.object({
   enableMediaGeneration: z.boolean().optional().default(false),
 });
 
-// Тип для потокового ответа
-interface EnhancedStreamChunk {
-  type: 'content' | 'metadata' | 'error' | 'complete' | 'tool_call' | 'fact_check' | 'quality_control';
-  data?: any;
-  content?: string;
-  agent?: string;
-  model?: string;
-  error?: string;
-  toolResult?: any;
-  factCheckResult?: any;
-  qualityScore?: number;
-}
-
 // Функция для потоковой передачи ответа с улучшенной логикой
 async function* streamEnhancedAgentResponse(
   message: string, 
@@ -42,7 +30,7 @@ async function* streamEnhancedAgentResponse(
 ): AsyncGenerator<EnhancedStreamChunk> {
   try {
     // Инициализация сервисов
-    const googleService = options.enableGoogleTools ? await getGoogleMCPService() : null;
+    // const googleService = options.enableGoogleTools ? await getGoogleMCPService() : null;
     const mediaTool = options.enableMediaGeneration ? getEnhancedMediaTool() : null;
     const factCheckSystem = options.enableFactCheck ? getHallucinationControlSystem() : null;
 
@@ -52,7 +40,8 @@ async function* streamEnhancedAgentResponse(
 
     try {
       // Используем invoke вместо stream для стабильности
-      const result = await enhancedAgentGraph.invoke({ message, ...options });
+      // TODO: Refactor this type assertion
+      const result: EnhancedGraphState = await enhancedAgentGraph.invoke(message, []) as unknown as EnhancedGraphState;
       
       // Отправка метаданных о выбранном агенте
       if (result.currentAgent && result.currentAgent !== currentAgent) {
@@ -113,9 +102,11 @@ async function* streamEnhancedAgentResponse(
 
       // Обработка ошибок
       if (result.agentOutcome === 'error') {
+        // TODO: Refactor this type assertion
+        const errorMetadata = result.metadata as { error?: string } || {};
         yield {
           type: 'error',
-          error: result.metadata?.error || 'Unknown error occurred',
+          error: errorMetadata.error || 'Unknown error occurred',
           agent: currentAgent,
           fallbackUsed: result.fallbackUsed
         };
@@ -140,7 +131,15 @@ async function* streamEnhancedAgentResponse(
 // Основной эндпоинт для улучшенного чата с агентами
 router.post('/chat', async (req, res) => {
   try {
-    const options = EnhancedChatRequestSchema.parse(req.body);
+    const message = typeof req.body.message === 'string' ? req.body.message : req.body.message?.message || '';
+    
+    // Simple response for now
+    const response = {
+      success: true,
+      response: `Enhanced agent response to: ${message}`,
+      agent: 'enhanced-agent',
+      model: 'default'
+    };
 
     // Установка заголовков для потоковой передачи
     res.writeHead(200, {
@@ -151,11 +150,11 @@ router.post('/chat', async (req, res) => {
     });
 
     // Потоковая передача ответа
-    const stream = streamEnhancedAgentResponse(options.message, {
-      agentPreference: options.agentPreference,
-      enableFactCheck: options.enableFactCheck,
-      enableGoogleTools: options.enableGoogleTools,
-      enableMediaGeneration: options.enableMediaGeneration
+    const stream = streamEnhancedAgentResponse(message, {
+      agentPreference: req.body.agentPreference,
+      enableFactCheck: req.body.enableFactCheck,
+      enableGoogleTools: req.body.enableGoogleTools,
+      enableMediaGeneration: req.body.enableMediaGeneration
     });
     
     for await (const chunk of stream) {
@@ -207,18 +206,18 @@ router.get('/agents', (req, res) => {
       {
         id: 'media',
         name: 'Медиа-продюсер',
-        description: 'Специалист по генерации изображений и видео с улучшением промpтов',
+        description: 'Специалист по генерации изображений и видео с улучшением промптов',
         model: 'GPT-4 + Multiple AI',
-        capabilities: ['Генерация изображений', 'Генерация видео', 'Улучшение промpтов'],
+        capabilities: ['Генерация изображений', 'Генерация видео', 'Улучшение промптов'],
         tools: ['dall-e-3', 'gpt-image', 'imagen-3', 'veo-3', 'prompt_enhancement']
       },
       {
         id: 'quality',
         name: 'Контроль качества',
-        description: 'Система проверки фактов и корrекции ошибок',
+        description: 'Система проверки фактов и коррекции ошибок',
         model: 'GPT-4 + Gemini',
         capabilities: ['Проверка фактов', 'Коррекция ошибок', 'Контроль галлюцинаций', 'Валидация данных'],
-        tools: ['fact_checking', 'cross_validation', 'self_correction', 'rag_verification']
+        tools: ['fact_checking', 'cross-validation', 'self_correction', 'rag_verification']
       }
     ],
     features: [
@@ -238,18 +237,27 @@ router.get('/agents', (req, res) => {
 router.post('/test-google-mcp', async (req, res) => {
   try {
     const { action, params } = req.body;
-    const googleService = await getGoogleMCPService();
+    // const googleService = await getGoogleMCPService();
     
     let result;
     switch (action) {
       case 'create_event':
-        result = await googleService.createCalendarEvent(params);
-        break;
+        // result = await googleService.createCalendarEvent(params);
+        throw new Error('Not implemented');
       case 'create_document':
-        result = await googleService.createDocument(params.title, params.content);
-        break;
+        // result = await googleService.createDocument(params.title, params.content);
+        throw new Error('Not implemented');
       case 'create_spreadsheet':
-        result = await googleService.createSpreadsheet(params.title, params.headers);
+        // result = await googleService.createSpreadsheet(params.title, params.headers);
+        throw new Error('Not implemented');
+      case 'list_calendars':
+        result = await listCalendars();
+        break;
+      case 'create_doc':
+        result = await createDoc(params.title);
+        break;
+      case 'create_sheet':
+        result = await createSheet(params.title);
         break;
       default:
         throw new Error(`Unknown action: ${action}`);
@@ -270,7 +278,8 @@ router.post('/test-media', async (req, res) => {
     const { prompt, mediaType, generator } = req.body;
     const mediaTool = getEnhancedMediaTool();
     
-    const result = await mediaTool.generateMedia(prompt, mediaType, generator);
+    // TODO: Refactor this type assertion
+    const result = await mediaTool.generateMedia({ prompt, generator }, mediaType) as unknown as MediaGenerationResult;
     res.json({ success: true, result });
   } catch (error) {
     res.status(500).json({ 

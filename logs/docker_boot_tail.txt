@@ -1,0 +1,18 @@
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+📅 Backup scheduler started. Daily backups scheduled for 03:00 UTC
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+DATABASE_URL loaded: YES
+DATABASE_URL length: 191
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+6:58:38 AM [server] [36m[INFO][0m Production mode: mounting static file server
+6:58:38 AM [server] [36m[INFO][0m Static file server mounted from server/public
+6:58:38 AM [express] [36m[INFO][0m Server running on port 5000 in production mode

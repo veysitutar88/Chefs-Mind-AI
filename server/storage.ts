@@ -92,12 +92,20 @@ export class DatabaseStorage implements IStorage {
     return session;
   }
 
-  async getChatSessions(userId: string): Promise<ChatSession[]> {
+  async getChatSessions(userId: string, limit: number = 20, offset: number = 0): Promise<ChatSession[]> {
     return await db
-      .select()
+      .select({
+        id: chatSessions.id,
+        userId: chatSessions.userId,
+        agentType: chatSessions.agentType,
+        title: chatSessions.title,
+        createdAt: chatSessions.createdAt,
+      })
       .from(chatSessions)
       .where(eq(chatSessions.userId, userId))
-      .orderBy(desc(chatSessions.createdAt));
+      .orderBy(desc(chatSessions.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async getChatSession(id: string): Promise<ChatSession | undefined> {
@@ -113,12 +121,21 @@ export class DatabaseStorage implements IStorage {
     return msg;
   }
 
-  async getMessages(sessionId: string): Promise<Message[]> {
+  async getMessages(sessionId: string, limit: number = 50, offset: number = 0): Promise<Message[]> {
     return await db
-      .select()
+      .select({
+        id: messages.id,
+        sessionId: messages.sessionId,
+        role: messages.role,
+        content: messages.content,
+        metadata: messages.metadata,
+        createdAt: messages.createdAt,
+      })
       .from(messages)
       .where(eq(messages.sessionId, sessionId))
-      .orderBy(messages.createdAt);
+      .orderBy(messages.createdAt)
+      .limit(limit)
+      .offset(offset);
   }
 
   async createUpload(upload: InsertUpload & { userId: string }): Promise<Upload> {

@@ -1,0 +1,18 @@
+* Host localhost:5000 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:5000...
+* Established connection to localhost (::1 port 5000) from ::1 port 54549 
+* using HTTP/1.x
+> GET /api/health HTTP/1.1
+> Host: localhost:5000
+> User-Agent: curl/8.16.0
+> Accept: */*
+> 
+* Request completely sent off
+* Empty reply from server
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+* shutting down connection #0
+curl: (52) Empty reply from server

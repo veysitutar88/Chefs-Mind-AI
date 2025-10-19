@@ -1,0 +1,10 @@
+| Test      | Status  | Latency (ms) |
+|-----------|---------|--------------|
+| health    | passed  | 1            |
+| metrics   | passed  | 3            |
+| oauth     | passed  | 2            |
+| rbac      | passed  | 1            |
+| import    | failed  | 868          |
+| calendar  | passed  | 49           |
+
+Overall: passed=5, failed=1, skipped=0

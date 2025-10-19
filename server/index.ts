@@ -1,76 +1,69 @@
+// Load environment variables FIRST before any other imports
+import dotenv from 'dotenv';
+dotenv.config();
+
+console.log('DATABASE_URL loaded:', process.env.DATABASE_URL ? 'YES' : 'NO');
+console.log('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
+
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
+import session from "express-session";
+import { log } from "./utils/log";
+import { mountStatic } from "./utils/static";
+import { requestIdMiddleware, errorHandler } from "./middleware/errorHandler";
+import "./services/backupScheduler"; // Import to start the backup scheduler
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { requestIdMiddleware, errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { mountMetrics } from "./metrics";
+import cors from "cors";
 
 const app = express();
+
+app.use(cors({
+  origin: ["http://localhost:3000", "http://localhost:5001"],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(requestIdMiddleware);
 
-// Middleware to mark API/auth requests - must come BEFORE routes
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
-    (res as any).isApiRequest = true;
-  }
-  next();
-});
-
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
+// Session middleware (required for Google OAuth)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dev_secret',
+  resave: false,
+  saveUninitialized: false
+}));
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Create server BEFORE using it in setupVite
+  const port = parseInt(process.env.PORT || '5000', 10);
+  const server = createServer(app);
 
-  // Guard middleware: prevent Vite from serving HTML for /api/* and /auth/* routes
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
-      if (!res.headersSent) {
-        return res.status(404).json({
-          success: false,
-          error: "Not Found",
-          path: req.path,
-          requestId: req.requestId
-        });
-      }
+  // Mount metrics
+  mountMetrics(app);
+
+  // Register routes (this now only sets up routes, doesn't create server)
+  registerRoutes(app);
+
+  // Setup frontend serving: Dev (Vite) vs Production (static)
+  const isDev = process.env.NODE_ENV !== 'production';
+  
+  if (isDev) {
+    // Development: динамический импорт Vite middleware
+    log("Development mode: setting up Vite dev server", 'info', 'server');
+    try {
+      const { mountVite } = await import("./vite.js");
+      await mountVite(app, server);
+      log("Vite dev server mounted successfully", 'info', 'server');
+    } catch (error) {
+      log(`Failed to mount Vite dev server: ${error}`, 'error', 'server');
+      process.exit(1);
     }
-    next();
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Production: статическая раздача из server/public
+    log("Production mode: mounting static file server", 'info', 'server');
+    mountStatic(app);
+    log("Static file server mounted from server/public", 'info', 'server');
   }
 
   // Centralized error handler (must be last)
@@ -80,14 +73,8 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  
+  server.listen(port, '0.0.0.0', () => {
+    log(`Server running on port ${port} in ${isDev ? 'development' : 'production'} mode`);
   });
 })();
-
-

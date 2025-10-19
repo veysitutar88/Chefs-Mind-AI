@@ -1,0 +1,13 @@
+{
+  "generated_at": "2025-10-14T11:42:05.522Z",
+  "env_file_presence": {
+    "PORT": false,
+    "OPENAI_API_KEY": true,
+    "PERPLEXITY_API_KEY": true,
+    "GOOGLE_API_KEY": true,
+    "GOOGLE_APPLICATION_CREDENTIALS": false,
+    "VERTEX_PROJECT_ID": true,
+    "VERTEX_LOCATION": true
+  },
+  "notes": "All variables are missing from user environment but present in .env file"
+}

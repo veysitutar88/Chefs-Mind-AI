@@ -1,8 +1,18 @@
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
 import enhancedAgentRouter from './routes/enhanced-agent-chat.js';
 
 const app = express();
+const server = http.createServer(app); // Создаем HTTP сервер
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    methods: ["GET", "POST"]
+  }
+});
+
 const PORT = process.env.PORT || 5002;
 
 // Middleware
@@ -102,8 +112,36 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// WebSocket обработчики
+io.on('connection', (socket) => {
+  console.log('Пользователь подключился:', socket.id);
+  
+  // Отправляем приветственное сообщение при подключении
+  socket.emit('welcome', { message: 'Добро пожаловать в Chef\'s Mind AI WebSocket!' });
+  
+  // Обработчик события chat_message
+  socket.on('chat_message', (data) => {
+    console.log('Получено сообщение:', data);
+    
+    // Эмулируем ответ агента
+    const response = {
+      id: Date.now(),
+      text: `Это эмуляция ответа агента на ваше сообщение: "${data.text}"`,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Отправляем ответ обратно клиенту
+    socket.emit('agent_response', response);
+  });
+  
+  // Обработчик отключения
+  socket.on('disconnect', () => {
+    console.log('Пользователь отключился:', socket.id);
+  });
+});
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Chef's Mind AI Enhanced Server running on port ${PORT}`);
   console.log(`📖 API Documentation: http://localhost:${PORT}/`);
   console.log(`🤖 Enhanced Agent Chat: POST http://localhost:${PORT}/api/enhanced-agent/chat`);

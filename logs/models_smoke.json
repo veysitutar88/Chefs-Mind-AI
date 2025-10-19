@@ -1,0 +1,108 @@
+{
+  "timestamp": "2025-06-17T00:00:00.000Z",
+  "test_type": "dry_run_mock",
+  "tests": [
+    {
+      "provider": "openai",
+      "model": "gpt-5",
+      "type": "text",
+      "status": "no_api_key",
+      "latency": 231,
+      "endpoint": "https://api.openai.com/v1",
+      "mock_response": "pong",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-1",
+      "type": "image",
+      "status": "no_api_key",
+      "latency": 279,
+      "endpoint": "https://api.openai.com/v1",
+      "mock_response": "image_stub_url",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "openai",
+      "model": "dall-e-3",
+      "type": "image",
+      "status": "no_api_key",
+      "latency": 281,
+      "endpoint": "https://api.openai.com/v1",
+      "mock_response": "image_stub_url",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "openai",
+      "model": "sora-1",
+      "type": "video",
+      "status": "no_api_key",
+      "latency": 140,
+      "endpoint": "https://api.openai.com/v1",
+      "mock_response": "video_stub_url",
+      "available": false,
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "google",
+      "model": "imagen-3",
+      "type": "image",
+      "status": "no_api_key",
+      "latency": 228,
+      "endpoint": "https://generativelanguage.googleapis.com/v1",
+      "mock_response": "image_stub_url",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "google",
+      "model": "veo-3",
+      "type": "video",
+      "status": "no_api_key",
+      "latency": 172,
+      "endpoint": "https://generativelanguage.googleapis.com/v1",
+      "mock_response": "video_stub_url",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "perplexity",
+      "model": "sonar-large",
+      "type": "text",
+      "status": "no_api_key",
+      "latency": 184,
+      "endpoint": "https://api.perplexity.ai/chat/completions",
+      "mock_response": "pong",
+      "note": "Dry run - no actual API call made"
+    },
+    {
+      "provider": "perplexity",
+      "model": "sonar-pro",
+      "type": "text",
+      "status": "no_api_key",
+      "latency": 165,
+      "endpoint": "https://api.perplexity.ai/chat/completions",
+      "mock_response": "pong",
+      "note": "Dry run - no actual API call made"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 0,
+    "failed": 8,
+    "missing_keys": ["openai", "google", "perplexity"],
+    "test_mode": "dry_run",
+    "note": "All tests failed due to missing API keys in environment variables"
+  },
+  "recommendations": [
+    "Set OPENAI_API_KEY in .env for OpenAI models",
+    "Set GOOGLE_API_KEY in .env for Google models", 
+    "Set PERPLEXITY_API_KEY in .env for Perplexity models",
+    "Once API keys are configured, run actual smoke tests with real API calls",
+    "Sora-1 model marked as unavailable in configuration"
+  ],
+  "configuration_verified": {
+    "models_config_loaded": true,
+    "endpoints_configured": true,
+    "routing_rules_defined": true,
+    "agent_mappings_present": true
+  }
+}

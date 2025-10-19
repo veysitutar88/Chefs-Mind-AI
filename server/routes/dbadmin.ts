@@ -89,7 +89,7 @@ create table if not exists recipe_cost_snapshots(
 );
 `;
 
-router.post("/api/db/apply-ddl", requireWriteConfirm, async (req: Request, res: Response) => {
+router.post("/apply-ddl", requireWriteConfirm, async (req: Request, res: Response) => {
   const url = process.env.DATABASE_URL;
   if (!url) return res.status(500).json({ error: "DATABASE_URL is not set" });
   const pool = new Pool({ connectionString: url });

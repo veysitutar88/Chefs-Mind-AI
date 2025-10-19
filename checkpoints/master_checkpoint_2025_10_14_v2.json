@@ -1,0 +1,330 @@
+{
+  "checkpoint_id": "master_checkpoint_2025_10_14_v2",
+  "timestamp": "2025-10-14T04:28:00Z",
+  "project": "Chef's Mind AI",
+  "version": "compose-run-verify-v1",
+  "tasks": [
+    {
+      "task": "TASK DOCKER.DEPLOY",
+      "timestamp": "2025-10-15T00:42:48.783Z",
+      "service_summary": [
+        {"service": "api", "port": 5000, "status": "health 200 (HTML); RBAC/backup/metrics unavailable"}
+      ],
+      "health_route": "/health",
+      "last_backup_path": null,
+      "http_p95_ms": null,
+      "db_rtt_ms": null,
+      "logs": {
+        "docker": "logs/docker_local_smoke.json",
+        "rbac": "logs/rbac_smoke_live.json",
+        "backup": "logs/backup_smoke.json",
+        "metrics": "logs/metrics_surface.json"
+      },
+      "problems": [
+        "⚠️ НОВАЯ ПРОБЛЕМА: /health возвращает HTML вместо JSON",
+        "⚠️ НОВАЯ ПРОБЛЕМА: /api/health connection refused",
+        "⚠️ НОВАЯ ПРОБЛЕМА: RBAC — все роли deny для backup/restore/media",
+        "⚠️ НОВАЯ ПРОБЛЕМА: backup — нет ответа от /api/db/backup",
+        "⚠️ НОВАЯ ПРОБЛЕМА: /metrics недоступен (status=0)",
+        "⚠️ НОВАЯ ПРОБЛЕМА: отсутствуют http_p50/http_p95 и db_rtt_ms"
+      ]
+    },
+    {
+      "task": "TASK POSTDEPLOY.API.FIX",
+      "timestamp": "2025-10-15T12:27:21.738Z",
+      "service_summary": [
+        {"service": "api", "port": 5000, "status": "health 200 (HTML); metrics 200; admin RBAC allow; backup missing"}
+      ],
+      "health_route": "/api/health",
+      "last_backup_path": null,
+      "http_p95_ms": null,
+      "db_rtt_ms": 0,
+      "logs": {
+        "docker": "logs/docker_local_smoke.json",
+        "rbac": "logs/rbac_smoke_live.json",
+        "backup": "logs/backup_smoke.json",
+        "metrics": "logs/metrics_surface.json"
+      },
+      "problems": [
+        "⚠️ НОВАЯ ПРОБЛЕМА: /api/health возвращает HTML вместо JSON",
+        "⚠️ НОВАЯ ПРОБЛЕМА: отсутствует артефакт бэкапа и checksum",
+        "⚠️ НОВАЯ ПРОБЛЕМА: отсутствуют http_p50/http_p95",
+        "⚠️ НОВАЯ ПРОБЛЕМА: роли chef/accountant не протестированы (нет токенов)"
+      ]
+    }
+  ],
+  "status": "CRITICAL_FIXES_REQUIRED",
+  "supersedes": ["master_checkpoint_2025_10_14", "master_checkpoint_2025_10_13"],
+  "phase": "BOOTABILITY_FIRST",
+  
+  "CRITICAL_BLOCKERS": {
+    "P0_MUST_FIX_NOW": [
+      {
+        "issue": "npm run dev не запускается стабильно",
+        "impact": "Блокирует всю разработку",
+        "root_cause": "Vite build проблемы, смешение dev/prod конфигов",
+        "fix": "Разделить dev (Vite proxy) и prod (static) конфигурации"
+      },
+      {
+        "issue": "44 TypeScript ошибки",
+        "impact": "Блокирует build и deployment",
+        "root_cause": "Импорты .js vs .ts, отсутствующие типы, any",
+        "fix": "Триаж → быстрые фиксы → структурные изменения"
+      },
+      {
+        "issue": "DB latency 624ms",
+        "impact": "Недопустимо для production",
+        "root_cause": "Не используется Neon pooler или нет keepalive",
+        "fix": "Проверить URL на -pooler, добавить keepalive и timeouts"
+      },
+      {
+        "issue": "Нет метрик и observability",
+        "impact": "Невозможно диагностировать проблемы",
+        "root_cause": "Метрики отложены на позднюю фазу",
+        "fix": "Включить /metrics НЕМЕДЛЕННО с базовыми счётчиками"
+      },
+      {
+        "issue": "Health endpoint разнобой",
+        "impact": "Мониторинг и smoke тесты нестабильны",
+        "root_cause": "/health vs /api/health несогласованность",
+        "fix": "Основной /health, алиас на /api/health"
+      }
+    ]
+  },
+
+  "assessment": {
+    "overall_score": 5.5,
+    "note": "Снижена оценка из-за критических блокеров bootability",
+    "readiness_percentage": 55,
+    "production_ready": false,
+    "can_start_development": false,
+    "critical_issues": 5,
+    "medium_issues": 10,
+    "low_issues": 20
+  },
+
+  "current_state": {
+    "bootability": {
+      "score": 2,
+      "status": "CRITICAL",
+      "can_start": false,
+      "issues": [
+        "npm run dev fails intermittently",
+        "TypeScript compilation blocks",
+        "Vite/Express conflicts"
+      ]
+    },
+    "typescript": {
+      "score": 3,
+      "status": "BLOCKING",
+      "errors": 44,
+      "categories": {
+        "imports": "~15 errors",
+        "types": "~20 errors",
+        "async": "~5 errors",
+        "any": "~4 errors"
+      }
+    },
+    "database": {
+      "score": 4,
+      "status": "DEGRADED",
+      "connection": "works but slow",
+      "latency_ms": 624,
+      "expected_ms": 50,
+      "issues": [
+        "Not using Neon pooler endpoint",
+        "Missing keepalive",
+        "No connection reuse"
+      ]
+    },
+    "observability": {
+      "score": 1,
+      "status": "MISSING",
+      "metrics": false,
+      "tracing": false,
+      "logging": "partial",
+      "health_check": "inconsistent"
+    },
+    "testing": {
+      "score": 0,
+      "status": "NONE",
+      "unit_tests": 0,
+      "integration_tests": 0,
+      "smoke_tests": 0,
+      "ci_pipeline": false
+    }
+  },
+
+  "revised_plan": {
+    "approach": "BOOTABILITY_FIRST",
+    "reasoning": "Без стабильного запуска невозможно измерять прогресс",
+    "phases": [
+      {
+        "phase": 1,
+        "name": "BOOTABILITY_FIRST",
+        "duration": "2-3 days",
+        "focus": "Стабильный запуск и базовая observability",
+        "must_complete": [
+          "npm run dev works 100%",
+          "0 TypeScript errors on server",
+          "/metrics endpoint live",
+          "DB latency < 50ms",
+          "/health returns 200"
+        ]
+      },
+      {
+        "phase": 2,
+        "name": "TESTS_AND_STABILITY",
+        "duration": "4 days",
+        "focus": "Integration tests и CI pipeline"
+      },
+      {
+        "phase": 3,
+        "name": "PERFORMANCE",
+        "duration": "3 days",
+        "focus": "Caching, pooling, optimization"
+      },
+      {
+        "phase": 4,
+        "name": "FRONTEND",
+        "duration": "4 days",
+        "focus": "UI integration и real-time"
+      },
+      {
+        "phase": 5,
+        "name": "DEPLOYMENT",
+        "duration": "3 days",
+        "focus": "Docker, docs, production prep"
+      }
+    ]
+  },
+
+  "immediate_actions": {
+    "next_30_minutes": [
+      "Run: npx tsc --noEmit > logs/ts_errors_triage.txt",
+      "Check DATABASE_URL for '-pooler' in hostname",
+      "Verify if /metrics endpoint exists",
+      "Test npm run dev 3 times, log failures"
+    ],
+    "next_2_hours": [
+      "Categorize TypeScript errors by type",
+      "Fix import/export mismatches",
+      "Add basic /metrics if missing",
+      "Split dev/prod Vite configs"
+    ],
+    "today": [
+      "Get npm run dev working reliably",
+      "Reduce TypeScript errors by 50%",
+      "Get DB latency under 100ms",
+      "Create first smoke test"
+    ]
+  },
+
+  "infrastructure_fixes": {
+    "dev_environment": {
+      "current": "Mixed dev/prod, Vite conflicts",
+      "target": "Clean separation, stable startup",
+      "actions": [
+        "Vite dev server with proxy to :5000",
+        "Express API on :5000",
+        "No static files in dev mode",
+        "Production build to server/public"
+      ]
+    },
+    "database": {
+      "current": "624ms latency",
+      "target": "<50ms latency",
+      "actions": [
+        "Use pooler endpoint (must have -pooler)",
+        "Add ?keepalive=true&statement_timeout=5000",
+        "Enable connection pooling (min:5, max:20)",
+        "Add metrics for pool stats"
+      ]
+    },
+    "typescript": {
+      "current": "44 errors blocking build",
+      "target": "0 errors, strict mode",
+      "actions": [
+        "Quick fixes first (imports, basic types)",
+        "skipLibCheck: true temporarily",
+        "Structural fixes second phase",
+        "Enable strict after stabilization"
+      ]
+    },
+    "monitoring": {
+      "current": "No metrics, no observability",
+      "target": "Full metrics and health checks",
+      "actions": [
+        "Add /metrics endpoint NOW",
+        "http_request_duration_histogram",
+        "db_query_duration",
+        "error_rate counter"
+      ]
+    }
+  },
+
+  "definition_of_done": {
+    "phase_1": {
+      "server_starts": "10/10 successful starts",
+      "typescript": "0 errors on tsc --noEmit",
+      "health_check": "/health returns 200 OK",
+      "metrics": "/metrics returns Prometheus data",
+      "db_latency": "< 50ms average",
+      "basic_smoke": "At least 1 passing smoke test"
+    }
+  },
+
+  "risks": {
+    "high": [
+      {
+        "risk": "TypeScript errors deeper than expected",
+        "mitigation": "Triage first, fix incrementally",
+        "contingency": "Use ts-ignore for critical paths temporarily"
+      },
+      {
+        "risk": "DB latency has multiple causes",
+        "mitigation": "Profile queries, check indices",
+        "contingency": "Application-level caching"
+      }
+    ]
+  },
+
+  "technical_debt": {
+    "immediate": [
+      "44 TypeScript errors",
+      "No tests at all",
+      "DB latency 624ms",
+      "No metrics/observability",
+      "Unstable dev environment"
+    ],
+    "accumulated": [
+      "Multiple server entry points",
+      "Mixed import styles",
+      "No documentation",
+      "No CI/CD pipeline",
+      "Frontend partially integrated"
+    ]
+  },
+
+  "agents_status": {
+    "note": "Agents architecture is good but blocked by infrastructure",
+    "chef": "Ready but untested",
+    "accountant": "Ready but untested",
+    "researcher": "Ready but untested",
+    "media": "Ready but untested",
+    "qa_gate": "Implemented but unverified"
+  },
+
+  "files_updated": [
+    "logs/action_plan_2025_10_14_v2.json",
+    "checkpoints/master_checkpoint_2025_10_14_v2.json"
+  ],
+
+  "next_checkpoint": {
+    "trigger": "When npm run dev works reliably",
+    "expected": "2025-10-15",
+    "will_include": "TypeScript fixes progress, metrics data, smoke test results"
+  },
+
+  "notes": "CRITICAL: Project cannot proceed without fixing bootability. All other work is blocked. Focus 100% on Phase 1 (BOOTABILITY_FIRST) before any other tasks."
+}

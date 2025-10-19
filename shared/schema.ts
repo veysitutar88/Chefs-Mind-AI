@@ -19,6 +19,7 @@ export const chatSessions = pgTable("chat_sessions", {
 }, (table) => ({
   userIdIdx: index("chat_sessions_user_id_idx").on(table.userId),
   createdAtIdx: index("chat_sessions_created_at_idx").on(table.createdAt),
+  userIdAgentTypeIdx: index("chat_sessions_user_id_agent_type_idx").on(table.userId, table.agentType),
 }));
 
 export const messages = pgTable("messages", {
@@ -31,6 +32,7 @@ export const messages = pgTable("messages", {
 }, (table) => ({
   sessionIdIdx: index("messages_session_id_idx").on(table.sessionId),
   createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+  sessionIdCreatedAtIdx: index("messages_session_id_created_at_idx").on(table.sessionId, table.createdAt),
 }));
 
 export const uploads = pgTable("uploads", {
@@ -46,6 +48,7 @@ export const uploads = pgTable("uploads", {
 }, (table) => ({
   userIdIdx: index("uploads_user_id_idx").on(table.userId),
   createdAtIdx: index("uploads_created_at_idx").on(table.createdAt),
+  userIdProcessedIdx: index("uploads_user_id_processed_idx").on(table.userId, table.processed),
 }));
 
 export const generatedContent = pgTable("generated_content", {
@@ -60,6 +63,8 @@ export const generatedContent = pgTable("generated_content", {
 }, (table) => ({
   userIdIdx: index("generated_content_user_id_idx").on(table.userId),
   createdAtIdx: index("generated_content_created_at_idx").on(table.createdAt),
+  userIdTypeIdx: index("generated_content_user_id_type_idx").on(table.userId, table.type),
+  typeModelIdx: index("generated_content_type_model_idx").on(table.type, table.model),
 }));
 
 export const mediaJobs = pgTable("media_jobs", {
@@ -76,6 +81,8 @@ export const mediaJobs = pgTable("media_jobs", {
 }, (table) => ({
   statusIdx: index("media_jobs_status_idx").on(table.status),
   inputHashIdx: index("media_jobs_input_hash_idx").on(table.inputHash),
+  statusProviderIdx: index("media_jobs_status_provider_idx").on(table.status, table.provider),
+  createdAtIdx: index("media_jobs_created_at_idx").on(table.createdAt),
 }));
 
 export const ingredients = pgTable("ingredients", {
@@ -89,7 +96,12 @@ export const ingredients = pgTable("ingredients", {
   category: text("category"), // vegetables, meat, dairy, etc.
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("ingredients_name_idx").on(table.name),
+  categoryIdx: index("ingredients_category_idx").on(table.category),
+  supplierIdx: index("ingredients_supplier_idx").on(table.supplier),
+  nameCategoryIdx: index("ingredients_name_category_idx").on(table.name, table.category),
+}));
 
 export const recipes = pgTable("recipes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -106,7 +118,13 @@ export const recipes = pgTable("recipes", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("recipes_name_idx").on(table.name),
+  categoryIdx: index("recipes_category_idx").on(table.category),
+  isActiveIdx: index("recipes_is_active_idx").on(table.isActive),
+  nameCategoryIdx: index("recipes_name_category_idx").on(table.name, table.category),
+  categoryActiveIdx: index("recipes_category_active_idx").on(table.category, table.isActive),
+}));
 
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -121,7 +139,13 @@ export const invoices = pgTable("invoices", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  supplierIdx: index("invoices_supplier_idx").on(table.supplier),
+  statusIdx: index("invoices_status_idx").on(table.status),
+  dateIdx: index("invoices_date_idx").on(table.date),
+  supplierStatusIdx: index("invoices_supplier_status_idx").on(table.supplier, table.status),
+  dateStatusIdx: index("invoices_date_status_idx").on(table.date, table.status),
+}));
 
 export const agentSettings = pgTable("agent_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -133,6 +157,7 @@ export const agentSettings = pgTable("agent_settings", {
 }, (table) => ({
   userIdIdx: index("agent_settings_user_id_idx").on(table.userId),
   userAgentIdx: index("agent_settings_user_agent_idx").on(table.userId, table.agentType),
+  agentTypeIdx: index("agent_settings_agent_type_idx").on(table.agentType),
 }));
 
 export const insertUserSchema = createInsertSchema(users).pick({

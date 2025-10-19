@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-10-15T12:16:35.745Z",
+  "docker_available": true,
+  "build": {
+    "status": "success",
+    "note": ""
+  },
+  "up": {
+    "status": "success",
+    "note": ""
+  },
+  "docker_ps_table": "NAMES                 STATUS                            PORTS\nchefs-mind-ai-app-1   Up 3 seconds (health: starting)   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp, 0.0.0.0:5002->5002/tcp, [::]:5002->5002/tcp\nLibreChat             Up 7 minutes                      0.0.0.0:3080->3080/tcp, [::]:3080->3080/tcp\nrag_api               Up 7 minutes                      \nvectordb              Up 7 minutes                      5432/tcp\nchat-mongodb          Up 7 minutes                      27017/tcp\nchat-meilisearch      Up 7 minutes                      7700/tcp",
+  "service_port": 5000,
+  "detected": false,
+  "api_health_probe": {
+    "url": "http://localhost:5000/api/health",
+    "status": 0
+  },
+  "problems": [
+    "⚠️ НОВАЯ ПРОБЛЕМА: service port not found; defaulted to 5000"
+  ]
+}

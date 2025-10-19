@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+index f33c57b..27f940c 100644
+--- a/package.json
++++ b/package.json
+@@ -18,8 +18,8 @@
+     "test:mcp": "vitest tests/mcp/prompt-enhancer.spec.ts",
+     "smoke:media": "sh scripts/smoke-media.sh",
+     "smoke:media:auth": "sh scripts/smoke-media-auth.sh",
+-    "lint": "eslint . --ext .ts",
+-    "lint:fix": "eslint . --ext .ts --fix",
++    "lint": "eslint .",
++    "lint:fix": "eslint . --fix",
+     "format": "prettier --write .",
+     "prepare": "husky"
+   },

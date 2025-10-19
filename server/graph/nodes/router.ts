@@ -29,6 +29,3 @@ export function enhancedRouteToAgent(state: GraphState): string {
 export function finalAnswerNode(state: GraphState): GraphState {
   return state;
 }
-
-// Export для совместимости
-export { finalAnswerNode as qualityControlNode };

@@ -1,0 +1,20 @@
+{
+  "confirmCode": "2UU6QXBH9Q52OOP7",
+  "headers": {
+    "Authorization": "Bearer OPTIONAL_JWT"
+  },
+  "rbac": {
+    "probeUrl": "http://localhost:5001/api/rbac/smoke"
+  },
+  "import": {
+    "file": "data/import/ingredients/ingredients.csv",
+    "table": "ingredients",
+    "mode": "upsert"
+  },
+  "calendar": {
+    "title": "Smoke Test Event",
+    "startISO": "2025-10-16T10:00:00.000Z",
+    "endISO": "2025-10-16T11:00:00.000Z",
+    "notes": "Smoke test calendar event"
+  }
+}

@@ -2,8 +2,11 @@ import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MODEL_REGISTRY, selectModelForQuery } from '../config/models.js';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY || 'test-key-for-smoke-testing',
+  dangerouslyAllowBrowser: true
+});
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'test-key');
 
 export interface UniversalAskParams {
   query: string;

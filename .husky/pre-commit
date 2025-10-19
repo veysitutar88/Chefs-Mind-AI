@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Получаем список индексированных файлов
+indexed_files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' | sed 's/^/"./' | sed 's/$/", /' | tr '\n' ' ')
+
+# Если есть индексированные файлы, запускаем ESLint и Prettier
+if [ -n "$indexed_files" ]; then
+  echo "Running ESLint and Prettier on staged files..."
+  npx eslint --fix $indexed_files
+  npx prettier --write $indexed_files
+  # Добавляем исправленные файлы обратно в индекс
+  git add $indexed_files
+fi
