@@ -1,0 +1,90 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 984B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 611B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [deps 1/4] FROM docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda2001821f2c2400252b6cb61044bd9f9ad48
+#5 resolve docker.io/library/node:20-alpine@sha256:1ab6fc5a31d515dc7b6b25f6acfda2001821f2c2400252b6cb61044bd9f9ad48 0.0s done
+#5 DONE 0.0s
+
+#6 [deps 2/4] WORKDIR /app
+#6 CACHED
+
+#7 [internal] load build context
+#7 transferring context: 1.33MB 0.5s done
+#7 DONE 0.5s
+
+#8 [deps 3/4] COPY package*.json ./
+#8 CACHED
+
+#9 [deps 4/4] RUN npm ci
+#9 0.503 npm error code EUSAGE
+#9 0.504 npm error
+#9 0.504 npm error The `npm ci` command can only install with an existing package-lock.json or
+#9 0.504 npm error npm-shrinkwrap.json with lockfileVersion >= 1. Run an install with npm@5 or
+#9 0.504 npm error later to generate a package-lock.json file, then try again.
+#9 0.504 npm error
+#9 0.504 npm error Clean install a project
+#9 0.504 npm error
+#9 0.504 npm error Usage:
+#9 0.504 npm error npm ci
+#9 0.504 npm error
+#9 0.504 npm error Options:
+#9 0.504 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#9 0.504 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#9 0.504 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#9 0.504 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#9 0.504 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#9 0.504 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#9 0.504 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+#9 0.504 npm error
+#9 0.504 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#9 0.504 npm error
+#9 0.504 npm error Run "npm help ci" for more info
+#9 0.505 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-10-20T04_10_43_191Z-debug-0.log
+#9 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+------
+ > [deps 4/4] RUN npm ci:
+0.504 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+0.504 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+0.504 npm error [--no-bin-links] [--no-fund] [--dry-run]
+0.504 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+0.504 npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+0.504 npm error
+0.504 npm error aliases: clean-install, ic, install-clean, isntall-clean
+0.504 npm error
+0.504 npm error Run "npm help ci" for more info
+0.505 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-10-20T04_10_43_191Z-debug-0.log
+------
+Dockerfile:4
+
+--------------------
+
+   2 |     WORKDIR /app
+
+   3 |     COPY package*.json ./
+
+   4 | >>> RUN npm ci
+
+   5 |     
+
+   6 |     FROM node:20-alpine AS builder
+
+--------------------
+
+failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+
+
+
+View build details: docker-desktop://dashboard/build/default/default/aqdu4umg04rwhaq5n99z91j0a
+

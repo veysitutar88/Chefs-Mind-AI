@@ -1,0 +1,42 @@
+* Host localhost:5001 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:5001...
+* Established connection to localhost (::1 port 5001) from ::1 port 65253 
+* using HTTP/1.x
+> GET /health HTTP/1.1
+
+> Host: localhost:5001
+
+> User-Agent: curl/8.16.0
+
+> Accept: */*
+
+> 
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+
+< X-Powered-By: Express
+
+< Cache-Control: no-store
+
+< Pragma: no-cache
+
+< Content-Type: text/plain; charset=utf-8
+
+< Content-Length: 2
+
+< ETag: W/"2-eoX0dku9ba8cNUXvu/DyeabcC+s"
+
+< Date: Tue, 21 Oct 2025 00:57:14 GMT
+
+< Connection: keep-alive
+
+< Keep-Alive: timeout=5
+
+< 
+
+{ [2 bytes data]
+* Connection #0 to host localhost:5001 left intact
+ok

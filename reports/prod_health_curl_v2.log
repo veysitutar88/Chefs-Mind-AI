@@ -1,0 +1,30 @@
+* Host localhost:5001 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:5001...
+* Established connection to localhost (::1 port 5001) from ::1 port 64580 
+* using HTTP/1.x
+> GET /health HTTP/1.1
+> Host: localhost:5001
+> User-Agent: curl/8.16.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< X-Powered-By: Express
+< Vary: Origin
+< Access-Control-Allow-Credentials: true
+< X-Request-ID: zumTVb73pn
+< Accept-Ranges: bytes
+< Cache-Control: public, max-age=0
+< Last-Modified: Mon, 20 Oct 2025 20:31:44 GMT
+< ETag: W/"55-19a03521bb6"
+< Content-Type: text/html; charset=UTF-8
+< Content-Length: 85
+< Date: Mon, 20 Oct 2025 20:32:21 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< 
+{ [85 bytes data]
+* Connection #0 to host localhost:5001 left intact
+<html><body><h1>Chefs Mind AI Backend</h1><p>API Server is running</p></body></html>

@@ -1,0 +1,27 @@
+backend-1   | 📅 Backup scheduler started. Daily backups scheduled for 03:00 UTC
+backend-1   | [dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+backend-1   | Warning: connect.session() MemoryStore is not
+frontend-1  | 
+frontend-1  | > chefs-mind-ai-enhanced@2.0.0 start
+frontend-1  | > next start -p 3000
+frontend-1  | 
+frontend-1  |    ▲ Next.js 15.5.6
+frontend-1  |    - Local:        http://localhost:3000
+frontend-1  |    - Network:      http://172.18.0.2:3000
+frontend-1  | 
+frontend-1  |  ✓ Starting...
+frontend-1  |  ✓ Ready in 801ms
+backend-1   | designed for a production environment, as it will leak
+backend-1   | memory, and will not scale past a single process.
+backend-1   | [dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+backend-1   | DATABASE_URL loaded: YES
+backend-1   | DATABASE_URL length: 45
+backend-1   | 12:42:45 AM [health] [36m[INFO][0m [Health] Mounted /health
+backend-1   | Warning: connect.session() MemoryStore is not
+backend-1   | designed for a production environment, as it will leak
+backend-1   | memory, and will not scale past a single process.
+backend-1   | Tue, 21 Oct 2025 00:42:45 GMT express-session deprecated req.secret; provide secret option at file:/app/dist/server/auth.js:33:13
+backend-1   | 12:42:45 AM [server] [36m[INFO][0m Production mode: mounting static file server
+backend-1   | 12:42:45 AM [express] [36m[INFO][0m [Static] Serving static files from: /app/public
+backend-1   | 12:42:45 AM [server] [36m[INFO][0m Static file server mounted from server/public
+backend-1   | 12:42:45 AM [express] [36m[INFO][0m Server running on port 5000 in production mode
