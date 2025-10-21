@@ -1,6 +1,16 @@
 // Load environment variables FIRST before any other imports
 import dotenv from 'dotenv';
-dotenv.config();
+import { log } from "./utils/log";
+
+// Determine the environment and load the appropriate .env file
+const env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+if (env === 'production') {
+  dotenv.config({ path: './.env.production' });
+} else {
+  dotenv.config(); // Loads .env by default
+}
+
+log(`[env] NODE_ENV=${env}, dotenv_file=${env === 'production' ? '.env.production' : '.env'}`, 'info', 'server');
 
 console.log('DATABASE_URL loaded:', process.env.DATABASE_URL ? 'YES' : 'NO');
 console.log('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
@@ -8,7 +18,6 @@ console.log('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import session from "express-session";
-import { log } from "./utils/log";
 import { mountStatic } from "./utils/static";
 import { requestIdMiddleware, errorHandler } from "./middleware/errorHandler";
 import "./services/backupScheduler"; // Import to start the backup scheduler
@@ -27,12 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(requestIdMiddleware);
 
-// Session middleware (required for Google OAuth)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev_secret',
-  resave: false,
-  saveUninitialized: false
-}));
+// Session middleware is now configured in server/auth.ts via buildSession
 
 (async () => {
   // Create server BEFORE using it in setupVite
@@ -43,7 +47,7 @@ app.use(session({
   mountMetrics(app);
 
   // Register routes (this now only sets up routes, doesn't create server)
-  registerRoutes(app);
+  await registerRoutes(app);
 
   // Setup frontend serving: Dev (Vite) vs Production (static)
   const isDev = process.env.NODE_ENV !== 'production';

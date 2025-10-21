@@ -8,13 +8,13 @@ import dbadminRouter from "./routes/dbadmin";
 import enhancedAgentChatRouter from "./routes/enhanced-agent-chat";
 import agentChatRouter from "./routes/agent-chat";
 import smokeHelpersRouter from "./routes/smoke-helpers";
-
-export function registerRoutes(app: Express) {
-  // Setup authentication routes
-  setupAuth(app);
-  
-  // Health check endpoint - no auth required
-  app.get("/api/health", async (req: Request, res: Response) => {
+ 
+ export async function registerRoutes(app: Express) { // Сделаем функцию асинхронной
+   // Setup authentication routes
+   await setupAuth(app); // Дождемся завершения настройки аутентификации
+   
+   // Health check endpoint - no auth required
+   app.get("/api/health", async (req: Request, res: Response) => {
     res.json({ ok: true, ts: Date.now() });
   });
 

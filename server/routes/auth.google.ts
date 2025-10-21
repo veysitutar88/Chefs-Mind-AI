@@ -5,8 +5,7 @@ import { listCalendars, createDoc, createSheet, listSpreadsheets } from "../serv
 
 const r = Router();
 
-// session middleware (в app.ts тоже подключим, если ещё не подключено)
-r.use(session({ secret: process.env.SESSION_SECRET || "dev_secret", resave:false, saveUninitialized:false }));
+// session middleware теперь подключается глобально в auth.ts
 
 // старт авторизации (для совместимости с smoke)
 r.get("/login", (_req, res) => {

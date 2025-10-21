@@ -2,19 +2,52 @@ name: chefs-mind-ai
 services:
   backend:
     build:
-      context: C:\Projects\Chefs-Mind-AI
+      context: c:\Projects\Chefs-Mind-AI
       dockerfile: Dockerfile
     command:
       - node
       - dist/server/index.js
     environment:
-      CORS_ORIGIN: http://localhost:3000
-      DATABASE_URL: postgresql://user:password@host:port/database
-      NEXT_PUBLIC_API_URL: http://localhost:5001
+      API_BASE_URL: http://localhost:5002
+      CONFIRM_CODE: 2UU6QXBH9Q52OOP7
+      CORS_ORIGIN: ""
+      DATABASE_URL: postgresql://neondb_owner:npg_bSP12pmUnDIo@ep-fragrant-tree-agk3qhvl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require&keepalive=true&statement_timeout=5000
+      DEBUG: chefs-mind:*
+      DEFAULT_MODEL: gpt-4-turbo-preview
+      ENABLE_CROSS_VALIDATION: "true"
+      ENABLE_GOOGLE_MCP: "true"
+      ENABLE_HALLUCINATION_CONTROL: "true"
+      ENABLE_MEDIA_GENERATION: "true"
+      ENABLE_MEDIA_STREAMING: "false"
+      ENABLE_PROMPT_ENHANCEMENT: "true"
+      FALLBACK_MODEL: gemini-2.0-flash-exp
+      FRONTEND_URL: http://localhost:3000
+      GOOGLE_API_KEY: AIzaSyCy1VCav2CT8IRiaZBdsWc8nvf107hKXNg
+      GOOGLE_AUTH_SMOKE_BYPASS: "1"
+      GOOGLE_CLIENT_ID: your-google-client-id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+      GOOGLE_REDIRECT_URI: http://localhost:5002/auth/google/callback
+      GOOGLE_SCOPES: https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: your-service-account@your-project.iam.gserviceaccount.com
+      GOOGLE_SERVICE_ACCOUNT_KEY: ./google-service-account.json
+      GOOGLE_VERTEX_API_KEY: AQ.Ab8RN6KVpu9Fd-Tuiq3XLe5JfmYHTDKWiMgkJhwJ21CwGOJOyQ
+      JWT_SECRET: 5c08da6a3b0e9f4867b39ea9d5b60d3769edabd936dcfdb63268a7f12120e2f1bdd3fa7d3debcfeb0bf75feff08e27f902a0a150c3da94fb807e5418d0551ad8
+      LOG_FILE: ./logs/app.log
+      LOG_LEVEL: info
       NODE_ENV: production
+      OPENAI_API_KEY: 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
+      PERPLEXITY_API_KEY: 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
       PORT: "5000"
-      RATE_LIMIT: "100"
+      PROMPT_ENHANCER_MODEL: gpt-4-turbo-preview
+      QUALITY_CHECK_MODEL: gpt-4-turbo-preview
+      RATE_LIMIT: ""
+      RATE_LIMIT_MAX_REQUESTS: "100"
+      RATE_LIMIT_WINDOW_MS: "900000"
+      SAFE_MODE: "1"
       SESSION_COOKIE_SECURE: "true"
+      SESSION_SECRET: f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0
+      VERTEX_LOCATION: us-central1
+      VERTEX_PROJECT_ID: fourth-dynamo-466917-s3fourth-dynamo-466917-s3
     networks:
       default: null
     ports:
@@ -25,20 +58,50 @@ services:
     restart: unless-stopped
   frontend:
     build:
-      context: C:\Projects\Chefs-Mind-AI\frontend-enhanced
+      context: c:\Projects\Chefs-Mind-AI\frontend-enhanced
       dockerfile: Dockerfile
     command:
       - npm
       - run
       - start
     environment:
-      CORS_ORIGIN: http://localhost:3000
-      DATABASE_URL: postgresql://user:password@host:port/database
-      NEXT_PUBLIC_API_URL: http://localhost:5001
+      API_BASE_URL: http://localhost:5002
+      CONFIRM_CODE: 2UU6QXBH9Q52OOP7
+      DATABASE_URL: postgresql://neondb_owner:npg_bSP12pmUnDIo@ep-fragrant-tree-agk3qhvl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require&keepalive=true&statement_timeout=5000
+      DEBUG: chefs-mind:*
+      DEFAULT_MODEL: gpt-4-turbo-preview
+      ENABLE_CROSS_VALIDATION: "true"
+      ENABLE_GOOGLE_MCP: "true"
+      ENABLE_HALLUCINATION_CONTROL: "true"
+      ENABLE_MEDIA_GENERATION: "true"
+      ENABLE_MEDIA_STREAMING: "false"
+      ENABLE_PROMPT_ENHANCEMENT: "true"
+      FALLBACK_MODEL: gemini-2.0-flash-exp
+      FRONTEND_URL: http://localhost:3000
+      GOOGLE_API_KEY: AIzaSyCy1VCav2CT8IRiaZBdsWc8nvf107hKXNg
+      GOOGLE_AUTH_SMOKE_BYPASS: "1"
+      GOOGLE_CLIENT_ID: your-google-client-id.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+      GOOGLE_REDIRECT_URI: http://localhost:5002/auth/google/callback
+      GOOGLE_SCOPES: https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: your-service-account@your-project.iam.gserviceaccount.com
+      GOOGLE_SERVICE_ACCOUNT_KEY: ./google-service-account.json
+      GOOGLE_VERTEX_API_KEY: AQ.Ab8RN6KVpu9Fd-Tuiq3XLe5JfmYHTDKWiMgkJhwJ21CwGOJOyQ
+      JWT_SECRET: 5c08da6a3b0e9f4867b39ea9d5b60d3769edabd936dcfdb63268a7f12120e2f1bdd3fa7d3debcfeb0bf75feff08e27f902a0a150c3da94fb807e5418d0551ad8
+      LOG_FILE: ./logs/app.log
+      LOG_LEVEL: info
+      NEXT_PUBLIC_API_URL: ""
       NODE_ENV: production
-      PORT: "5000"
-      RATE_LIMIT: "100"
-      SESSION_COOKIE_SECURE: "true"
+      OPENAI_API_KEY: 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
+      PERPLEXITY_API_KEY: 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
+      PROMPT_ENHANCER_MODEL: gpt-4-turbo-preview
+      QUALITY_CHECK_MODEL: gpt-4-turbo-preview
+      RATE_LIMIT_MAX_REQUESTS: "100"
+      RATE_LIMIT_WINDOW_MS: "900000"
+      SAFE_MODE: "1"
+      SESSION_SECRET: f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0
+      VERTEX_LOCATION: us-central1
+      VERTEX_PROJECT_ID: fourth-dynamo-466917-s3fourth-dynamo-466917-s3
     networks:
       default: null
     ports:

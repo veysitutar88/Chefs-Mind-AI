@@ -44,3 +44,7 @@ router.post("/api/agent/accountant/calendar", requireWriteConfirm, ensureAuthed,
 });
 
 export default router;
+router.get('/smoke/session-cookie', (req, res) => {
+  req.session.smokeTs = Date.now();
+  res.json({ ok: true });
+});

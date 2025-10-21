@@ -1,10 +1,11 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
-import session from "express-session";
+import type { Express } from "express";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
+import { storage } from "./storage"; // Для работы с пользователями, не с сессиями
+import {buildSession} from './session';
+import { log } from "./utils/log";
 import { User as SelectUser } from "@shared/schema";
 import { requireWriteConfirm } from "./middleware/safeMode";
 import { generateToken, sanitizeUser } from "./utils/jwt";
@@ -34,29 +35,26 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 минут
 const scryptAsync = promisify(scrypt);
 
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+ const salt = randomBytes(16).toString("hex");
+ const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+ return `${buf.toString("hex")}.${salt}`;
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+ const [hashed, salt] = stored.split(".");
+ const hashedBuf = Buffer.from(hashed, "hex");
+ const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+ return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-export function setupAuth(app: Express) {
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    store: storage.sessionStore,
-  };
+export async function setupAuth(app: Express) { // Сделаем функцию асинхронной
+ const env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+ const sessionMiddleware = await buildSession(env); // Используем нашу фабрику
 
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
-  app.use(passport.initialize());
+ app.set("trust proxy", 1);
+ log(`[session] trust_proxy=1, env=${env}`, 'info', 'session');
+ app.use(sessionMiddleware); // Подключаем полученный middleware
+ app.use(passport.initialize());
   app.use(passport.session());
   app.use(jwtAuthMiddleware);
 
