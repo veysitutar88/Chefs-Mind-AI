@@ -526,3 +526,96 @@ npx tsc --noEmit
 
 **Последнее обновление:** 2025-10-27  
 **Автор:** Chef's Mind AI Team
+
+## Production Monitoring с Prometheus
+
+Данный проект включает готовую конфигурацию Prometheus для прод‑наблюдаемости backend сервиса.
+
+### Доступ к дашборду
+- URL по умолчанию: http://localhost:9090
+- Сервис Prometheus поднимается через Docker Compose из файла [`docker-compose.prod.yml`](docker-compose.prod.yml:1)
+- Конфигурация Prometheus находится в [`prometheus/prometheus.yml`](prometheus/prometheus.yml:1)
+
+### Как запустить
+```bash
+# Запуск backend, БД и Prometheus
+docker-compose -f docker-compose.prod.yml up -d backend db prometheus
+
+# Проверить статус контейнеров
+docker-compose -f docker-compose.prod.yml ps
+```
+
+### Конфигурация scrape
+Текущая конфигурация собирает метрики:
+- job_name: backend → таргет backend:5000, путь /metrics
+- job_name: prometheus → сам Prometheus на localhost:9090
+
+Фрагмент [`prometheus/prometheus.yml`](prometheus/prometheus.yml:1):
+```yaml
+scrape_configs:
+  - job_name: backend
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend:5000"]
+        labels:
+          service: backend
+          env: prod
+```
+
+Backend экспортирует HTTP‑метрики через prom-client в эндпоинт /metrics (регистрируется в приложении, см. [`server/index.ts`](server/index.ts:55)). Убедитесь, что сервис backend работает и доступен внутри сети Compose под именем backend:5000.
+
+### Быстрая проверка
+1. Откройте Prometheus Targets:
+   - http://localhost:9090/targets
+   - Ожидайте статус UP для таргета backend.
+2. Выполните запрос в PromQL на графе:
+   - Запрос RPS: `sum(rate(http_requests_total[1m]))`
+   - Ошибки 5xx: `sum by (status)(rate(http_requests_total{status=~"5.."}[5m]))`
+   - Латентность p95: сначала соберите histogram_quantile с длительностью запросов, например:
+     ```
+     histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route))
+     ```
+     Подставьте метки по вашей схеме метрик.
+
+Примечание: точные имена метрик зависят от того, как они объявлены в middleware метрик. Ищите названия в файле метрик сервера и/или выполните raw просмотр:
+- http://localhost:5001/metrics (из хоста)
+- либо через Prometheus UI → /graph → введите `http_` и изучите автодополнение
+
+### Интерпретация ключевых метрик
+- Доступность таргета:
+  - Если статус DOWN → проверьте, что backend запущен и доступен в сети Compose, а также что в Prometheus верно указан таргет backend:5000.
+- Пропускная способность (RPS):
+  - `sum(rate(http_requests_total[1m]))` — общий трафик за минуту.
+  - Разбейте по маршрутам/статусам, если метрики снабжены соответствующими лейблами.
+- Ошибки:
+  - Доля 5xx: `sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))`
+  - Рост доли 5xx → триггер для расследования и алертов.
+- Латентность:
+  - p95/p99 по маршрутам через histogram_quantile.
+  - Увеличение p95 → индикатор деградации производительности.
+
+### Траблшутинг
+- Таргет не поднимается:
+  - Проверьте логи Prometheus:
+    ```bash
+    docker-compose -f docker-compose.prod.yml logs -f prometheus
+    ```
+  - Убедитесь, что backend слушает на 5000 внутри контейнера и доступен по имени backend в сети Compose.
+- В /metrics пусто или ошибки:
+  - Проверьте серверные логи backend:
+    ```bash
+    docker-compose -f docker-compose.prod.yml logs -f backend
+    ```
+  - Убедитесь, что метрики включены в приложении и middleware метрик подключено.
+- Конфиг не применяется:
+  - Изменили [`prometheus/prometheus.yml`](prometheus/prometheus.yml:1)? Перезапустите сервис:
+    ```bash
+    docker-compose -f docker-compose.prod.yml restart prometheus
+    ```
+
+### Операционные рекомендации
+- Ретеншн исторических данных по умолчанию в Compose настроен на 15d.
+- Для прод окружений рекомендуются:
+  - Внешний volume для Prometheus data
+  - Алертинг (Alertmanager) и дашборды (Grafana)
+  - Базовые алерты: p95 latency, 5xx rate, UP/DOWN таргетов
