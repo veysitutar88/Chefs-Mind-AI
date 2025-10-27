@@ -13,3 +13,7 @@ tmp/
 /data
 postgres_data/
 checkpoint_$(date
+frontend-enhanced/.next/
+playwright-report/
+test-results/
+frontend-enhanced/.next/
