@@ -12,3 +12,4 @@ tmp/
 # Local database data
 /data
 postgres_data/
+checkpoint_$(date

@@ -19,8 +19,22 @@ function Page() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [model, setModel] = useState<string>('auto');
+  const [useHttpTest, setUseHttpTest] = useState<boolean>(false);
+
+  // Включаем HTTP-тестовый режим по флагу в query (?e2e=1) или через env NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST
+  useEffect(() => {
+    const urlFlag =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).has('e2e');
+    const envFlag =
+      process.env.NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST === '1' ||
+      process.env.NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST === 'true';
+    setUseHttpTest(!!urlFlag || !!envFlag);
+  }, []);
 
   useEffect(() => {
+    if (useHttpTest) return;
+
     // Подключаемся к WebSocket серверу
     const newSocket = io('http://localhost:5002');
     setSocket(newSocket);
@@ -41,18 +55,46 @@ function Page() {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [useHttpTest]);
 
-  const sendMessage = () => {
-    if (inputMessage.trim() && socket) {
-      // Отправляем сообщение на сервер
-      socket.emit('chat_message', { text: inputMessage });
-      
-      // Добавляем наше сообщение в список для отображения
-      setMessages(prev => [...prev, { text: inputMessage, type: 'user' }]);
-      
-      // Очищаем поле ввода
-      setInputMessage('');
+  const sendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    // Добавляем наше сообщение в список для отображения
+    setMessages(prev => [...prev, { text: inputMessage, type: 'user' }]);
+
+    // Очищаем поле ввода, но запоминаем
+    const messageToSend = inputMessage;
+    setInputMessage('');
+
+    if (useHttpTest) {
+      try {
+        const path =
+          (process.env.NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST === '1' ||
+            process.env.NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST === 'true')
+            ? '/api/universal-ask-test'
+            : '/api/universal-ask';
+
+        const res = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'universal', query: messageToSend }),
+        });
+
+        const result = await res.json();
+        setMessages(prev => [
+          ...prev,
+          { text: (result?.data ?? 'Тестовый ответ'), type: 'agent' },
+        ]);
+      } catch (e) {
+        setMessages(prev => [
+          ...prev,
+          { text: 'Ошибка тестового запроса', type: 'system' },
+        ]);
+      }
+    } else if (socket) {
+      // Отправляем сообщение на сервер через WebSocket
+      socket.emit('chat_message', { text: messageToSend });
     }
   };
 

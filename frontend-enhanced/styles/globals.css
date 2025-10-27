@@ -4,9 +4,151 @@
 
 @layer base {
   * {
-    @apply border-gray-200;
+    @apply border-chef-silver/20;
   }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-chef-pearl text-chef-black font-modern antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Fine Dining typography improvements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-fine tracking-wide;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+  
+  h1 {
+    @apply text-4xl mb-6 text-chef-black;
+    font-weight: 200;
+  }
+  
+  h2 {
+    @apply text-3xl mb-4 text-chef-gray;
+    font-weight: 250;
+  }
+  
+  h3 {
+    @apply text-2xl mb-3 text-chef-gray;
+    font-weight: 300;
+  }
+  
+  /* Elegant form styling */
+  input, textarea, select {
+    @apply bg-chef-cream border-chef-silver/30 rounded-fine px-4 py-3;
+    @apply focus:outline-none focus:ring-2 focus:ring-chef-gold/50 focus:border-chef-gold;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Premium button styling */
+  button {
+    @apply rounded-fine px-6 py-3 font-medium transition-all duration-200;
+    @apply hover:shadow-elegant active:scale-95;
+  }
+  
+  /* Elegant scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-chef-pearl;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-chef-silver/40 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-chef-silver/60;
+  }
+}
+
+@layer components {
+  /* Fine Dining card component */
+  .card-fine {
+    @apply bg-chef-cream border border-chef-silver/20 rounded-lg shadow-fine;
+    @apply hover:shadow-elegant transition-shadow duration-300;
+  }
+  
+  /* Premium gradient backgrounds */
+  .bg-gradient-fine {
+    background: linear-gradient(135deg, #faf8f3 0%, #f8f6f0 100%);
+  }
+  
+  .bg-gradient-luxury {
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+  }
+  
+  /* Elegant status indicators */
+  .status-loading {
+    @apply bg-chef-blue/10 text-chef-blue border-chef-blue/20;
+  }
+  
+  .status-success {
+    @apply bg-green-50 text-green-800 border-green-200;
+  }
+  
+  .status-error {
+    @apply bg-red-50 text-red-800 border-red-200;
+  }
+  
+  /* Skeleton loader animation */
+  .skeleton-fine {
+    @apply bg-gradient-to-r from-chef-silver/20 via-chef-silver/10 to-chef-silver/20;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  /* Elegant transitions */
+  .transition-fine {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Premium focus states */
+  .focus-fine:focus {
+    @apply outline-none ring-2 ring-chef-gold/50 ring-offset-2 ring-offset-chef-pearl;
+  }
+}
+
+@layer utilities {
+  /* Text shadow for elegance */
+  .text-shadow-fine {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Elegant glass effect */
+  .glass-fine {
+    @apply bg-chef-cream/80 backdrop-blur-sm border border-chef-silver/20;
+  }
+  
+  /* Luxury spacing utilities */
+  .space-fine {
+    @apply p-8 md:p-12;
+  }
+  
+  /* Premium borders */
+  .border-fine {
+    @apply border border-chef-silver/30;
+  }
+  
+  /* Elegant hover states */
+  .hover-lift:hover {
+    @apply transform -translate-y-1 shadow-elegant;
   }
 }

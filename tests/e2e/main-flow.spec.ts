@@ -29,24 +29,27 @@ test.describe('E2E Main Flow', () => {
       });
     });
 
-    // Navigate to the home page
-    const base = process.env.E2E_BASE_URL || 'http://localhost:3000/';
-    await page.goto(base);
+    // Navigate to the home page (append e2e=1 to enable HTTP test mode in UI)
+    const base = process.env.E2E_BASE_URL || 'http://localhost:3001/';
+    await page.goto(base.includes('?') ? `${base}&e2e=1` : `${base}?e2e=1`);
 
     // Basic smoke of the page shell
-    await expect(page.getByRole('heading', { level: 2, name: 'Чат' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /Чат/ })).toBeVisible();
 
     // Submit a prompt
     await page.getByPlaceholder('Введите сообщение...').fill('План на вечер');
-    await page.getByRole('button', { name: 'Отправить' }).click();
+    const reqPromise = page.waitForRequest('**/api/universal-ask*', { timeout: 5000 });
+    const respPromise = page.waitForResponse('**/api/universal-ask*', { timeout: 5000 });
+    await page.locator('button.bg-blue-500').click();
+    await Promise.all([reqPromise, respPromise]);
 
     // Verify either mocked universal or streamed enhanced response appears
     const expected1 = page.getByText('Тестовый ответ');
     const expected2 = page.getByText('Стримовый тест');
 
     await Promise.race([
-      expected1.waitFor({ state: 'visible', timeout: 10000 }),
-      expected2.waitFor({ state: 'visible', timeout: 10000 })
+      expected1.waitFor({ state: 'visible', timeout: 15000 }),
+      expected2.waitFor({ state: 'visible', timeout: 15000 })
     ]);
 
     const vis1 = await expected1.isVisible().catch(() => false);

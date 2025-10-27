@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
 import StatusIndicator from "./ui/StatusIndicator.tsx";
+import SkeletonLoader from "./ui/SkeletonLoader.tsx";
 
 type Status = 'calling' | 'ok' | 'timeout' | 'fallback' | 'error';
 
@@ -243,7 +244,7 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
             <div className="text-sm text-gray-500">
               {new Date().toLocaleTimeString()}
             </div>
-            <div>Агент печатает...</div>
+            <SkeletonLoader lines={2} className="mt-1" />
           </div>
         )}
         
