@@ -1,3 +1,0 @@
-NAME                       IMAGE                    COMMAND                  SERVICE    CREATED       STATUS       PORTS
-chefs-mind-ai-backend-1    chefs-mind-ai-backend    "docker-entrypoint.s…"   backend    2 hours ago   Up 2 hours   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp
-chefs-mind-ai-frontend-1   chefs-mind-ai-frontend   "docker-entrypoint.s…"   frontend   2 hours ago   Up 2 hours   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp

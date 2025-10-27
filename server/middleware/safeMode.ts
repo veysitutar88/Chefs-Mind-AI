@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from "express";
  * Применяем на всех маршрутах, которые меняют БД/файлы.
  */
 export function requireWriteConfirm(req: Request, res: Response, next: NextFunction) {
-  const safe = (process.env.SAFE_MODE || "off").toLowerCase() === "on";
+  const safe = (process.env.SAFE_MODE || "on").toLowerCase() === "on";
   if (!safe) return next();
   const code = process.env.CONFIRM_CODE || "";
   const provided = req.header("x-confirm-code") || req.body?.confirm_code || req.query?.confirm_code;
@@ -17,8 +17,7 @@ export function requireWriteConfirm(req: Request, res: Response, next: NextFunct
       success: false,
       error: "Write operation requires confirmation",
       how_to_confirm: "Add header X-Confirm-Code: <CONFIRM_CODE>",
-      detail: "SAFE_MODE is ON. Reads are allowed, writes require confirmation.",
-      requestId: req.requestId
+      detail: "SAFE_MODE is ON. Reads are allowed, writes require confirmation."
     });
   }
   return next();

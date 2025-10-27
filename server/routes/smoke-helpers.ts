@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { authStatus, ensureAuthed } from "../auth/google";
-import { requireWriteConfirm } from "../middleware/safeMode";
-import { createCalendarEvent } from "../services/google-mcp";
+import { authStatus, ensureAuthed } from "../auth/google.js";
+import { requireWriteConfirm } from "../middleware/safeMode.js";
+import { createCalendarEvent } from "../services/google-mcp.js";
 
 const router = Router();
 
@@ -45,6 +45,6 @@ router.post("/api/agent/accountant/calendar", requireWriteConfirm, ensureAuthed,
 
 export default router;
 router.get('/smoke/session-cookie', (req, res) => {
-  req.session.smokeTs = Date.now();
+  (req.session as any).smokeTs = Date.now();
   res.json({ ok: true });
 });

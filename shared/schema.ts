@@ -160,6 +160,71 @@ export const agentSettings = pgTable("agent_settings", {
   agentTypeIdx: index("agent_settings_agent_type_idx").on(table.agentType),
 }));
 
+export const suppliers = pgTable("suppliers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  contact_info: jsonb("contact_info"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const orders = pgTable("orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customer_id: varchar("customer_id").references(() => users.id),
+  order_date: timestamp("order_date").defaultNow(),
+  status: text("status").notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }),
+  items: jsonb("items"),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("orders_customer_id_idx").on(table.customer_id),
+  statusIdx: index("orders_status_idx").on(table.status),
+}));
+
+export const purchase_orders = pgTable("purchase_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplier_id: varchar("supplier_id").references(() => suppliers.id),
+  order_date: timestamp("order_date").defaultNow(),
+  delivery_date: timestamp("delivery_date"),
+  status: text("status").notNull(),
+  items: jsonb("items"),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  supplierIdIdx: index("po_supplier_id_idx").on(table.supplier_id),
+  statusIdx: index("po_status_idx").on(table.status),
+}));
+
+export const attachments = pgTable("attachments", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(), // e.g., 'invoice', 'recipe'
+    entity_id: varchar("entity_id").notNull(),
+    file_id: varchar("file_id").references(() => uploads.id),
+    created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+    entityIdx: index("attachments_entity_idx").on(table.entity_type, table.entity_id),
+}));
+
+export const notes = pgTable("notes", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(), // e.g., 'customer', 'order'
+    entity_id: varchar("entity_id").notNull(),
+    user_id: varchar("user_id").references(() => users.id),
+    content: text("content").notNull(),
+    created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+    entityIdx: index("notes_entity_idx").on(table.entity_type, table.entity_id),
+}));
+
+export const calendar_links = pgTable("calendar_links", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(),
+    entity_id: varchar("entity_id").notNull(),
+    google_event_id: text("google_event_id"),
+    event_date: timestamp("event_date"),
+    reminder_24h: boolean("reminder_24h").default(false),
+    reminder_1h: boolean("reminder_1h").default(false),
+    created_at: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -248,3 +313,43 @@ export type Invoice = typeof invoices.$inferSelect;
 export type InsertAgentSettings = z.infer<typeof insertAgentSettingsSchema>;
 export type UpdateAgentSettings = z.infer<typeof updateAgentSettingsSchema>;
 export type AgentSettings = typeof agentSettings.$inferSelect;
+
+
+export const insertSupplierSchema = createInsertSchema(suppliers).omit({
+  id: true,
+  created_at: true,
+});
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  created_at: true,
+});
+export const insertPurchaseOrderSchema = createInsertSchema(purchase_orders).omit({
+  id: true,
+  created_at: true,
+});
+export const insertAttachmentSchema = createInsertSchema(attachments).omit({
+  id: true,
+  created_at: true,
+});
+export const insertNoteSchema = createInsertSchema(notes).omit({
+  id: true,
+  created_at: true,
+});
+export const insertCalendarLinkSchema = createInsertSchema(calendar_links).omit({
+  id: true,
+  created_at: true,
+});
+
+
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type PurchaseOrder = typeof purchase_orders.$inferSelect;
+export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type Attachment = typeof attachments.$inferSelect;
+export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
+export type Note = typeof notes.$inferSelect;
+export type InsertNote = z.infer<typeof insertNoteSchema>;
+export type CalendarLink = typeof calendar_links.$inferSelect;
+export type InsertCalendarLink = z.infer<typeof insertCalendarLinkSchema>;

@@ -8,3 +8,7 @@ checkpoints/
 logs/
 tmp/
 *.zip
+
+# Local database data
+/data
+postgres_data/

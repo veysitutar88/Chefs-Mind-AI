@@ -1,15 +1,20 @@
 const http = require('http');
 const https = require('https');
 
-const baseUrl = 'http://localhost:5000';
+const baseUrl = 'http://localhost:5001';
 const roles = ['admin', 'chef', 'accountant'];
 const endpoints = [
   { method: 'POST', path: '/api/db/backup', headers: { 'X-Confirm-Code': 'yes' } },
   { method: 'POST', path: '/api/db/restore' },
+  { method: 'GET', path: '/api/db/backups' },
+  // Calendar endpoints
+  { method: 'POST', path: '/api/calendar/payment', headers: { 'X-Confirm-Code': 'yes' } },
+  { method: 'POST', path: '/api/calendar/delivery', headers: { 'X-Confirm-Code': 'yes' } },
+  { method: 'POST', path: '/api/calendar/followup', headers: { 'X-Confirm-Code': 'yes' } },
   // Media will be selected below
 ];
-const mediaCandidates = ['/api/media/ping', '/api/media/providers', '/api/media/status', '/api/media'];
 
+const mediaCandidates = ['/api/media/ping', '/api/media/providers', '/api/media/status', '/api/media'];
 async function getToken(role) {
   return new Promise((resolve) => {
     const url = `${baseUrl}/safe/dev-token?role=${role}`;
@@ -105,17 +110,32 @@ async function main() {
     for (const endpoint of endpoints) {
       const { status, latency } = await testEndpoint(endpoint.method, endpoint.path, token, endpoint.headers);
       const allow = typeof status === 'number' && status >= 200 && status < 300;
+      
+      // Special handling for calendar endpoints - only admin should have access
+      let expectedAllow = allow;
+      if (endpoint.path.startsWith('/api/calendar/') && role !== 'admin') {
+        expectedAllow = false; // Non-admin roles should be denied access to calendar
+      }
+      
       results.push({
         role,
         method: endpoint.method,
         path: endpoint.path,
         status: typeof status === 'number' ? status : 0,
-        allow,
-        latency_ms: latency
+        allow: expectedAllow,
+        actual_allow: allow,
+        latency_ms: latency,
+        rbac_correct: expectedAllow === allow
       });
     }
   }
 
+  // Calculate summary statistics
+  const totalTests = results.length;
+  const passedTests = results.filter(r => r.rbac_correct).length;
+  const failedTests = totalTests - passedTests;
+  const avgLatency = Math.round(results.reduce((sum, r) => sum + r.latency_ms, 0) / totalTests);
+  
   // Write log
   const logData = {
     timestamp: new Date().toISOString(),
@@ -123,13 +143,21 @@ async function main() {
     endpoints: endpoints.map(e => ({ method: e.method, path: e.path })),
     roles,
     results,
-    problems
+    problems,
+    summary: {
+      total_tests: totalTests,
+      passed_tests: passedTests,
+      failed_tests: failedTests,
+      success_rate: Math.round((passedTests / totalTests) * 100),
+      avg_latency_ms: avgLatency
+    }
   };
 
   const fs = require('fs').promises;
   await fs.writeFile('logs/rbac_smoke_live.json', JSON.stringify(logData, null, 2));
 
-  console.log('RBAC smoke test completed. Log saved to logs/rbac_smoke_live.json');
+  console.log(`RBAC smoke test completed. Log saved to logs/rbac_smoke_live.json`);
+  console.log(`Summary: ${passedTests}/${totalTests} tests passed (${Math.round((passedTests / totalTests) * 100)}%), avg latency: ${avgLatency}ms`);
 }
 
 main().catch(console.error);

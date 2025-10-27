@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt";
-import { storage } from "../storage";
+import { verifyToken } from "../utils/jwt.js";
+import { storage } from "../storage.js";
 
 // Создаем расширенный тип пользователя с полями email и role
 interface AppUser {

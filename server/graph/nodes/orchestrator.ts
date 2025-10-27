@@ -1,5 +1,5 @@
 // server/graph/nodes/orchestrator.ts
-import type { GraphState, Agent, Plan } from "../types";
+import type { GraphState, Agent, Plan } from "../types.js";
 
 function guessAgentAndPlan(input: string): { agent: Agent; plan: Plan } {
   const t = input.toLowerCase();

@@ -1,7 +1,7 @@
 # ARCH-01: Risk Register — Chef’s Mind AI
 
-Статус: черновик v0.1  
-Дата: 2025-10-15
+Статус: обновлено v1.0
+Дата: 2025-10-26
 
 Легенда приоритета
 - P1: блокирующие/критические риски (остановка функций, безопасность, потери данных)
@@ -10,108 +10,92 @@
 
 P1 — Критические
 
-1) Повреждение узла качества и подмена заглушкой
-- Описание: Файл качества содержит бинарный мусор, а в роутере финальный узел экспортирован под видом qualityControlNode.
-- Доказательства:
-  - [server/graph/nodes/quality_control.ts](../server/graph/nodes/quality_control.ts:1-4)
-  - [server/graph/nodes/router.ts](../server/graph/nodes/router.ts:29-34)
-  - Использование в раннере: [server/graph/enhanced-graph.ts](../server/graph/enhanced-graph.ts:20-36)
-- Влияние: Возможен краш при маршрутизации в Quality, обход QA-проверок.
-- Митигации:
-  - Переписать узел качества с корректной проверкой ответа, интегрировать QA-Gate.
-  - Исправить импорт в [runEnhancedGraphOnce()](../server/graph/enhanced-graph.ts:11) и убрать временный экспорт из роутера.
-  - Покрыть smoke-тестами.
-- Владелец: Coder; Ревью: Architect; Проверка: Debugger.
+✅ **РЕШЕНО:**
 
-2) Не смонтированы критичные маршруты (импорт, админ-DDL, OAuth-тесты, enhanced-agent-chat)
-- Описание: Базовый [server/routes.ts](../server/routes.ts:6-68) не монтирует /auth/google, /api/import, /api/dbadmin, /api/enhanced-agent-chat.
-- Влияние: Недоступны OAuth-инструменты, импорт данных и DDL-применение; функциональность заблокирована.
-- Митигации:
-  - Смонтировать роутеры: [server/routes/auth.google.ts](../server/routes/auth.google.ts:1-49), [server/routes/importer.ts](../server/routes/importer.ts:1-253), [server/routes/dbadmin.ts](../server/routes/dbadmin.ts:1-110), [server/routes/enhanced-agent-chat.ts](../server/routes/enhanced-agent-chat.ts:2-255).
-  - На все write-операции навесить RBAC+SAFE.
-- Владелец: Coder; Ревью: Architect; Проверка: Debugger.
+1) ~~Повреждение узла качества и подмена заглушкой~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** [qualityControlNode()](../server/graph/nodes/quality_control.ts:3) переписан, использует последний assistant message, сохраняет результат в state.qualityCheck
+- ✅ **Интеграция:** QA-Gate корректно интегрирован в enhanced-graph поток
+- ✅ **Smoke-тесты:** Покрывают QA функциональность
 
-3) Два источника истины по БД и отсутствие миграционной консолидации
-- Описание: Drizzle-схемы и параллельный SQL DDL расходятся.
-- Доказательства:
-  - Drizzle: [shared/schema.ts](../shared/schema.ts:1-250)
-  - SQL DDL: [server/routes/dbadmin.ts](../server/routes/dbadmin.ts:8-90)
-- Влияние: Дрейф схемы, нестабильные окружения, ошибки импортов.
-- Митигации:
-  - Перенести DDL в миграции Drizzle; унифицировать схему.
-  - Настроить CI-проверку дрейфа.
-- Владелец: Architect; Исполнитель: Coder; Проверка: Debugger.
+2) ~~Не смонтированы критичные маршруты (импорт, админ-DDL, OAuth-тесты, enhanced-agent-chat)~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** Все маршруты смонтированы в [server/routes.ts](../server/routes.ts:12)
+- ✅ **Защита:** RBAC+SAFE применены на все write-эндпоинты
+- ✅ **Smoke-тесты:** RBAC smoke тесты покрывают все маршруты
 
-4) Отсутствует создание событий календаря (оплата/доставка/фоллоу-ап) и REST-слой
-- Описание: В [server/services/google-mcp.ts](../server/services/google-mcp.ts:1-31) нет createEvent; в тестовом роуте create_event Not implemented.
-- Доказательства: [server/routes/enhanced-agent-chat.ts](../server/routes/enhanced-agent-chat.ts:243-255)
-- Влияние: Невозможна автоматизация напоминаний и процессов.
-- Митигации:
-  - Реализовать createEvent (Primary календарь, напоминания -24ч/-1ч, без приглашений).
-  - Добавить POST /api/calendar/payment|delivery|followup с RBAC+SAFE.
-- Владелец: Coder; Ревью: Architect; Проверка: Debugger.
+3) ~~Два источника истины по БД и отсутствие миграционной консолидации~~
+- 🔄 **Статус:** В ПРОЦЕССЕ
+- 📋 **План:** Консолидация DDL в миграции Drizzle
+- ⚠️ **Риск:** Остается дрейф схемы между Drizzle и runtime DDL
+
+4) ~~Отсутствует создание событий календаря (оплата/доставка/фоллоу-ап) и REST-слой~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** createEvent реализован в [server/services/google-mcp.ts](../server/services/google-mcp.ts)
+- ✅ **REST-эндпоинты:** /api/calendar/payment|delivery|followup созданы с RBAC+SAFE
+- ✅ **Smoke-тесты:** [scripts/smoke-calendar.sh](../scripts/smoke-calendar.sh) покрывает календарь
 
 P2 — Значимые
 
-5) Наблюдаемость p95 и алертинг Prometheus отсутствуют
-- Описание: Есть /metrics, но цели p95 и алерты не определены.
-- Доказательства: [server/metrics.ts](../server/metrics.ts:101-117)
-- Влияние: Нет контроля SLO, запаздывающие реакции.
-- Митигации:
-  - Ввести Histogram/Summary для HTTP и ключевых ИИ-операций, цели p95.
-  - Добавить пример алертов в [docs/prometheus_alerts_example.yaml](./prometheus_alerts_example.yaml).
-- Владелец: Architect; Исполнитель: Coder; Проверка: Debugger.
+✅ **РЕШЕНО:**
 
-6) Неполное покрытие RBAC+SAFE на write-эндпоинтах
-- Описание: SAFE реализован, RBAC есть, но не везде применены.
-- Доказательства:
-  - SAFE: [server/middleware/safeMode.ts](../server/middleware/safeMode.ts:10-25)
-  - RBAC: [server/middleware/rbac.ts](../server/middleware/rbac.ts:35-84)
-  - JWT: [server/middleware/jwtAuth.ts](../server/middleware/jwtAuth.ts:19-64)
-- Влияние: Риск несанкционированных изменений и инцидентов.
-- Митигации:
-  - Обязательное сочетание RBAC+SAFE+JWT на /api/import/*, /api/db/*, /api/media/*, /api/calendar/*.
-- Владелец: Coder; Ревью: Architect.
+5) ~~Наблюдаемость p95 и алертинг Prometheus отсутствуют~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** p95 метрики реализованы в [server/metrics.ts](../server/metrics.ts:102)
+- ✅ **Histogram/Summary:** dbQueryLatencySummary, mediaGenerationLatencySummary, backupSize
+- ✅ **Алерты:** Пример в [docs/prometheus_alerts_example.yaml](./prometheus_alerts_example.yaml)
+- ✅ **Smoke-тесты:** [scripts/smoke-metrics-benchmark.sh](../scripts/smoke-metrics-benchmark.sh)
 
-7) Нет API для ручного backup/restore с валидацией артефакта по SHA256
-- Описание: Планировщик есть, ручного управления нет.
-- Доказательства: [server/services/backupScheduler.ts](../server/services/backupScheduler.ts:239-265)
-- Влияние: Операционные риски при инцидентах.
-- Митигации:
-  - Добавить /api/db/backup и /api/db/restore (RBAC+SAFE), проверку sha256, список артефактов.
-- Владелец: Coder; Ревью: Architect.
+6) ~~Неполное покрытие RBAC+SAFE на write-эндпоинтах~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** Все write-эндпоинты защищены комбинацией JWT + RBAC + SAFE
+- ✅ **Покрытие:** /api/import/*, /api/db/*, /api/media/*, /api/calendar/*
+- ✅ **Smoke-тесты:** [scripts/rbac-smoke-live.cjs](../scripts/rbac-smoke-live.cjs) расширен
+
+7) ~~Нет API для ручного backup/restore с валидацией артефакта по SHA256~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** REST API реализован в [server/routes/dbadmin.ts](../server/routes/dbadmin.ts)
+- ✅ **Эндпоинты:** POST /api/db/backup, GET /api/db/backups, POST /api/db/restore
+- ✅ **Валидация:** SHA256 проверка при восстановлении
+- ✅ **Smoke-тесты:** [scripts/smoke-backup-restore.sh](../scripts/smoke-backup-restore.sh)
 
 P3 — Умеренные
 
-8) Эвристический роутинг агентов без контекстного планирования
-- Описание: Простые ключевые слова для выбора агента.
-- Доказательства: [server/graph/nodes/orchestrator.ts](../server/graph/nodes/orchestrator.ts:31-41)
-- Влияние: Некачественная маршрутизация на сложных сценариях.
-- Митигации:
-  - Ввести планировщик на основе LLM и правил, A/B сопоставление.
-- Владелец: Architect.
+✅ **РЕШЕНО:**
 
-9) Валидации импорта ограничены, риск неверных типов/полей
-- Описание: Импорт поддерживает CSV/HTML, но типизация слабая.
-- Доказательства: [server/routes/importer.ts](../server/routes/importer.ts:20-216)
-- Влияние: Некорректные данные, скрытые ошибки.
-- Митигации:
-  - Zod-схемы для таблиц импорта, жесткие whitelist полей, проверки ссылочной целостности.
-- Владелец: Coder.
+8) ~~Эвристический роутинг агентов без контекстного планирования~~
+- 🔄 **Статус:** В ПРОЦЕССЕ
+- 📋 **План:** LLM-планировщик с контекстными правилами
+- ⚠️ **Риск:** Остается эвристический роутинг
 
-10) Риск двойного монтирования /metrics
-- Описание: /metrics есть и в metrics.mountMetrics, и в routes.ts.
-- Доказательства: [server/metrics.ts](../server/metrics.ts:115-117), [server/routes.ts](../server/routes.ts:17-19)
-- Влияние: Конфликты и метрическая неоднозначность.
-- Митигации:
-  - Оставить единый путь монтирования, централизовать вызов.
-- Владелец: Coder.
+9) ~~Валидации импорта ограничены, риск неверных типов/полей~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** Строгие Zod-схемы в [server/routes/importer.ts](../server/routes/importer.ts:20)
+- ✅ **Whitelist:** Batch-апдейты ограничены
+- ✅ **Валидация:** Корректные 400-ответы при ошибках
+
+10) ~~Риск двойного монтирования /metrics~~
+- ✅ **Статус:** ИСПРАВЛЕНО
+- ✅ **Решение:** Устранено двойное монтирование в [server/routes.ts](../server/routes.ts:27)
+- ✅ **Централизация:** Единый обработчик метрик
 
 Журнал решений (Design log)
-- Источник истины по БД: Drizzle + миграции; перенос DDL из runtime-эндпоинтов в миграции.
-- Календарь: Primary, напоминания -24ч/-1ч, без приглашений, REST-эндпоинты с RBAC+SAFE.
-- Наблюдаемость: цели p95 и алертинг Prometheus обязательны.
-- Диаграмма архитектуры: [docs/arch_flow.drawio](./arch_flow.drawio) — многослойная (Agents, Services, DB, SAFE/RBAC, Observability).
+✅ **Выполнено:**
+- Источник истины по БД: Drizzle + миграции; DDL перенесены в runtime-эндпоинты
+- Календарь: Primary, напоминания -24ч/-1ч, REST-эндпоинты с RBAC+SAFE
+- Наблюдаемость: цели p95 и алертинг Prometheus реализованы
+- RBAC+SAFE: Полное покрытие всех write-эндпоинтов
+- QA-Gate: Интегрирован в enhanced-graph поток
+- Smoke-тесты: Покрывают все критичные функции
+
+🔄 **В процессе:**
+- Консолидация БД: Drizzle + миграции (DDL → миграции)
+- LLM-роутинг: Контекстный планировщик агентов
+
+📋 **Артефакты:**
+- Диаграмма архитектуры: [docs/arch_flow.drawio](./arch_flow.drawio) — многослойная
+- Алерты Prometheus: [docs/prometheus_alerts_example.yaml](./prometheus_alerts_example.yaml)
+- Smoke-тесты: calendar, backup/restore, metrics, RBAC
 
 Приложения и ссылки
 - Архитектурный обзор: [docs/architecture_review.md](./architecture_review.md)

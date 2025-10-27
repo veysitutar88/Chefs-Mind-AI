@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 
+interface GoogleStatus {
+  ok: boolean;
+  expiry_date?: string | number;
+  error?: string;
+}
+
 export default function GoogleConnect() {
-  const [status, setStatus] = useState<any>(null);
+  const [status, setStatus] = useState<GoogleStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -11,7 +17,7 @@ export default function GoogleConnect() {
         const response = await fetch("/auth/google/status");
         const data = await response.json();
         setStatus(data);
-      } catch (error) {
+      } catch {
         setStatus({ ok: false, error: "Failed to check status" });
       } finally {
         setLoading(false);
@@ -39,7 +45,7 @@ export default function GoogleConnect() {
       const response = await fetch("/auth/google/status");
       const data = await response.json();
       alert(JSON.stringify(data, null, 2));
-    } catch (error) {
+    } catch {
       alert("Failed to get status");
     }
   };

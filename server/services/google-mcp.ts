@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { authedOAuth2 } from "../auth/google";
+import { authedOAuth2 } from "../auth/google.js";
 
 export async function listCalendars(){
   const auth = authedOAuth2();
@@ -58,4 +58,39 @@ export async function createCalendarEvent(params:{ title:string; startISO:string
     }
   });
   return { id: r.data.id, calendarId };
+}
+
+// Новая упрощенная функция для создания событий
+export async function createEvent(params: {
+  summary: string;
+  startTime: Date;
+  description?: string;
+  calendarId?: string;
+}) {
+  const auth = authedOAuth2();
+  const cal = google.calendar({ version: "v3", auth });
+  const calendarId = params.calendarId || "primary";
+  
+  // Расчет времени окончания (+1 час)
+  const endTime = new Date(params.startTime);
+  endTime.setHours(endTime.getHours() + 1);
+  
+  const r = await cal.events.insert({
+    calendarId,
+    requestBody: {
+      summary: params.summary,
+      description: params.description,
+      start: { dateTime: params.startTime.toISOString() },
+      end: { dateTime: endTime.toISOString() },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: "email", minutes: 1440 }, // За 24 часа
+          { method: "popup", minutes: 60 }     // За 1 час
+        ]
+      }
+    }
+  });
+  
+  return r.data.id as string;
 }

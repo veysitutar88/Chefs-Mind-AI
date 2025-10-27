@@ -15,7 +15,28 @@
   "headers": [],
   "rewrites": {
     "beforeFiles": [],
-    "afterFiles": [],
+    "afterFiles": [
+      {
+        "source": "/api/:path*",
+        "destination": "http://localhost:5001/api/:path*",
+        "regex": "^/api(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/socket.io/:path*",
+        "destination": "http://localhost:5001/socket.io/:path*",
+        "regex": "^/socket\\.io(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/metrics",
+        "destination": "http://localhost:5001/metrics",
+        "regex": "^/metrics(?:/)?$"
+      },
+      {
+        "source": "/auth/:path*",
+        "destination": "http://localhost:5001/auth/:path*",
+        "regex": "^/auth(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      }
+    ],
     "fallback": []
   },
   "dynamicRoutes": [],
@@ -31,12 +52,6 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
-    },
-    {
-      "page": "/register-test",
-      "regex": "^/register\\-test(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/register\\-test(?:/)?$"
     }
   ],
   "dataRoutes": [],

@@ -1,13 +1,20 @@
 'use client' 
 
 import { useState, useEffect } from 'react'
-import { ChefHat, Calculator, Brain, Send, Loader2, Activity, Camera, Search, CheckCircle } from 'lucide-react'
-import GoogleConnect from '../../components/GoogleConnect'
+import { Send } from 'lucide-react'
+import GoogleConnect from '../../components/GoogleConnect.tsx'
 import io from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
+
+type ChatMessage = {
+  text: string;
+  type: 'system' | 'agent' | 'user';
+  timestamp?: number | string;
+}
 
 function Page() {
-  const [socket, setSocket] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
 
   useEffect(() => {

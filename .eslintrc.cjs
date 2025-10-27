@@ -3,7 +3,8 @@ module.exports = {
   plugins: ["@typescript-eslint", "import"],
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@next/next/recommended"
   ],
   settings: {
     "import/resolver": {

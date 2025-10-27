@@ -1,55 +1,66 @@
 import type { Express, Request, Response } from "express";
-import { setupAuth } from "./auth";
-import healthRouter from "./routes/health";
-import { register, httpRequestDuration, httpRequestTotal, getMetricsHandler } from "./metrics";
-import authGoogleRouter from "./routes/auth.google";
-import importerRouter from "./routes/importer";
-import dbadminRouter from "./routes/dbadmin";
-import enhancedAgentChatRouter from "./routes/enhanced-agent-chat";
-import agentChatRouter from "./routes/agent-chat";
-import smokeHelpersRouter from "./routes/smoke-helpers";
+import { register } from "prom-client";
+import { jwtAuthMiddleware } from "./middleware/jwtAuth.js";
+import { apiLimiter, authLimiter } from "./config/rateLimit.js";
+import authGoogleRouter from "./routes/auth.google.js";
+import importerRouter from "./routes/importer.js";
+import dbadminRouter from "./routes/dbadmin.js";
+import enhancedAgentChatRouter from "./routes/enhanced-agent-chat.js";
+import agentChatRouter from "./routes/agent-chat.js";
+import smokeHelpersRouter from "./routes/smoke-helpers.js";
+import universalRouter from "./routes/universal.js";
+import mediaRouter from "./routes/media.js";
+import calendarRouter from "./routes/calendar.js";
+import { users } from "@shared/schema";
  
  export async function registerRoutes(app: Express) { // Сделаем функцию асинхронной
-   // Setup authentication routes
-   await setupAuth(app); // Дождемся завершения настройки аутентификации
    
-   // Health check endpoint - no auth required
-   app.get("/api/health", async (req: Request, res: Response) => {
-    res.json({ ok: true, ts: Date.now() });
+   // Health check endpoint for external monitoring/LB checks (standard path)
+   app.get("/health", async (req: Request, res: Response) => {
+    res.json({ ok: true, uptime: process.uptime(), ts: Date.now() });
   });
 
-  app.use("/health", healthRouter);
+   // Internal API health endpoint (backward compatibility)
+   app.get("/api/health", async (req: Request, res: Response) => {
+    res.json({ ok: true, uptime: process.uptime(), ts: Date.now() });
+  });
 
-  // Metrics endpoint
-  app.get("/metrics", getMetricsHandler());
+   // Prometheus metrics endpoint
+   app.get('/metrics', async (req, res) => {
+    try {
+      res.set('Content-Type', register.contentType);
+      res.end(await register.metrics());
+    } catch (ex) {
+      res.status(500).end(ex);
+    }
+  });
+
+
+
+  // Apply rate limiting
+  app.use('/api/', apiLimiter);
+  app.use('/auth/', authLimiter);
+
+  // Apply JWT authentication middleware globally (but don't require auth for all routes)
+  app.use(jwtAuthMiddleware);
+
+  // Rate limiting
+  app.use('/api/', apiLimiter);
+  app.use('/auth/', authLimiter);
 
   // Additional routes
   app.use("/auth/google", authGoogleRouter);
   app.use("/api/import", importerRouter);
   app.use("/api/dbadmin", dbadminRouter);
   app.use("/api/enhanced-agent-chat", enhancedAgentChatRouter);
+  // Backward compatibility alias
+  app.use("/api/enhanced-agent/chat", enhancedAgentChatRouter);
   app.use("/api/agent", agentChatRouter);
+  app.use("/api/media", mediaRouter);
+  app.use("/api/calendar", calendarRouter);
   app.use("/", smokeHelpersRouter);
+  app.use("/", universalRouter);
 
-  // Middleware to track HTTP requests
-  app.use((req: Request, res: Response, next: any) => {
-    const start = Date.now();
-    
-    res.on('finish', () => {
-      const duration = (Date.now() - start) / 1000; // Convert to seconds
-      const route = req.route ? req.route.path : req.path;
-      
-      httpRequestDuration
-        .labels(req.method, route, res.statusCode.toString(), (req as any).user?.id || 'anonymous')
-        .observe(duration);
-        
-      httpRequestTotal
-        .labels(req.method, route, res.statusCode.toString(), (req as any).user?.id || 'anonymous')
-        .inc();
-    });
-    
-    next();
-  });
 
   // Basic API routes for testing
   app.get("/api/test", (req: Request, res: Response) => {
@@ -62,11 +73,11 @@ import smokeHelpersRouter from "./routes/smoke-helpers";
   // Database test endpoint (to generate DB traffic)
   app.get("/api/test/db", async (req: Request, res: Response) => {
     try {
+      // Lazy-load DB only when this route is hit to avoid env requirements in tests
+      const { dbRead } = await import("./db.js");
       // Simple DB query to test latency - query users table directly
-      const { db } = await import("./db");
-      const { users } = await import("@shared/schema");
-      const result = await db.select().from(users).limit(1);
-      
+      const result = await dbRead.select().from(users).limit(1);
+
       res.json({
         message: "DB test successful",
         userCount: result.length,

@@ -34,5 +34,6 @@
     "React 18 maintained for compatibility",
     "ESLint 9 and TypeScript 5 updated",
     "Build, lint, and type checks all clean"
-  ]
+  ],
+  "latest": "checkpoints/master_checkpoint_2025_10_21_1954.json"
 }

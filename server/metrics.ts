@@ -1,117 +1,90 @@
-import client from 'prom-client';
-import fs from 'fs/promises';
-import path from 'path';
+import { register, collectDefaultMetrics, Counter, Histogram, Summary } from 'prom-client';
 
-// Create a Registry to register the metrics
-const register = new client.Registry();
+collectDefaultMetrics({ prefix: 'chefs_' });
 
-// Add default metrics (CPU, memory, etc.)
-client.collectDefaultMetrics({
-  register,
-  prefix: 'chefs_mind_',
-});
-
-// Custom metrics
-const httpRequestDuration = new client.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status_code', 'user_id'],
-  buckets: [0.1, 0.5, 1, 2, 5, 10],
-  registers: [register],
-});
-
-const httpRequestTotal = new client.Counter({
-  name: 'http_requests_total',
+export const httpRequestsTotal = new Counter({
+  name: 'chefs_http_requests_total',
   help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status_code', 'user_id'],
-  registers: [register],
+  labelNames: ['method', 'status_code'],
 });
 
-const databaseQueries = new client.Counter({
-  name: 'database_queries_total',
-  help: 'Total number of database queries',
-  labelNames: ['operation', 'table', 'success'],
-  registers: [register],
+export const httpLatency = new Histogram({
+  name: 'chefs_http_latency_ms',
+  help: 'HTTP request latency in milliseconds',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [10, 50, 100, 300, 500, 1000, 3000, 5000, 10000],
 });
 
-const aiApiCalls = new client.Counter({
-  name: 'ai_api_calls_total',
-  help: 'Total number of AI API calls',
-  labelNames: ['provider', 'model', 'success', 'duration_ms'],
-  registers: [register],
+export const httpLatencySummary = new Summary({
+  name: 'chefs_http_latency_summary_ms',
+  help: 'HTTP request latency summary in milliseconds',
+  labelNames: ['method', 'route', 'status'],
+  percentiles: [0.5, 0.9, 0.95, 0.99],
+  maxAgeSeconds: 300, // 5 minutes
+  ageBuckets: 5
 });
 
-const backupOperations = new client.Counter({
-  name: 'backup_operations_total',
+export const llmLatency = new Histogram({
+  name: 'chefs_llm_latency_ms',
+  help: 'LLM call latency in milliseconds',
+  labelNames: ['model', 'agent'],
+  buckets: [100, 500, 1000, 3000, 5000, 10000, 30000],
+});
+
+export const llmLatencySummary = new Summary({
+  name: 'chefs_llm_latency_summary_ms',
+  help: 'LLM call latency summary in milliseconds',
+  labelNames: ['model', 'agent'],
+  percentiles: [0.5, 0.9, 0.95, 0.99],
+  maxAgeSeconds: 600, // 10 minutes
+  ageBuckets: 3
+});
+
+export const dbQueryLatency = new Histogram({
+  name: 'chefs_db_query_latency_ms',
+  help: 'Database query latency in milliseconds',
+  labelNames: ['operation', 'table'],
+  buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500],
+});
+
+export const dbQueryLatencySummary = new Summary({
+  name: 'chefs_db_query_latency_summary_ms',
+  help: 'Database query latency summary in milliseconds',
+  labelNames: ['operation', 'table'],
+  percentiles: [0.5, 0.9, 0.95, 0.99],
+  maxAgeSeconds: 300, // 5 minutes
+  ageBuckets: 5
+});
+
+export const mediaGenerationLatency = new Histogram({
+  name: 'chefs_media_generation_latency_ms',
+  help: 'Media generation latency in milliseconds',
+  labelNames: ['type', 'provider', 'model'],
+  buckets: [1000, 5000, 10000, 30000, 60000, 120000, 300000],
+});
+
+export const mediaGenerationLatencySummary = new Summary({
+  name: 'chefs_media_generation_latency_summary_ms',
+  help: 'Media generation latency summary in milliseconds',
+  labelNames: ['type', 'provider', 'model'],
+  percentiles: [0.5, 0.9, 0.95, 0.99],
+  maxAgeSeconds: 600, // 10 minutes
+  ageBuckets: 3
+});
+
+export const backupOperations = new Counter({
+  name: 'chefs_backup_operations_total',
   help: 'Total number of backup operations',
-  labelNames: ['operation', 'success', 'size_bytes'],
-  registers: [register],
+  labelNames: ['operation', 'status'],
 });
 
-// Metrics logging function
-async function logMetrics() {
-  try {
-    const metrics = await register.metrics();
-    const logPath = path.join(process.cwd(), 'logs', 'metrics_smoke.json');
-    
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      metrics: metrics,
-      system_info: {
-        node_version: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        memory_usage: process.memoryUsage(),
-        uptime: process.uptime()
-      }
-    };
-    
-    // Read existing logs and append new entry
-    let existingLogs = [];
-    try {
-      const existing = await fs.readFile(logPath, 'utf8');
-      existingLogs = JSON.parse(existing);
-      if (!Array.isArray(existingLogs)) {
-        existingLogs = [existingLogs];
-      }
-    } catch (error) {
-      // File doesn't exist or is invalid, start with empty array
-    }
-    
-    existingLogs.push(logEntry);
-    await fs.writeFile(logPath, JSON.stringify(existingLogs, null, 2));
-    
-    console.log(`📊 Metrics logged to ${logPath}`);
-  } catch (error) {
-    console.error('Failed to log metrics:', error);
-  }
-}
+export const backupSize = new Summary({
+  name: 'chefs_backup_size_bytes',
+  help: 'Backup file size in bytes',
+  labelNames: ['type'],
+  percentiles: [0.5, 0.9, 0.95, 0.99],
+  maxAgeSeconds: 3600, // 1 hour
+  ageBuckets: 24
+});
 
-// Export metrics
-export {
-  register,
-  httpRequestDuration,
-  httpRequestTotal,
-  databaseQueries,
-  aiApiCalls,
-  backupOperations,
-  logMetrics
-};
-
-// Metrics endpoint
-export function getMetricsHandler() {
-  return async (req: any, res: any) => {
-    try {
-      const metrics = await register.metrics();
-      res.set('Content-Type', register.contentType);
-      res.end(metrics);
-    } catch (error: any) {
-      res.status(500).end(error.message);
-    }
-  };
-}
-
-// Mount metrics endpoint
-export function mountMetrics(app: any) {
-  app.get("/metrics", getMetricsHandler());
-}
+export { register };

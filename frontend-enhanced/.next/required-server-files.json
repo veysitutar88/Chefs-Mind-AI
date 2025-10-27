@@ -98,7 +98,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "c:\\Projects\\Chefs-Mind-AI",
+    "outputFileTracingRoot": "c:\\Projects\\Chefs-Mind-AI\\frontend-enhanced",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -288,11 +288,33 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.js",
     "turbopack": {
-      "root": "c:\\Projects\\Chefs-Mind-AI"
+      "root": "c:\\Projects\\Chefs-Mind-AI\\frontend-enhanced"
+    },
+    "_originalRewrites": {
+      "beforeFiles": [],
+      "afterFiles": [
+        {
+          "source": "/api/:path*",
+          "destination": "http://localhost:5001/api/:path*"
+        },
+        {
+          "source": "/socket.io/:path*",
+          "destination": "http://localhost:5001/socket.io/:path*"
+        },
+        {
+          "source": "/metrics",
+          "destination": "http://localhost:5001/metrics"
+        },
+        {
+          "source": "/auth/:path*",
+          "destination": "http://localhost:5001/auth/:path*"
+        }
+      ],
+      "fallback": []
     }
   },
   "appDir": "c:\\Projects\\Chefs-Mind-AI\\frontend-enhanced",
-  "relativeAppDir": "frontend-enhanced",
+  "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",
     ".next\\server\\pages-manifest.json",

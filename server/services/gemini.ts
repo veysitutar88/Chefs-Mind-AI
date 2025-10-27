@@ -1,6 +1,30 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { generateWithOpenAI } from './openai';
+import { generateWithOpenAI } from './openai.js';
 import { MediaGenerationResult } from '../../shared/types.js';
+
+// Interface for Vertex AI credentials
+interface VertexAICredentials {
+  project_id: string;
+  private_key_id?: string;
+  private_key?: string;
+  client_email?: string;
+}
+
+// Interface for Vertex AI response
+interface VertexAIResponse {
+  response: {
+    candidates: Array<{
+      content: {
+        parts: Array<{
+          inlineData?: {
+            data: string;
+            mimeType?: string;
+          };
+        }>;
+      };
+    }>;
+  };
+}
 
 // Initialize the Google AI client with the API key from Google AI Studio
 let genAI: GoogleGenerativeAI;
@@ -181,8 +205,11 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
       } catch (error: any) {
         console.warn('⚠️ Vertex AI credentials issue:', error.message);
         console.warn('🔄 Falling back to DALL-E 3 for image generation');
-        // TODO: Refactor this type assertion
-        return await generateWithOpenAI(prompt, 'image') as unknown as MediaGenerationResult;
+        const result = await generateWithOpenAI(prompt, 'image');
+        return {
+          ...result,
+          model: "dall-e-3"
+        };
       }
 
       // Initialize Vertex AI client with explicit credentials
@@ -273,8 +300,11 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
       if (type === 'image') {
         console.log('🔄 Falling back to DALL-E 3...');
         try {
-          // TODO: Refactor this type assertion
-          return await generateWithOpenAI(prompt, 'image') as unknown as MediaGenerationResult;
+          const result = await generateWithOpenAI(prompt, 'image');
+          return {
+            ...result,
+            model: "dall-e-3"
+          };
         } catch (dalleError) {
           console.error('DALL-E 3 fallback also failed:', dalleError);
         }

@@ -1,4 +1,4 @@
-import { BuildBadge } from '../components/build-badge';
+import { BuildBadge } from '../components/build-badge.tsx';
 
 export const metadata = {
   title: 'Next.js',

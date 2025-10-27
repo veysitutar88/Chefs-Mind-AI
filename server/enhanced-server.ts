@@ -141,7 +141,7 @@ io.on('connection', (socket) => {
 });
 
 // Start server
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`🚀 Chef's Mind AI Enhanced Server running on port ${PORT}`);
   console.log(`📖 API Documentation: http://localhost:${PORT}/`);
   console.log(`🤖 Enhanced Agent Chat: POST http://localhost:${PORT}/api/enhanced-agent/chat`);

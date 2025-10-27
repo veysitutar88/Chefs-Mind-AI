@@ -27,7 +27,7 @@ uploads
 .local
 .husky
 tests
-scripts
+
 *.md
 !README.md
 .github

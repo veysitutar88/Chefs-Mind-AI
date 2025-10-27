@@ -3,13 +3,13 @@ import { Strategy as LocalStrategy } from "passport-local";
 import type { Express } from "express";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage"; // Для работы с пользователями, не с сессиями
-import {buildSession} from './session';
-import { log } from "./utils/log";
-import { User as SelectUser } from "@shared/schema";
-import { requireWriteConfirm } from "./middleware/safeMode";
-import { generateToken, sanitizeUser } from "./utils/jwt";
-import { jwtAuthMiddleware } from "./middleware/jwtAuth";
+import { storage } from "./storage.js"; // Для работы с пользователями, не с сессиями
+import {buildSession} from './session.js';
+import { log } from "./utils/log.js";
+import { User as SelectUser } from "@shared/schema.js";
+import { requireWriteConfirm } from "./middleware/safeMode.js";
+import { generateToken, sanitizeUser } from "./utils/jwt.js";
+import { jwtAuthMiddleware } from "./middleware/jwtAuth.js";
 
 // Создаем расширенный тип пользователя с полями email и role
 interface AppUser {

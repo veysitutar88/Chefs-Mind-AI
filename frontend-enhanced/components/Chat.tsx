@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
+import StatusIndicator from "./StatusIndicator.tsx";
+
+type Status = 'calling' | 'ok' | 'timeout' | 'fallback' | 'error';
 
 interface ChatProps {
   selectedAgent?: string;
@@ -12,6 +15,7 @@ interface Message {
   text: string;
   sender: "user" | "server";
   timestamp: Date;
+  model?: string;
 }
 
 export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
@@ -19,6 +23,8 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<Status | null>(null);
+  const [lastModelUsed, setLastModelUsed] = useState<string | undefined>(undefined);
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -51,7 +57,6 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
     e.preventDefault();
     
     if (inputValue.trim() && selectedAgent) {
-      // Добавляем сообщение пользователя в историю
       const newUserMessage: Message = {
         id: Date.now().toString(),
         text: inputValue,
@@ -61,24 +66,65 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
       
       setMessages(prev => [...prev, newUserMessage]);
       setError(null);
-      
-      // Очищаем поле ввода
       setInputValue("");
       
       try {
-        // Отправляем сообщение через fetch API
-        await fetchEnhancedAgentResponse(selectedAgent, inputValue);
+        if (selectedAgent === 'Universal') {
+          await fetchUniversalAgentResponse(selectedAgent, inputValue);
+        } else {
+          await fetchEnhancedAgentResponse(selectedAgent, inputValue);
+        }
       } catch (err) {
         console.error("Fetch error, falling back to WebSocket:", err);
-        // Fallback на WebSocket при ошибке fetch
         socketRef.current?.emit("chat_message", { agent: selectedAgent, message: inputValue });
       }
+    }
+  };
+
+  const fetchUniversalAgentResponse = async (agent: string, message: string) => {
+    setApiStatus('calling');
+    setIsTyping(true);
+    try {
+      const response = await fetch('/api/universal-ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: agent.toLowerCase(), query: message }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+
+      if (result.success) {
+        setApiStatus('ok');
+        setLastModelUsed(result.route?.model);
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          text: result.data,
+          sender: "server",
+          timestamp: new Date(),
+          model: result.route?.model,
+        }]);
+      } else {
+        setApiStatus('error');
+        setError(result.error || 'Unknown error from universal agent');
+      }
+      
+    } catch (err) {
+       setApiStatus('error');
+       setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsTyping(false);
     }
   };
   
   const fetchEnhancedAgentResponse = async (agent: string, message: string) => {
     setIsTyping(true);
-    let assistantMessageId = Date.now().toString();
+    const assistantMessageId = Date.now().toString();
     
     try {
       const response = await fetch('/api/enhanced-agent/chat', {
@@ -102,7 +148,6 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
       let done = false;
       let accumulatedContent = '';
       
-      // Создаем начальное сообщение ассистента
       setMessages(prev => [...prev, {
         id: assistantMessageId,
         text: '',
@@ -132,7 +177,6 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
                 
                 if (parsed.type === 'content') {
                   accumulatedContent += parsed.content;
-                  // Обновляем последнее сообщение ассистента
                   setMessages(prev => {
                     const lastMessage = prev[prev.length - 1];
                     if (lastMessage && lastMessage.id === assistantMessageId) {
@@ -160,8 +204,6 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
     } catch (err) {
       console.error('Stream error:', err);
       setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
-      
-      // Fallback на WebSocket при ошибке стриминга
       socketRef.current?.emit("chat_message", { agent, message });
     } finally {
       setIsTyping(false);
@@ -172,7 +214,8 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
     <div className="border rounded-lg p-4 bg-white shadow-md">
       <h2 className="text-xl font-bold mb-4">Чат</h2>
       
-      {/* Окно сообщений */}
+      {apiStatus && <StatusIndicator status={apiStatus} model={lastModelUsed} />}
+      
       <div className="h-64 overflow-y-auto border rounded p-2 mb-4 bg-gray-50">
         {messages.map((message) => (
           <div 
@@ -187,6 +230,11 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
               {message.timestamp.toLocaleTimeString()}
             </div>
             <div>{message.text}</div>
+             {message.sender === 'server' && message.model && (
+              <div className="text-xs text-gray-400 mt-1">
+                Model: {message.model}
+              </div>
+            )}
           </div>
         ))}
         
@@ -211,7 +259,6 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Форма ввода */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"

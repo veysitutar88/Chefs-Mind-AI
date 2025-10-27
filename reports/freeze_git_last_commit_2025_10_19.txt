@@ -1,5 +1,0 @@
-commit e1eb9167ec65eb187b7254a537baab3e82b2d8f4
-Author: Damario33 <kalmikov.koch@gmail.com>
-Date:   Sun Oct 19 11:08:16 2025 +0200
-
-    feat: upgrade to next@15.x with clean build/lint/tsc

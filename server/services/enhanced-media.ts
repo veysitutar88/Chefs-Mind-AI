@@ -2,6 +2,31 @@ import OpenAI from 'openai';
 import { VertexAI } from '@google-cloud/vertexai';
 import { MediaGenerationParams, MediaGenerationResult, EnhancedPromptResult } from '../../shared/types.js';
 
+// Interface for OpenAI chat response
+interface OpenAIChatResponse {
+  choices: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+}
+
+// Interface for Vertex AI response
+interface VertexAIResponse {
+  response: {
+    candidates: Array<{
+      content: {
+        parts: Array<{
+          inlineData?: {
+            data: string;
+            mimeType?: string;
+          };
+        }>;
+      };
+    }>;
+  };
+}
+
 // Улучшенный Media Tool с множественными генераторами
 export class EnhancedMediaTool {
   private openai: OpenAI;
@@ -44,7 +69,6 @@ export class EnhancedMediaTool {
         response_format: { type: 'json_object' }
       });
 
-      // TODO: Refactor this type assertion
       if (response.choices && response.choices[0] && response.choices[0].message) {
         return JSON.parse(response.choices[0].message.content || '{}') as EnhancedPromptResult;
       }
@@ -126,7 +150,6 @@ export class EnhancedMediaTool {
 
       const response = await imageModel.generateContent(request);
 
-      // TODO: Refactor this type assertion
       if (response.response && response.response.candidates && response.response.candidates[0]) {
         const candidate = response.response.candidates[0];
         
@@ -178,7 +201,6 @@ export class EnhancedMediaTool {
 
       const response = await videoModel.generateContent(request);
 
-      // TODO: Refactor this type assertion
       if (response.response && response.response.candidates && response.response.candidates[0]) {
         const candidate = response.response.candidates[0];
         
@@ -253,8 +275,7 @@ export class EnhancedMediaTool {
             return await this.generateWithImagen3(enhancement.enhancedPrompt, enhancement.negativePrompt);
           
           case 'veo-3':
-            // TODO: Refactor this type assertion
-            return await this.generateWithVeo3(enhancement.enhancedPrompt, params.durationSec as unknown as number);
+            return await this.generateWithVeo3(enhancement.enhancedPrompt, params.durationSec || 10);
           
           default:
             throw new Error(`Unknown generator: ${generator}`);

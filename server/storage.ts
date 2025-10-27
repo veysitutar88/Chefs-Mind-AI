@@ -19,11 +19,11 @@ import {
   type InsertAgentSettings,
   type UpdateAgentSettings
 } from "@shared/schema";
-import { db } from "./db";
+import { dbRead, dbWrite } from "./db.js";
 import { eq, desc, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import { pool } from "./db.js";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -67,17 +67,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await dbRead.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await dbRead.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
+    const [user] = await dbWrite
       .insert(users)
       .values(insertUser)
       .returning();
@@ -85,7 +85,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createChatSession(sessionData: InsertChatSession & { userId: string }): Promise<ChatSession> {
-    const [session] = await db
+    const [session] = await dbWrite
       .insert(chatSessions)
       .values(sessionData)
       .returning();
@@ -93,7 +93,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChatSessions(userId: string, limit: number = 20, offset: number = 0): Promise<ChatSession[]> {
-    return await db
+    return await dbRead
       .select({
         id: chatSessions.id,
         userId: chatSessions.userId,
@@ -109,12 +109,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChatSession(id: string): Promise<ChatSession | undefined> {
-    const [session] = await db.select().from(chatSessions).where(eq(chatSessions.id, id));
+    const [session] = await dbRead.select().from(chatSessions).where(eq(chatSessions.id, id));
     return session || undefined;
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
-    const [msg] = await db
+    const [msg] = await dbWrite
       .insert(messages)
       .values(message)
       .returning();
@@ -122,7 +122,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMessages(sessionId: string, limit: number = 50, offset: number = 0): Promise<Message[]> {
-    return await db
+    return await dbRead
       .select({
         id: messages.id,
         sessionId: messages.sessionId,
@@ -139,7 +139,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUpload(upload: InsertUpload & { userId: string }): Promise<Upload> {
-    const [uploadRecord] = await db
+    const [uploadRecord] = await dbWrite
       .insert(uploads)
       .values(upload)
       .returning();
@@ -147,12 +147,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUpload(id: string): Promise<Upload | undefined> {
-    const [upload] = await db.select().from(uploads).where(eq(uploads.id, id));
+    const [upload] = await dbRead.select().from(uploads).where(eq(uploads.id, id));
     return upload || undefined;
   }
 
   async getUploads(userId: string): Promise<Upload[]> {
-    return await db
+    return await dbRead
       .select()
       .from(uploads)
       .where(eq(uploads.userId, userId))
@@ -160,7 +160,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUpload(id: string, data: Partial<Upload>): Promise<Upload | undefined> {
-    const [upload] = await db
+    const [upload] = await dbWrite
       .update(uploads)
       .set(data)
       .where(eq(uploads.id, id))
@@ -169,7 +169,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createGeneratedContent(content: InsertGeneratedContent & { userId: string }): Promise<GeneratedContent> {
-    const [generated] = await db
+    const [generated] = await dbWrite
       .insert(generatedContent)
       .values(content)
       .returning();
@@ -177,7 +177,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getGeneratedContent(userId: string): Promise<GeneratedContent[]> {
-    return await db
+    return await dbRead
       .select()
       .from(generatedContent)
       .where(eq(generatedContent.userId, userId))
@@ -185,7 +185,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAgentSettings(settings: InsertAgentSettings & { userId: string }): Promise<AgentSettings> {
-    const [agentSetting] = await db
+    const [agentSetting] = await dbWrite
       .insert(agentSettings)
       .values(settings)
       .returning();
@@ -193,7 +193,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAgentSettings(userId: string): Promise<AgentSettings[]> {
-    return await db
+    return await dbRead
       .select()
       .from(agentSettings)
       .where(eq(agentSettings.userId, userId))
@@ -201,7 +201,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAgentSettingsByType(userId: string, agentType: string): Promise<AgentSettings | undefined> {
-    const [setting] = await db
+    const [setting] = await dbRead
       .select()
       .from(agentSettings)
       .where(and(eq(agentSettings.userId, userId), eq(agentSettings.agentType, agentType)));
@@ -209,7 +209,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAgentSettingsById(id: string, userId: string): Promise<AgentSettings | undefined> {
-    const [setting] = await db
+    const [setting] = await dbRead
       .select()
       .from(agentSettings)
       .where(and(eq(agentSettings.id, id), eq(agentSettings.userId, userId)));
@@ -217,7 +217,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateAgentSettings(id: string, data: UpdateAgentSettings): Promise<AgentSettings | undefined> {
-    const [updated] = await db
+    const [updated] = await dbWrite
       .update(agentSettings)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(agentSettings.id, id))
