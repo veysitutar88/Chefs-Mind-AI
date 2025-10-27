@@ -5,6 +5,8 @@ import { Send } from 'lucide-react'
 import GoogleConnect from '../../components/GoogleConnect.tsx'
 import io from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
+import ModelPicker from '../../components/ui/ModelPicker.tsx'
+import SkeletonLoader from '../../components/ui/SkeletonLoader.tsx'
 
 type ChatMessage = {
   text: string;
@@ -16,6 +18,7 @@ function Page() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [model, setModel] = useState<string>('auto');
 
   useEffect(() => {
     // Подключаемся к WebSocket серверу
@@ -67,10 +70,24 @@ function Page() {
 
         <GoogleConnect />
 
+        <div className="mt-6 bg-white rounded-xl shadow p-4 border border-amber-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Параметры ИИ</h3>
+          <div className="max-w-sm">
+            <ModelPicker value={model} onChange={setModel} includeAuto className="w-full" />
+          </div>
+        </div>
+
         <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Чат в реальном времени</h2>
           
           <div className="mb-4 h-64 overflow-y-auto border rounded-lg p-4 bg-gray-50">
+            {messages.length === 0 && (
+              <div className="space-y-3">
+                <SkeletonLoader lines={1} />
+                <SkeletonLoader lines={2} />
+                <SkeletonLoader lines={1} />
+              </div>
+            )}
             {messages.map((msg, index) => (
               <div key={index} className={`mb-2 ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
                 <span className={`inline-block p-2 rounded-lg ${msg.type === 'user' ? 'bg-blue-500 text-white' : msg.type === 'agent' ? 'bg-green-100' : 'bg-gray-200'}`}>

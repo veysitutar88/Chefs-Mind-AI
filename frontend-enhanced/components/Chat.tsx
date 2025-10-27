@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
-import StatusIndicator from "./StatusIndicator.tsx";
+import StatusIndicator from "./ui/StatusIndicator.tsx";
 
 type Status = 'calling' | 'ok' | 'timeout' | 'fallback' | 'error';
 
@@ -85,7 +85,7 @@ export default function Chat({ selectedAgent = "Chef" }: ChatProps) {
     setApiStatus('calling');
     setIsTyping(true);
     try {
-      const response = await fetch('/api/universal-ask', {
+      const response = await fetch(process.env.NEXT_PUBLIC_USE_UNIVERSAL_ASK_TEST ? '/api/universal-ask-test' : '/api/universal-ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

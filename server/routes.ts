@@ -11,6 +11,7 @@ import smokeHelpersRouter from "./routes/smoke-helpers.js";
 import universalRouter from "./routes/universal.js";
 import mediaRouter from "./routes/media.js";
 import calendarRouter from "./routes/calendar.js";
+import modelsRouter from "./routes/models.js";
 import { users } from "@shared/schema";
  
  export async function registerRoutes(app: Express) { // Сделаем функцию асинхронной
@@ -58,6 +59,7 @@ import { users } from "@shared/schema";
   app.use("/api/agent", agentChatRouter);
   app.use("/api/media", mediaRouter);
   app.use("/api/calendar", calendarRouter);
+  app.use("/api/models", modelsRouter);
   app.use("/", smokeHelpersRouter);
   app.use("/", universalRouter);
 
