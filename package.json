@@ -22,6 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "test:integration": "vitest tests/integration/*.test.ts",
     "test:media": "vitest tests/it/media.spec.ts",
     "test:mcp": "vitest tests/mcp/prompt-enhancer.spec.ts",
@@ -135,6 +136,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@replit/vite-plugin-cartographer": "^0.3.1",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
