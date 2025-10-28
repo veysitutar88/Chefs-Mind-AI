@@ -5,12 +5,14 @@ import { ChatInterface } from '@/components/chat/ChatInterface'
 import { AgentSelector } from '@/components/AgentSelector'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Brain, MessageSquare, Activity } from 'lucide-react'
 import { checkHealth } from '@/lib/api'
 
 export default function Home() {
   const [health, setHealth] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [pingStatus, setPingStatus] = useState<string>('')
 
   useEffect(() => {
     const loadHealth = async () => {
@@ -26,6 +28,21 @@ export default function Home() {
 
     loadHealth()
   }, [])
+
+  const handlePingApi = async () => {
+    setPingStatus('Пинг...')
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/health`)
+      if (response.ok) {
+        const data = await response.json()
+        setPingStatus(`OK (${response.status}) - ${data.status}`)
+      } else {
+        setPingStatus(`Ошибка: ${response.status}`)
+      }
+    } catch (error) {
+      setPingStatus(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,6 +70,14 @@ export default function Home() {
               ) : (
                 <Badge variant="destructive">
                   Система недоступна
+                </Badge>
+              )}
+              <Button onClick={handlePingApi} variant="outline" size="sm">
+                Ping API
+              </Button>
+              {pingStatus && (
+                <Badge variant={pingStatus.startsWith('OK') ? 'default' : 'destructive'}>
+                  {pingStatus}
                 </Badge>
               )}
             </div>

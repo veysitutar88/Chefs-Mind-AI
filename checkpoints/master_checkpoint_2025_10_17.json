@@ -1,0 +1,135 @@
+{
+  "checkpoint_id": "master_checkpoint_2025_10_17",
+  "timestamp": "2025-10-17T00:00:00.000Z",
+  "project": "Chef's Mind AI",
+  "version": "2.1.1-smoke-pass",
+  "status": "stable",
+  "phase": "post-deploy (local)",
+  "summary": "Инфраструктура и бекенд стабилизированы, фронтенд Next14 подключен к API на 5001, dev-UI на 3000. Smoke-suite: 6/6 passed. Готово к Surface-deploy и включению Smoke Gate в CI.",
+  "endpoints": {
+    "api_base": "http://localhost:5001",
+    "ui_dev": "http://localhost:3000",
+    "health": "http://localhost:5001/api/health",
+    "metrics": "http://localhost:5001/metrics",
+    "oauth_status": "http://localhost:5001/auth/google/status"
+  },
+  "completed_tasks": [
+    "SERVER-UP: bind 0.0.0.0 + портовая схема согласована",
+    "DOCKER: публикация 5001:5000, удалены устаревшие version и лишние порты",
+    "HEALTH/METRICS: 200 OK на хосте",
+    "SMOKE-SUITE: 6/6 passed (health, metrics, oauth, rbac, import, calendar)",
+    "DB: создана таблица ingredients и зафиксирована логика UPSERT",
+    "UTF-8: перекодирование проблемных файлов (quality_control.ts, researcher.ts, accountant.ts)",
+    "FRONTEND-DEPS-FIX: удалена несуществующая зависимость @radix-ui/react-button",
+    "NEXT14-CLEANUP: убран experimental.appDir, добавлен postcss.config.js",
+    "CONNECT-TO-API: фронт переведён на http://localhost:5001; кнопка Ping API работает",
+    "PORT SWITCH: конфликт wslrelay на 5000 обойдён; стандартизировано на 5001 наружу"
+  ],
+  "current_state": {
+    "server": {
+      "status": "running",
+      "internal_port": 5000,
+      "public_port": 5001,
+      "health_route": "/api/health",
+      "metrics_route": "/metrics",
+      "rbac": "active (smoke helper: /api/rbac/smoke)",
+      "backup_scheduler": "03:00 UTC (enabled)"
+    },
+    "database": {
+      "provider": "Neon PostgreSQL",
+      "status": "connected",
+      "migrations": [
+        "01_create_ingredients.sql (applied)"
+      ],
+      "tables_verified": ["ingredients"]
+    },
+    "docker": {
+      "compose_mapping": "5001:5000",
+      "healthcheck": "GET /api/health every 10s",
+      "orphans_removed": true,
+      "image": "chefs-mind-ai-app:latest"
+    },
+    "frontend": {
+      "framework": "Next.js 14",
+      "dev_port": 3000,
+      "env_local": {
+        "NEXT_PUBLIC_API_URL": "http://localhost:5001",
+        "VITE_API_BASE": "http://localhost:5001"
+      },
+      "postcss": true,
+      "tailwind": true,
+      "ping_api": "OK (200)"
+    },
+    "security": {
+      "safe_mode": true,
+      "session_secret": "present",
+      "oauth_google": "authenticated:true (локально)"
+    }
+  },
+  "files_changed": {
+    "backend": [
+      "server/enhanced-server.ts (listen on 0.0.0.0; порт согласован)",
+      "server/routes/smoke-helpers.ts (rbac smoke, calendar helper)"
+    ],
+    "frontend": [
+      "frontend/package.json (удалён @radix-ui/react-button)",
+      "frontend/next.config.js (удалён experimental.appDir)",
+      "frontend/.env.local (API → http://localhost:5001)",
+      "frontend/postcss.config.js (создан)"
+    ],
+    "docker": [
+      "docker-compose.yml (очистка: version)",
+      "docker-compose.override.yml (ports: 5001:5000; healthcheck)",
+      "Dockerfile (EXPOSE 5000)"
+    ],
+    "scripts": [
+      "scripts/smoke_suite.ps1",
+      "scripts/smoke_suite_config.json (rbac/import/calendar заполнены)"
+    ],
+    "db": [
+      "drizzle/01_create_ingredients.sql (если добавлена в репо)"
+    ],
+    "logs": [
+      "logs/smoke_suite_summary.json",
+      "logs/docker_boot_tail_5001.txt",
+      "logs/probe_health_5001.txt",
+      "logs/probe_metrics_5001.txt"
+    ]
+  },
+  "smoke_suite": {
+    "host_url": "http://localhost:5001",
+    "result": "ok",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "checks": {
+      "health": "passed",
+      "metrics": "passed",
+      "oauth": "passed",
+      "rbac": "passed",
+      "import": "passed",
+      "calendar": "passed"
+    }
+  },
+  "env_baseline": {
+    "PORT": 5000,
+    "SAFE_MODE": 1,
+    "OPENAI_API_KEY": "present",
+    "VERTEX_PROJECT_ID": "present",
+    "PERPLEXITY_API_KEY": "present",
+    "DATABASE_URL": "present",
+    "SESSION_SECRET": "present"
+  },
+  "known_constraints": [
+    "В dev UI используется порт 3000. В проде документировать конечный порт UI (3000 либо отдача статики через сервер на 5001).",
+    "Убедиться, что миграции drizzle зафиксированы в репозитории (если применялись вручную из контейнера)."
+  ],
+  "next_steps": [
+    "CI: добавить Smoke Gate в пайплайн (compose up → scripts/smoke_suite.ps1 → артефакты → fail on ok=false).",
+    "Surface Deploy: оформить docs/surface_deploy.md и автозапуск (schtasks).",
+    "Frontend: добавить Build-version badge в UI футер (для защиты от кэша).",
+    "Media presets: зафиксировать стандарт освещения/посуды (Genie6/June) в конфиге и UI формах.",
+    "UTF-8 guard: линтер/скрипт для проверки кодировки .ts/.tsx."
+  ],
+  "notes": "Внешний порт API — 5001 (маппинг 5001:5000). UI dev — 3000. Все write-операции защищены SAFE (X-Confirm-Code). OAuth календаря работает локально. Бекапы — 03:00 UTC."
+}

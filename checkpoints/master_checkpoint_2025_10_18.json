@@ -1,0 +1,28 @@
+{
+  "project": "Chef's Mind AI",
+  "timestamp": "2025-10-18T11-13-01.1077660Z",
+  "git_commit": "d7242c7",
+  "ui": { "port": 3000, "build_badge": null },
+  "api": { "port_public": 5001, "port_container": 5000, "health": { "ok": null, "status_url": "http://localhost:5001/api/health" }, "metrics": { "ok": null } },
+  "frontend": {
+    "framework": "next@14.x",
+    "dev_script_port": 3000,
+    "api_base_env": "NEXT_PUBLIC_API_URL",
+    "env_present": true
+  },
+  "backend": {
+    "framework": "express",
+    "env_present": true,
+    "oauth": { "google": { "authenticated": null } }
+  },
+  "docker": { "compose_present": true, "port_mapping": "5001:5000", "healthcheck": "configured" },
+  "smoke": { "passed": null, "artifacts": [] },
+  "port_map": { "3000": "ui", "5001": "api-public", "5000": "api-container", "others": [3010,3011] },
+  "notes": [
+    "Порт 3000 занят на хосте (LISTEN PID 25116) по данным netstat/PowerShell",
+    "В коде сервера встречаются разные значения PORT (5000/5001/5002), тогда как Docker маппит 5001:5000",
+    "В .env.local присутствуют NEXT_PUBLIC_API_URL и VITE_API_BASE; фактическое использование VITE_API_BASE в коде в логе не подтверждено",
+    "Отсутствуют результаты curl/HTTP для /api/health и /metrics в данном логе; статус недоступен",
+    "[NO server/package.json] обнаружено в разделе backend сканирования"
+  ]
+}

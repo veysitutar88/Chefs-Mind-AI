@@ -1,0 +1,38 @@
+{
+  "frontend": {
+    "framework": "next@14.2.5",
+    "env_clean": true,
+    "env": ["NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_BUILD_TS"],
+    "ui_components": ["button", "build-badge"],
+    "build": {
+      "status": "success",
+      "logs": ["reports/pr2d_build_2025_10_19.log", "reports/pr2d_build_retry_2025_10_19.log"]
+    },
+    "lint": {
+      "status": "clean",
+      "logs": ["reports/eslint_after_cleanup_2025_10_19.log"]
+    },
+    "types": {
+      "status": "clean",
+      "logs": ["reports/tsc_check_2025_10_19.log"]
+    }
+  },
+  "backend": {
+    "port": 5000,
+    "host_mapping": 5001,
+    "entry_point": "server/index.ts"
+  },
+  "docker": {
+    "compose_version_field": "removed",
+    "ports": ["5001:5000"]
+  },
+  "notes": [
+    "VITE_API_BASE removed, only NEXT_PUBLIC_API_URL kept",
+    "BuildBadge added and wired in layout",
+    "ESLint legacy options removed in scripts; lint clean",
+    "TypeScript check clean; prod build successful"
+  ],
+  "timestamp": "2025-10-19T09:40:00Z",
+  "git_commit": "d7242c76d97dd1f60cef55aff4a86fa23444e1c0",
+  "release": "v2.1.1-stable"
+}

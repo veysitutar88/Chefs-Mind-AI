@@ -1,5 +1,5 @@
 // server/graph/nodes/chef.ts
-import type { GraphState, Role } from "../types";
+import type { GraphState, Role } from "../types.js";
 
 /**
  * Простейший узел «Шеф»: формирует ответ и, если в плане медиа,
@@ -16,6 +16,7 @@ export async function enhancedChefNode(state: GraphState): Promise<GraphState> {
 
   const next = {
     ...state,
+    response: assistantReply, // Добавляем response для QA проверки
     messages: [
       ...(state.messages || []),
       { role: "assistant" as Role, content: assistantReply, meta: { agent: "Chef" } }

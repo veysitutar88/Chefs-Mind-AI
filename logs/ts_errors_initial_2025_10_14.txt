@@ -1,0 +1,47 @@
+server/metrics.ts(103,17): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/metrics.ts(103,22): error TS7006: Parameter 'res' implicitly has an 'any' type.
+server/metrics.ts(109,27): error TS18046: 'error' is of type 'unknown'.
+server/middleware/rbac.ts(11,18): error TS2430: Interface 'AuthenticatedRequest' incorrectly extends interface 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+server/middleware/rbac.ts(25,5): error TS2322: Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+server/middleware/rbac.ts(38,7): error TS2322: Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+server/middleware/rbac.ts(55,7): error TS2322: Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+server/routes/enhanced-agent-chat.ts(3,10): error TS2305: Module '"../services/google-mcp.js"' has no exported member 'getGoogleMCPService'.
+server/routes/enhanced-agent-chat.ts(55,54): error TS2345: Argument of type '{ agentPreference?: string; enableFactCheck?: boolean; enableGoogleTools?: boolean; enableMediaGeneration?: boolean; message: string; }' is not assignable to parameter of type 'string'.
+server/routes/enhanced-agent-chat.ts(58,18): error TS2339: Property 'currentAgent' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(58,41): error TS2339: Property 'currentAgent' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(59,31): error TS2339: Property 'currentAgent' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(60,31): error TS2339: Property 'usedModel' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(67,23): error TS2339: Property 'metadata' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(68,32): error TS2339: Property 'confidence' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(69,37): error TS2339: Property 'correctionLoops' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(70,34): error TS2339: Property 'fallbackUsed' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(88,34): error TS2339: Property 'agent' does not exist on type 'Message | { role: string; content: string; meta: { agent: string; error: boolean; }; }'.
+server/routes/enhanced-agent-chat.ts(89,34): error TS2339: Property 'model' does not exist on type 'Message | { role: string; content: string; meta: { agent: string; error: boolean; }; }'.
+server/routes/enhanced-agent-chat.ts(90,36): error TS2339: Property 'confidence' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(100,18): error TS2339: Property 'agentOutcome' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(106,32): error TS2339: Property 'confidence' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(107,37): error TS2339: Property 'correctionLoops' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(108,34): error TS2339: Property 'fallbackUsed' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(115,18): error TS2339: Property 'agentOutcome' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(118,25): error TS2339: Property 'metadata' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(120,11): error TS2353: Object literal may only specify known properties, and 'fallbackUsed' does not exist in type 'EnhancedStreamChunk'.
+server/routes/enhanced-agent-chat.ts(120,32): error TS2339: Property 'fallbackUsed' does not exist on type '{ messages: (Message | { role: string; content: string; meta: { agent: string; error: boolean; }; })[]; input: string; agent?: Agent | undefined; plan?: Plan | undefined; meta?: Record<...> | undefined; }'.
+server/routes/enhanced-agent-chat.ts(263,38): error TS2554: Expected 0 arguments, but got 1.
+server/routes/enhanced-agent-chat.ts(266,49): error TS2554: Expected 1 arguments, but got 2.
+server/routes/enhanced-agent-chat.ts(269,51): error TS2554: Expected 1 arguments, but got 2.
+server/routes/enhanced-agent-chat.ts(290,69): error TS2554: Expected 2 arguments, but got 3.
+server/services/enhanced-media.ts(51,20): error TS2339: Property 'data' does not exist on type 'ChatCompletion & { _request_id?: string | null | undefined; }'.
+server/services/enhanced-media.ts(52,25): error TS2339: Property 'data' does not exist on type 'ChatCompletion & { _request_id?: string | null | undefined; }'.
+server/services/enhanced-media.ts(74,9): error TS2769: No overload matches this call.
+server/services/enhanced-media.ts(90,9): error TS2739: Type 'Image[]' is missing the following properties from type '{ url: string; model: "dall-e-3"; metadata: any; }': url, model, metadata
+server/services/enhanced-media.ts(108,9): error TS2769: No overload matches this call.
+server/services/enhanced-media.ts(124,9): error TS2739: Type 'Image[]' is missing the following properties from type '{ url: string; model: "gpt-image"; metadata: any; }': url, model, metadata
+server/services/enhanced-media.ts(148,13): error TS2353: Object literal may only specify known properties, and 'numberOfImages' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(158,20): error TS2339: Property 'data' does not exist on type 'GenerateContentResult'.
+server/services/enhanced-media.ts(159,25): error TS2339: Property 'data' does not exist on type 'GenerateContentResult'.
+server/services/enhanced-media.ts(183,13): error TS2353: Object literal may only specify known properties, and 'durationSeconds' does not exist in type 'GenerationConfig'.
+server/services/enhanced-media.ts(192,20): error TS2339: Property 'data' does not exist on type 'GenerateContentResult'.
+server/services/enhanced-media.ts(193,25): error TS2339: Property 'data' does not exist on type 'GenerateContentResult'.
+server/services/gemini.ts(107,25): error TS2304: Cannot find name 'genAI'.
+server/services/gemini.ts(180,57): error TS18046: 'error' is of type 'unknown'.
+server/services/gemini.ts(192,16): error TS2304: Cannot find name 'modelName'.

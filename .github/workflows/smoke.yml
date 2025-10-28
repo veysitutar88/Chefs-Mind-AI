@@ -1,0 +1,35 @@
+name: Smoke CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "feat/**" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Install root deps
+        run: npm ci
+      - name: Install frontend deps
+        run: cd frontend-enhanced && npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type Check
+        run: tsc -p . --noEmit
+      - name: Build Frontend
+        run: cd frontend-enhanced && npm run build
+      - name: Archive Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-reports
+          path: |
+            reports/**
+            frontend-enhanced/.next/**

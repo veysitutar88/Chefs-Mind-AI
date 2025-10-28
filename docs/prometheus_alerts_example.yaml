@@ -1,0 +1,271 @@
+# Prometheus Alerts Example for Chef's Mind AI
+# Пример правил алертов для мониторинга системы
+
+groups:
+  - name: chefs_mind_ai_alerts
+    rules:
+      # Алерты доступности сервисов
+      - alert: ServiceDown
+        expr: up{job="chefs-mind-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "Chef's Mind API service is down"
+          description: "API service has been down for more than 1 minute"
+          runbook_url: "https://docs.chefsmind.ai/runbook/api-recovery"
+
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Database connection lost"
+          description: "PostgreSQL database has been down for more than 30 seconds"
+          runbook_url: "https://docs.chefsmind.ai/runbook/db-recovery"
+
+      # Алерты производительности HTTP
+      - alert: HighHTTPLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High HTTP latency detected"
+          description: "95th percentile latency is {{ $value }}s for more than 2 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/performance"
+
+      - alert: CriticalHTTPLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "Critical HTTP latency detected"
+          description: "95th percentile latency is {{ $value }}s for more than 1 minute"
+          runbook_url: "https://docs.chefsmind.ai/runbook/performance-critical"
+
+      # Алерты ошибок HTTP
+      - alert: HighHTTPErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High HTTP error rate"
+          description: "HTTP 5xx error rate is {{ $value | humanizePercentage }} for more than 3 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/error-investigation"
+
+      - alert: CriticalHTTPErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.10
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "Critical HTTP error rate"
+          description: "HTTP 5xx error rate is {{ $value | humanizePercentage }} for more than 1 minute"
+          runbook_url: "https://docs.chefsmind.ai/runbook/emergency-response"
+
+      # Алерты производительности базы данных
+      - alert: HighDBLatency
+        expr: histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database latency"
+          description: "95th percentile DB query latency is {{ $value }}s for more than 2 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/db-performance"
+
+      - alert: CriticalDBLatency
+        expr: histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 1.0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Critical database latency"
+          description: "95th percentile DB query latency is {{ $value }}s for more than 1 minute"
+          runbook_url: "https://docs.chefsmind.ai/runbook/db-emergency"
+
+      # Алерты Media Generation
+      - alert: HighMediaGenerationLatency
+        expr: histogram_quantile(0.95, rate(media_generation_duration_seconds_bucket[5m])) > 30.0
+        for: 3m
+        labels:
+          severity: warning
+          service: media
+        annotations:
+          summary: "High media generation latency"
+          description: "95th percentile media generation time is {{ $value }}s for more than 3 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/media-performance"
+
+      - alert: MediaGenerationFailure
+        expr: rate(media_generation_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: media
+        annotations:
+          summary: "High media generation failure rate"
+          description: "Media generation failure rate is {{ $value | humanizePercentage }} for more than 2 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/media-troubleshooting"
+
+      # Алерты backup
+      - alert: BackupFailure
+        expr: increase(backup_failures_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: backup
+        annotations:
+          summary: "Backup operation failed"
+          description: "Backup operation has failed in the last hour"
+          runbook_url: "https://docs.chefsmind.ai/runbook/backup-recovery"
+
+      - alert: BackupSizeAnomaly
+        expr: abs(change(backup_size_bytes[24h])) / backup_size_bytes > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: backup
+        annotations:
+          summary: "Backup size anomaly detected"
+          description: "Backup size changed by more than 50% in 24 hours"
+          runbook_url: "https://docs.chefsmind.ai/runbook/backup-investigation"
+
+      # Алерты ресурсов
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} for more than 5 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/memory-optimization"
+
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} for more than 1 minute"
+          runbook_url: "https://docs.chefsmind.ai/runbook/emergency-scaling"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% for more than 5 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/cpu-optimization"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical CPU usage"
+          description: "CPU usage is {{ $value }}% for more than 2 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/emergency-scaling"
+
+      # Алерты дискового пространства
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value | humanizePercentage }} available"
+          runbook_url: "https://docs.chefsmind.ai/runbook/disk-cleanup"
+
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.05
+        for: 1m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical disk space"
+          description: "Disk space is {{ $value | humanizePercentage }} available"
+          runbook_url: "https://docs.chefsmind.ai/runbook/emergency-cleanup"
+
+      # Алерты QA Gate
+      - alert: HighQAFailureRate
+        expr: rate(qa_gate_failures_total[5m]) / rate(qa_gate_checks_total[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: warning
+          service: qa
+        annotations:
+          summary: "High QA failure rate"
+          description: "QA Gate failure rate is {{ $value | humanizePercentage }} for more than 3 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/qa-troubleshooting"
+
+      # Алерты OAuth/Google Services
+      - alert: GoogleOAuthFailure
+        expr: increase(google_oauth_failures_total[5m]) > 2
+        for: 2m
+        labels:
+          severity: warning
+          service: oauth
+        annotations:
+          summary: "Google OAuth failures detected"
+          description: "Multiple Google OAuth failures in the last 5 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/oauth-troubleshooting"
+
+      - alert: GoogleCalendarFailure
+        expr: increase(google_calendar_failures_total[5m]) > 1
+        for: 1m
+        labels:
+          severity: warning
+          service: calendar
+        annotations:
+          summary: "Google Calendar API failures"
+          description: "Google Calendar API failures detected"
+          runbook_url: "https://docs.chefsmind.ai/runbook/calendar-troubleshooting"
+
+  - name: chefs_mind_ai_business
+    rules:
+      # Бизнес-алерты
+      - alert: LowAgentSuccessRate
+        expr: rate(agent_requests_total{status="success"}[15m]) / rate(agent_requests_total[15m]) < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: agents
+        annotations:
+          summary: "Low agent success rate"
+          description: "Agent success rate is {{ $value | humanizePercentage }} over 15 minutes"
+          runbook_url: "https://docs.chefsmind.ai/runbook/agent-performance"
+
+      - alert: HighAgentLatency
+        expr: histogram_quantile(0.95, rate(agent_processing_duration_seconds_bucket[5m])) > 10.0
+        for: 3m
+        labels:
+          severity: warning
+          service: agents
+        annotations:
+          summary: "High agent processing latency"
+          description: "95th percentile agent processing time is {{ $value }}s"
+          runbook_url: "https://docs.chefsmind.ai/runbook/agent-optimization"

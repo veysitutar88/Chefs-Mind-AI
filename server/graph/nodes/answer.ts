@@ -1,5 +1,5 @@
 // server/graph/nodes/answer.ts
-import type { GraphState } from "../types";
+import type { GraphState } from "../types.js";
 
 /**
  * Финальный узел: возвращает последнее состояние без изменений.

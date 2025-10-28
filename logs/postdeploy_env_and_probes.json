@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-10-15T12:08:04.637Z",
+  "container": {
+    "id": null,
+    "name": null
+  },
+  "env_presence": {
+    "PORT": "missing",
+    "DATABASE_URL": "missing",
+    "SESSION_SECRET": "missing",
+    "OPENAI_API_KEY": "missing",
+    "PERPLEXITY_API_KEY": "missing",
+    "VERTEX_*": "missing",
+    "GOOGLE_*": "missing"
+  },
+  "port_env": "",
+  "probes": {
+    "health": {
+      "status": 0,
+      "content_type": "unknown",
+      "is_html": false
+    },
+    "apiHealth": {
+      "status": 0,
+      "content_type": "unknown",
+      "is_html": false
+    },
+    "metrics": {
+      "status": 0,
+      "content_type": "unknown",
+      "is_html": false
+    },
+    "backup": {
+      "status": 0,
+      "content_type": "unknown",
+      "is_html": false
+    }
+  },
+  "problems": [
+    "⚠️ НОВАЯ ПРОБЛЕМА: контейнер API не найден"
+  ]
+}

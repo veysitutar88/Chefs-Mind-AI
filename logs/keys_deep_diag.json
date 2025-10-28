@@ -1,0 +1,30 @@
+[
+  {
+    "provider": "openai",
+    "attempted": true,
+    "status": "ok",
+    "http_status": 200,
+    "error_reason": null
+  },
+  {
+    "provider": "perplexity",
+    "attempted": true,
+    "status": "ok",
+    "http_status": 200,
+    "error_reason": null
+  },
+  {
+    "provider": "google_api",
+    "attempted": true,
+    "status": "ok",
+    "http_status": 200,
+    "error_reason": null
+  },
+  {
+    "provider": "vertex",
+    "attempted": false,
+    "status": "fail",
+    "http_status": null,
+    "error_reason": "missing_credentials"
+  }
+]

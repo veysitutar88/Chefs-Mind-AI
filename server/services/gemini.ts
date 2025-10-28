@@ -1,9 +1,35 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { generateWithOpenAI } from './openai';
+import { generateWithOpenAI } from './openai.js';
+import { MediaGenerationResult } from '../../shared/types.js';
+
+// Interface for Vertex AI credentials
+interface VertexAICredentials {
+  project_id: string;
+  private_key_id?: string;
+  private_key?: string;
+  client_email?: string;
+}
+
+// Interface for Vertex AI response
+interface VertexAIResponse {
+  response: {
+    candidates: Array<{
+      content: {
+        parts: Array<{
+          inlineData?: {
+            data: string;
+            mimeType?: string;
+          };
+        }>;
+      };
+    }>;
+  };
+}
 
 // Initialize the Google AI client with the API key from Google AI Studio
+let genAI: GoogleGenerativeAI;
 try {
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
+  genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "");
 } catch (importError) {
   console.error('Failed to import GoogleGenerativeAI:', importError instanceof Error ? importError.message : importError);
   throw new Error('Gemini AI initialization failed');
@@ -74,7 +100,7 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
 {
   "response": "Deine Antwort hier",
   "sqlQuery": "SELECT statement ohne Semikolon" oder null,
-  "chartType": "bar|line|pie|doughnut" или null,
+  "chartType": "bar|line|pie|doughnut" oder null,
   "confidence": 0.95
 }`;
       break;
@@ -139,13 +165,13 @@ Antworte NUR mit einem gültigen JSON-Objekt in folgendem Format:
         confidence: parsedResult.confidence
       }
     };
-  } catch (error) {
-    console.error('Gemini model creation failed:', error instanceof Error ? error.message : error);
-    throw new Error('Gemini model creation failed');
+  } catch (error: any) {
+    console.error('Gemini API error:', error);
+    throw new Error(`Gemini API error: ${error?.message || 'Unknown error'}`);
   }
 }
 
-export async function generateWithGemini(prompt: string, type: 'image' | 'video'): Promise<{url: string, metadata: any}> {
+export async function generateWithGemini(prompt: string, type: 'image' | 'video'): Promise<MediaGenerationResult> {
   try {
     if (type === 'image') {
       console.log('🎨 Generating image with Imagen 3 via Vertex AI...');
@@ -176,24 +202,24 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
         if (!credentials.project_id) {
           throw new Error('Invalid credentials: missing project_id');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.warn('⚠️ Vertex AI credentials issue:', error.message);
         console.warn('🔄 Falling back to DALL-E 3 for image generation');
-        return await generateWithOpenAI(prompt, 'image');
+        const result = await generateWithOpenAI(prompt, 'image');
+        return {
+          ...result,
+          model: "dall-e-3"
+        };
       }
 
       // Initialize Vertex AI client with explicit credentials
       const vertexAI = new VertexAI({
-        project: process.env.GOOGLE_CLOUD_PROJECT_ID,
-        location: 'us-central1', // Imagen is available in us-central1
-        googleAuthOptions: {
-          credentials: credentials
-        }
+        project: process.env.GOOGLE_CLOUD_PROJECT_ID!,
+        location: process.env.VERTEX_LOCATION || 'us-central1',
       });
-
-      // Get Imagen 3 model
+      
       const model = vertexAI.getGenerativeModel({
-        model: 'imagen-3.0-generate-001'
+        model: "imagen-3", // Используем правильное имя модели
       });
 
       // Generate image
@@ -221,8 +247,8 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
               console.log('✅ Imagen 3 generation successful');
               return {
                 url: imageUrl,
+                model: "imagen-3",
                 metadata: {
-                  model: "imagen-3",
                   prompt,
                   status: 'success',
                   generated: true,
@@ -246,8 +272,8 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
       
       return {
         url: placeholderData,
+        model: "veo-3",
         metadata: {
-          model: "veo-3",
           prompt,
           status: 'unavailable',
           generated: false,
@@ -259,7 +285,7 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
     
     throw new Error("Unsupported generation type");
     
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Vertex AI ${type} generation error:`, error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
@@ -274,7 +300,11 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
       if (type === 'image') {
         console.log('🔄 Falling back to DALL-E 3...');
         try {
-          return await generateWithOpenAI(prompt, 'image');
+          const result = await generateWithOpenAI(prompt, 'image');
+          return {
+            ...result,
+            model: "dall-e-3"
+          };
         } catch (dalleError) {
           console.error('DALL-E 3 fallback also failed:', dalleError);
         }
@@ -286,8 +316,8 @@ export async function generateWithGemini(prompt: string, type: 'image' | 'video'
     
     return {
       url: placeholderData,
+      model: type === 'image' ? "imagen-3" : "veo-3",
       metadata: {
-        model: type === 'image' ? "imagen-3" : "veo-3",
         prompt,
         status: 'error',
         generated: false,

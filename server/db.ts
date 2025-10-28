@@ -1,15 +1,14 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as dotenv from 'dotenv';
+dotenv.config();
+// ВАЖНО: для алиаса @shared/schema расширение .js НЕ добавляем
+import * as schema from '@shared/schema';
+import { Pool } from 'pg';
 
-neonConfig.webSocketConstructor = ws;
+const writeClient = postgres(process.env.DATABASE_URL!);
+const readClient = postgres(process.env.DATABASE_READONLY_URL || process.env.DATABASE_URL!);
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+export const dbWrite = drizzle(writeClient, { schema });
+export const dbRead = drizzle(readClient, { schema });
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL! });

@@ -1,0 +1,432 @@
+{
+  "plan_id": "action_plan_2025_10_14_v2",
+  "timestamp": "2025-10-14T04:27:00Z",
+  "project": "Chef's Mind AI",
+  "version": "2.0 REVISED",
+  "critical_issues_addressed": [
+    "Bootstrap не закрыт - сервер периодически не запускается",
+    "44 TypeScript ошибки блокируют build/run",
+    "Метрики должны быть включены СРАЗУ для наблюдаемости",
+    "DB latency 624ms - критично высокая",
+    "Чекпоинты и воспроизводимость нестабильны"
+  ],
+  "current_blockers": {
+    "P0_CRITICAL": [
+      "npm run dev не запускается стабильно",
+      "44 TypeScript ошибки",
+      "Vite build проблемы",
+      "Разнобой /health vs /api/health",
+      "DB latency 624ms (должно быть <50ms для Neon pooler)"
+    ]
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "BOOTABILITY_FIRST",
+      "duration": "2-3 days",
+      "dates": "2025-10-14 to 2025-10-16",
+      "priority": "P0_CRITICAL",
+      "definition_of_done": {
+        "npm_run_dev": "Стабильно запускается 10 раз подряд",
+        "typescript": "tsc --noEmit возвращает 0 ошибок на server части",
+        "health_check": "/health отвечает 200 OK",
+        "metrics": "/metrics endpoint доступен и показывает latency",
+        "db_latency": "< 50ms через Neon pooler"
+      },
+      "tasks": [
+        {
+          "id": "FIX_DEV_CYCLE",
+          "task": "Починить dev-цикл запуска",
+          "effort": "4h",
+          "priority": "IMMEDIATE",
+          "steps": [
+            "Разделить dev и prod конфигурации",
+            "Dev: Vite dev server + Express API с proxy",
+            "Prod: build → server/public → Express static",
+            "Унифицировать /health (основной) и /api/health (alias)",
+            "Проверить server/public структуру"
+          ],
+          "success_criteria": "npm run dev запускается с первого раза"
+        },
+        {
+          "id": "TS_ERRORS_TRIAGE",
+          "task": "Триаж и исправление TypeScript ошибок",
+          "effort": "2h",
+          "priority": "IMMEDIATE",
+          "steps": [
+            "npx tsc --noEmit > logs/ts_errors_triage.txt",
+            "Категоризировать: imports, types, undefined, async",
+            "Быстрые фиксы (imports, missing types) - 1h",
+            "Структурные фиксы (API contracts) - отдельный task"
+          ]
+        },
+        {
+          "id": "TS_QUICK_FIXES",
+          "task": "Быстрые исправления TypeScript",
+          "effort": "4h",
+          "priority": "IMMEDIATE",
+          "steps": [
+            "Исправить import/export несоответствия (.js vs .ts)",
+            "Добавить недостающие типы для параметров",
+            "Временно: skipLibCheck: true",
+            "Включить strict mode но с allowJs для миграции"
+          ]
+        },
+        {
+          "id": "ENABLE_METRICS_NOW",
+          "task": "Включить метрики СЕЙЧАС (B7)",
+          "effort": "2h",
+          "priority": "IMMEDIATE",
+          "steps": [
+            "Добавить /metrics endpoint если отсутствует",
+            "http_request_duration_histogram",
+            "db_query_duration",
+            "error_rate counter",
+            "active_connections gauge"
+          ]
+        },
+        {
+          "id": "FIX_DB_LATENCY",
+          "task": "Исправить DB latency 624ms → <50ms",
+          "effort": "2h",
+          "priority": "IMMEDIATE",
+          "steps": [
+            "Проверить URL - должен быть Neon pooler (-pooler в hostname)",
+            "Добавить ?keepalive=true&statement_timeout=5000",
+            "Включить connection reuse",
+            "Измерить latency через /metrics после фикса"
+          ]
+        },
+        {
+          "id": "BASIC_SMOKE_TESTS",
+          "task": "Минимальные smoke тесты",
+          "effort": "2h",
+          "priority": "HIGH",
+          "steps": [
+            "tests/smoke/server-starts.test.ts",
+            "tests/smoke/health.test.ts",
+            "tests/smoke/metrics.test.ts",
+            "tests/smoke/db-connection.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "TESTS_AND_STABILITY",
+      "duration": "4 days",
+      "dates": "2025-10-17 to 2025-10-20",
+      "priority": "P1",
+      "definition_of_done": {
+        "integration_tests": "5+ integration тестов покрывают критические пути",
+        "lint": "ESLint 0 errors, Prettier форматирование",
+        "ci": "GitHub Actions pipeline зелёный",
+        "rbac": "RBAC матрица протестирована"
+      },
+      "tasks": [
+        {
+          "id": "INTEGRATION_SMOKE_SUITE",
+          "task": "Integration smoke тесты",
+          "effort": "8h",
+          "steps": [
+            "Настроить Vitest + Supertest",
+            "tests/integration/backup.test.ts",
+            "tests/integration/media-generation.test.ts",
+            "tests/integration/agent-routing.test.ts",
+            "tests/integration/qa-gate.test.ts"
+          ]
+        },
+        {
+          "id": "LINT_AND_FORMAT",
+          "task": "ESLint + Prettier + Husky",
+          "effort": "3h",
+          "steps": [
+            "Настроить ESLint с airbnb-typescript",
+            "Prettier с trailing comma и single quotes",
+            "Husky pre-commit hooks",
+            "npm run lint:fix на весь проект"
+          ]
+        },
+        {
+          "id": "CI_PIPELINE",
+          "task": "GitHub Actions CI",
+          "effort": "4h",
+          "steps": [
+            ".github/workflows/ci.yml",
+            "Steps: checkout, setup-node, install, tsc",
+            "lint, test:smoke, build",
+            "Matrix: Node 18, 20"
+          ]
+        },
+        {
+          "id": "RBAC_VERIFICATION",
+          "task": "Проверка RBAC матрицы",
+          "effort": "3h",
+          "steps": [
+            "Тест: admin может всё",
+            "Тест: chef может media и recipes",
+            "Тест: accountant может sheets и finance",
+            "Тест: unauthorized блокируется"
+          ]
+        },
+        {
+          "id": "TS_STRUCTURAL_FIXES",
+          "task": "Структурные TypeScript исправления",
+          "effort": "6h",
+          "steps": [
+            "Исправить API контракты",
+            "Типизировать enhanced-agent-chat",
+            "Типизировать enhanced-media",
+            "Убрать any типы где возможно"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "PERFORMANCE_OPTIMIZATION",
+      "duration": "3 days",
+      "dates": "2025-10-21 to 2025-10-23",
+      "priority": "P1",
+      "definition_of_done": {
+        "db_pooling": "Connection pool настроен и работает",
+        "caching": "Redis кеш для частых запросов",
+        "response_time": "P95 < 2 секунды",
+        "compression": "gzip включён"
+      },
+      "tasks": [
+        {
+          "id": "DB_CONNECTION_POOL",
+          "task": "Настройка DB connection pooling",
+          "effort": "3h",
+          "steps": [
+            "Проверить Neon pooler endpoint",
+            "max: 20, min: 5 connections",
+            "idle timeout: 10s",
+            "Метрики: pool size, wait time"
+          ]
+        },
+        {
+          "id": "REDIS_CACHING",
+          "task": "Redis кеширование",
+          "effort": "5h",
+          "steps": [
+            "Установить Redis (Docker для dev)",
+            "Кешировать agent responses (TTL 5min)",
+            "Кешировать media URLs (TTL 1h)",
+            "Invalidation при изменениях"
+          ]
+        },
+        {
+          "id": "RESPONSE_OPTIMIZATION",
+          "task": "Оптимизация ответов",
+          "effort": "4h",
+          "steps": [
+            "Включить gzip compression",
+            "Payload limits (10MB max)",
+            "Streaming для больших ответов",
+            "HTTP/2 если возможно"
+          ]
+        },
+        {
+          "id": "LAZY_MODEL_LOADING",
+          "task": "Lazy loading моделей",
+          "effort": "3h",
+          "steps": [
+            "Загружать модели по требованию",
+            "Preload критические модели",
+            "Memory monitoring",
+            "Graceful degradation"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "FRONTEND_INTEGRATION",
+      "duration": "4 days",
+      "dates": "2025-10-24 to 2025-10-27",
+      "priority": "P2",
+      "definition_of_done": {
+        "api_client": "Frontend успешно вызывает все API",
+        "websocket": "Real-time updates работают",
+        "responsive": "Mobile view корректный",
+        "status_panel": "Панель статусов показывает метрики"
+      },
+      "tasks": [
+        {
+          "id": "VITE_DEV_PROXY",
+          "task": "Настройка Vite dev proxy",
+          "effort": "2h",
+          "steps": [
+            "vite.config.ts proxy на :5000",
+            "Разделение dev/prod builds",
+            "HMR для frontend",
+            "API calls через proxy"
+          ]
+        },
+        {
+          "id": "STATUS_PANEL",
+          "task": "Панель статусов",
+          "effort": "6h",
+          "steps": [
+            "Компонент StatusDashboard",
+            "Показывать: health, metrics, backup status",
+            "Auto-refresh каждые 5 сек",
+            "Error states handling"
+          ]
+        },
+        {
+          "id": "WEBSOCKET_SETUP",
+          "task": "WebSocket для real-time",
+          "effort": "6h",
+          "steps": [
+            "Socket.io server setup",
+            "Client reconnection logic",
+            "Agent response streaming",
+            "Connection state UI"
+          ]
+        },
+        {
+          "id": "RESPONSIVE_DESIGN",
+          "task": "Mobile responsive",
+          "effort": "4h",
+          "steps": [
+            "Tailwind responsive classes",
+            "Touch-friendly buttons",
+            "Mobile navigation",
+            "Test on real devices"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "DOCUMENTATION_DEPLOYMENT",
+      "duration": "3 days",
+      "dates": "2025-10-28 to 2025-10-30",
+      "priority": "P2",
+      "definition_of_done": {
+        "readme": "README с quick start готов",
+        "api_docs": "OpenAPI spec + Swagger UI",
+        "docker": "Docker Compose работает",
+        "nightly_ci": "Nightly smoke tests в CI"
+      },
+      "tasks": [
+        {
+          "id": "README_RUNBOOK",
+          "task": "README и Runbook",
+          "effort": "4h",
+          "steps": [
+            "Quick start guide",
+            "Architecture overview",
+            "Environment setup",
+            "Troubleshooting guide",
+            ".env.example с комментариями"
+          ]
+        },
+        {
+          "id": "API_DOCUMENTATION",
+          "task": "OpenAPI документация",
+          "effort": "5h",
+          "steps": [
+            "OpenAPI 3.0 spec",
+            "Swagger UI на /api-docs",
+            "Примеры запросов",
+            "Postman collection export"
+          ]
+        },
+        {
+          "id": "DOCKER_SETUP",
+          "task": "Docker containerization",
+          "effort": "6h",
+          "steps": [
+            "Dockerfile multi-stage",
+            "docker-compose.yml",
+            "Health checks",
+            "Volume для uploads",
+            "ENV переменные"
+          ]
+        },
+        {
+          "id": "NIGHTLY_SMOKE",
+          "task": "Nightly CI smoke tests",
+          "effort": "3h",
+          "steps": [
+            "Schedule: '0 2 * * *'",
+            "Full smoke suite",
+            "Notification on failure",
+            "Metrics collection"
+          ]
+        }
+      ]
+    }
+  ],
+  "immediate_actions": {
+    "next_2_hours": [
+      "Запустить tsc --noEmit > logs/ts_errors_triage.txt",
+      "Проверить DATABASE_URL на наличие '-pooler' в hostname",
+      "Добавить /metrics endpoint если отсутствует",
+      "Разделить dev/prod конфигурации для Vite"
+    ],
+    "today": [
+      "Исправить критические TypeScript ошибки (imports)",
+      "Настроить базовый /health endpoint",
+      "Измерить текущую DB latency",
+      "Создать первый smoke test"
+    ]
+  },
+  "success_metrics": {
+    "phase_1": {
+      "server_starts": "100% success rate",
+      "typescript_errors": 0,
+      "db_latency": "<50ms",
+      "metrics_available": true
+    },
+    "phase_2": {
+      "test_coverage": ">30%",
+      "ci_pipeline": "green",
+      "lint_errors": 0
+    },
+    "phase_3": {
+      "response_time_p95": "<2s",
+      "cache_hit_rate": ">60%"
+    },
+    "phase_4": {
+      "frontend_api_integration": "100%",
+      "websocket_stability": ">99%"
+    },
+    "phase_5": {
+      "documentation_coverage": ">90%",
+      "docker_build": "successful",
+      "nightly_tests": "passing"
+    }
+  },
+  "risks_mitigation": {
+    "typescript_complexity": {
+      "risk": "44 ошибок могут быть сложнее чем ожидается",
+      "mitigation": "Триаж и категоризация, быстрые фиксы отдельно от структурных",
+      "fallback": "Временно отключить strict mode для критических файлов"
+    },
+    "db_latency_root_cause": {
+      "risk": "Latency может быть не только из-за pooler",
+      "mitigation": "Профилирование запросов, добавление индексов",
+      "fallback": "Временный кеш на уровне приложения"
+    },
+    "vite_integration": {
+      "risk": "Vite proxy может конфликтовать с Express",
+      "mitigation": "Чёткое разделение портов и путей",
+      "fallback": "Separate dev servers на разных портах"
+    }
+  },
+  "definition_of_done_overall": {
+    "compiles": "tsc --noEmit returns 0",
+    "starts": "npm run dev works reliably",
+    "tests_pass": "npm test passes",
+    "metrics_work": "/metrics returns data",
+    "health_ok": "/health returns 200",
+    "ci_green": "GitHub Actions all green",
+    "documented": "README has quick start",
+    "deployable": "Docker Compose works"
+  }
+}

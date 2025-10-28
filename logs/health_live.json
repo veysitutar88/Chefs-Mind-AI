@@ -1,0 +1,1 @@
+{"status":"error","timestamp":"2025-06-17T00:00:00.000Z","error":"OPENAI_API_KEY missing","backend_status":"failed_to_start","notes":"Backend cannot start without API keys"}

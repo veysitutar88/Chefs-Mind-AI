@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-10-14T23:17:00.000Z",
+  "problem": "ERR_MODULE_NOT_FOUND: Cannot find package 'vite'",
+  "solution": "moved vite from devDependencies to dependencies",
+  "image_id_before": "80553fff4cc4",
+  "image_id_after": "5c8fe6b158c8",
+  "image_size_after": "3.25GB",
+  "status": "partially_resolved",
+  "build_phase_status": "resolved",
+  "runtime_phase_status": "still_failing", 
+  "deployment_status": "blocked",
+  "container_status": "restarting",
+  "health_endpoint": "unavailable",
+  "note": "Temporary fix - consider refactoring to separate dev/prod entry points",
+  "detailed_analysis": {
+    "build_success": true,
+    "frontend_bundle_generated": "752.24 kB",
+    "server_bundle_generated": "40.0kb", 
+    "runtime_error_persists": true,
+    "vite_in_production_runtime": "architectural_problem"
+  },
+  "next_steps": [
+    "Remove vite imports from server runtime code",
+    "Implement conditional compilation for dev/prod modes",
+    "Consider separating dev server from production server entry points"
+  ]
+}
+{
+  "task": "vite_fix_refactoring_approach",
+  "timestamp": "2025-10-14T23:34:42Z",
+  "status": "partial_success",
+  "approach": "refactored server/index.ts to exclude vite from production bundle",
+  "changes_made": [
+    {
+      "file": "server/index.ts",
+      "change": "replaced dynamic import('./vite.js') with simple console.log in development mode",
+      "lines": "55-62",
+      "status": "completed"
+    },
+    {
+      "file": "package.json", 
+      "change": "moved vite and @vitejs/plugin-react from dependencies to devDependencies",
+      "status": "completed"
+    }
+  ],
+  "image_id_initial": "65a9905ef6c5",
+  "image_size": "662MB",
+  "image_id_final": "65a9905ef6c5",
+  "container_status": "restarting with exit code 1",
+  "error_persists": true,
+  "root_cause_identified": {
+    "file": "server/vite.ts",
+    "issue": "contains direct imports of vite package",
+    "imports": [
+      "import { createServer as createViteServer, createLogger } from 'vite';",
+      "import viteConfig from '../vite.config';"
+    ],
+    "explanation": "esbuild includes server/vite.ts in bundle automatically, causing vite dependency requirement in production"
+  },
+  "final_solution": "refactored server/index.ts to exclude vite from production",
+  "remaining_issue": "server/vite.ts still imports vite directly",
+  "recommendation": "completely isolate vite.ts from production bundle or create conditional imports in vite.ts",
+  "vite_in_deps": false,
+  "logs_updated": true
+}

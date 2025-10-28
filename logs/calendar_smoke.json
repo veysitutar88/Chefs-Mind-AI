@@ -1,0 +1,9 @@
+﻿{
+    "ok":  true,
+    "latencyMs":  50,
+    "statusCode":  200,
+    "response":  {
+                     "ok":  true,
+                     "message":  "Calendar endpoint for smoke test"
+                 }
+}

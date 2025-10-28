@@ -1,0 +1,14 @@
+* Host localhost:5002 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:5002...
+* Established connection to localhost (::1 port 5002) from ::1 port 61047 
+* using HTTP/1.x
+> GET / HTTP/1.1
+> Host: localhost:5002
+> User-Agent: curl/8.16.0
+> Accept: */*
+> 
+* Request completely sent off
+* Empty reply from server
+* shutting down connection #0

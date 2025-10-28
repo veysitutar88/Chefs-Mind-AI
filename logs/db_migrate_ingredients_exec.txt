@@ -1,0 +1,4 @@
+time="2025-10-16T08:50:07+02:00" level=warning msg="c:\\Projects\\Chefs-Mind-AI\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2025-10-16T08:50:07+02:00" level=warning msg="c:\\Projects\\Chefs-Mind-AI\\docker-compose.override.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2025-10-16T08:53:55+02:00" level=warning msg="c:\\Projects\\Chefs-Mind-AI\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2025-10-16T08:53:55+02:00" level=warning msg="c:\\Projects\\Chefs-Mind-AI\\docker-compose.override.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
