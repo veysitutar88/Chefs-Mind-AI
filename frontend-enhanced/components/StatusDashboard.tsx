@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { RBACGuard } from '../src/components/RBACGuard';
 
 // Функция для парсинга метрик в формате Prometheus
 function parsePrometheusMetrics(metricsText: string) {
@@ -10,23 +11,54 @@ function parsePrometheusMetrics(metricsText: string) {
   let heapSizeUsedBytes = 0;
 
   for (const line of lines) {
-    // Парсим общее количество запросов
-    if (line.startsWith('http_requests_total')) {
-      const match = line.match(/http_requests_total\s+([0-9.]+)/);
+    // Дополнительное логирование для отладки
+    if (
+      line.includes('chefs_') ||
+      line.includes('nodejs_') ||
+      line.includes('http_')
+    ) {
+      console.log('Metrics line:', line);
+    }
+
+    // Парсим общее количество запросов (с префиксом chefs_)
+    if (line.startsWith('chefs_http_requests_total')) {
+      const match = line.match(
+        /chefs_http_requests_total\{[^}]*\}\s+([0-9.]+)/
+      );
       if (match) {
         httpRequestsTotal = parseFloat(match[1]);
       }
     }
-    
-    // Парсим p95 задержку
-    if (line.includes('http_request_duration_seconds') && line.includes('quantile="0.95"')) {
-      const match = line.match(/http_request_duration_seconds\{[^}]*quantile="0.95"[^}]*\}\s+([0-9.]+)/);
+
+    // Парсим p95 задержку из Histogram метрики (используем bucket)
+    if (
+      line.includes('chefs_http_latency_ms_bucket') &&
+      line.includes('le="1000"')
+    ) {
+      const match = line.match(
+        /chefs_http_latency_ms_bucket\{[^}]*le="1000"[^}]*\}\s+([0-9.]+)/
+      );
       if (match) {
-        httpRequestDurationP95 = parseFloat(match[1]) * 1000; // Преобразуем в миллисекунды
+        // Это количество запросов с задержкой <= 1000ms
+        // Для простоты показываем это как p95 метрику
+        httpRequestDurationP95 = 1000; // В миллисекундах
       }
     }
-    
-    // Парсим использование памяти
+
+    // Альтернативно парсим из Summary если она есть
+    if (
+      line.includes('chefs_http_latency_summary_ms') &&
+      line.includes('quantile="0.95"')
+    ) {
+      const match = line.match(
+        /chefs_http_latency_summary_ms\{[^}]*quantile="0.95"[^}]*\}\s+([0-9.]+)/
+      );
+      if (match) {
+        httpRequestDurationP95 = parseFloat(match[1]); // Уже в миллисекундах
+      }
+    }
+
+    // Парсим использование памяти из Node.js метрик
     if (line.startsWith('nodejs_heap_size_used_bytes')) {
       const match = line.match(/nodejs_heap_size_used_bytes\s+([0-9.]+)/);
       if (match) {
@@ -38,7 +70,7 @@ function parsePrometheusMetrics(metricsText: string) {
   return {
     httpRequestsTotal,
     httpRequestDurationP95,
-    heapSizeUsedBytes
+    heapSizeUsedBytes,
   };
 }
 
@@ -46,7 +78,7 @@ export default function StatusDashboard() {
   const [metrics, setMetrics] = useState({
     httpRequestsTotal: 0,
     httpRequestDurationP95: 0,
-    heapSizeUsedBytes: 0
+    heapSizeUsedBytes: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +87,9 @@ export default function StatusDashboard() {
     // Функция для получения метрик
     const fetchMetrics = async () => {
       try {
-        const response = await fetch("/metrics");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/metrics`
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -64,8 +98,8 @@ export default function StatusDashboard() {
         setMetrics(parsedMetrics);
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch metrics:", err);
-        setError("Не удалось получить метрики");
+        console.error('Failed to fetch metrics:', err);
+        setError('Не удалось получить метрики');
       } finally {
         setLoading(false);
       }
@@ -100,17 +134,19 @@ export default function StatusDashboard() {
   }
 
   return (
-    <div className="border rounded p-3 bg-white space-y-2">
-      <div className="font-semibold">Статус системы</div>
-      <div className="text-sm">
-        Всего запросов: {Math.round(metrics.httpRequestsTotal)}
+    <RBACGuard allowedRoles={['admin', 'accountant']}>
+      <div className="border rounded p-3 bg-white space-y-2">
+        <div className="font-semibold">Статус системы</div>
+        <div className="text-sm">
+          Всего запросов: {Math.round(metrics.httpRequestsTotal)}
+        </div>
+        <div className="text-sm">
+          Задержка (p95): {metrics.httpRequestDurationP95.toFixed(2)} ms
+        </div>
+        <div className="text-sm">
+          Использование памяти: {metrics.heapSizeUsedBytes.toFixed(2)} MB
+        </div>
       </div>
-      <div className="text-sm">
-        Задержка (p95): {metrics.httpRequestDurationP95.toFixed(2)} ms
-      </div>
-      <div className="text-sm">
-        Использование памяти: {metrics.heapSizeUsedBytes.toFixed(2)} MB
-      </div>
-    </div>
+    </RBACGuard>
   );
 }

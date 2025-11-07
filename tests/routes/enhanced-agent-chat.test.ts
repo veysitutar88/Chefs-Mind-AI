@@ -5,17 +5,23 @@ import { createTestApp } from '../../tests/helpers/app.js';
 // Mock QA Gate to ensure deterministic behavior and inject routing info
 vi.mock('../middleware/qaGate.js', () => {
   return {
-    validateAndCorrectResponse: vi.fn(async (originalResponse: string, agentType: string, userQuery: string) => {
-      return {
-        correctedResponse: `Mocked researcher answer for: ${userQuery || 'N/A'}`,
-        originalResponse,
-        wasCorrected: false,
-        qaScore: 0.95,
-        agentName: 'researcher',
-        routedTo: 'researcher',
-        reasons: ['Mock QA passed']
-      };
-    }),
+    validateAndCorrectResponse: vi.fn(
+      async (
+        originalResponse: string,
+        agentType: string,
+        userQuery: string
+      ) => {
+        return {
+          correctedResponse: `Mocked researcher answer for: ${userQuery || 'N/A'}`,
+          originalResponse,
+          wasCorrected: false,
+          qaScore: 0.95,
+          agentName: 'researcher',
+          routedTo: 'researcher',
+          reasons: ['Mock QA passed'],
+        };
+      }
+    ),
     qaGateMiddleware: vi.fn((req: any, res: any, next: any) => {
       (req as any).qaResult = { score: 0.95, passed: true, reasons: [] };
       next();
@@ -28,15 +34,16 @@ vi.mock('../middleware/qaGate.js', () => {
 vi.mock('../services/perplexity.js', () => ({
   analyzeWithPerplexity: vi.fn(async (text: string) => ({
     response: `Mocked web result for: ${text}`,
-    metadata: { mocked: true }
+    metadata: { mocked: true },
   })),
 }));
 
 // Mock OpenAI used by QA validator to avoid network
 vi.mock('../services/openai.js', () => ({
-  analyzeWithGPT: vi.fn(async () => (
-    '{"qaScore":0.99,"wasCorrected":false,"correctedResponse":"OK","reasons":[]}'
-  )),
+  analyzeWithGPT: vi.fn(
+    async () =>
+      '{"qaScore":0.99,"wasCorrected":false,"correctedResponse":"OK","reasons":[]}'
+  ),
 }));
 
 describe('POST /api/enhanced-agent/chat - End-to-End', () => {

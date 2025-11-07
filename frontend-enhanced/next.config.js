@@ -6,19 +6,19 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5001/api/:path*',
+        destination: 'http://localhost:5003/api/:path*',
       },
       {
         source: '/socket.io/:path*',
-        destination: 'http://localhost:5001/socket.io/:path*',
+        destination: 'http://localhost:5003/socket.io/:path*',
       },
       {
         source: '/metrics',
-        destination: 'http://localhost:5001/metrics',
+        destination: 'http://localhost:5003/metrics',
       },
       {
         source: '/auth/:path*',
-        destination: 'http://localhost:5001/auth/:path*',
+        destination: 'http://localhost:5003/auth/:path*',
       },
     ]
   },

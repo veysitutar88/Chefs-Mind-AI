@@ -1,4 +1,10 @@
-import { register, collectDefaultMetrics, Counter, Histogram, Summary } from 'prom-client';
+import {
+  register,
+  collectDefaultMetrics,
+  Counter,
+  Histogram,
+  Summary,
+} from 'prom-client';
 
 collectDefaultMetrics({ prefix: 'chefs_' });
 
@@ -21,7 +27,7 @@ export const httpLatencySummary = new Summary({
   labelNames: ['method', 'route', 'status'],
   percentiles: [0.5, 0.9, 0.95, 0.99],
   maxAgeSeconds: 300, // 5 minutes
-  ageBuckets: 5
+  ageBuckets: 5,
 });
 
 export const llmLatency = new Histogram({
@@ -37,7 +43,7 @@ export const llmLatencySummary = new Summary({
   labelNames: ['model', 'agent'],
   percentiles: [0.5, 0.9, 0.95, 0.99],
   maxAgeSeconds: 600, // 10 minutes
-  ageBuckets: 3
+  ageBuckets: 3,
 });
 
 export const dbQueryLatency = new Histogram({
@@ -53,7 +59,7 @@ export const dbQueryLatencySummary = new Summary({
   labelNames: ['operation', 'table'],
   percentiles: [0.5, 0.9, 0.95, 0.99],
   maxAgeSeconds: 300, // 5 minutes
-  ageBuckets: 5
+  ageBuckets: 5,
 });
 
 export const mediaGenerationLatency = new Histogram({
@@ -69,7 +75,25 @@ export const mediaGenerationLatencySummary = new Summary({
   labelNames: ['type', 'provider', 'model'],
   percentiles: [0.5, 0.9, 0.95, 0.99],
   maxAgeSeconds: 600, // 10 minutes
-  ageBuckets: 3
+  ageBuckets: 3,
+});
+
+export const mediaGenerationErrors = new Counter({
+  name: 'chefs_media_generation_errors_total',
+  help: 'Total number of media generation errors',
+  labelNames: ['type', 'provider', 'model', 'error_type'],
+});
+
+export const mediaGenerationRetries = new Counter({
+  name: 'chefs_media_generation_retries_total',
+  help: 'Total number of media generation retry attempts',
+  labelNames: ['type', 'provider', 'model', 'retry_attempt'],
+});
+
+export const mediaGenerationFallbacks = new Counter({
+  name: 'chefs_media_generation_fallbacks_total',
+  help: 'Total number of media generation fallback activations',
+  labelNames: ['type', 'from_provider', 'to_provider'],
 });
 
 export const backupOperations = new Counter({
@@ -84,7 +108,7 @@ export const backupSize = new Summary({
   labelNames: ['type'],
   percentiles: [0.5, 0.9, 0.95, 0.99],
   maxAgeSeconds: 3600, // 1 hour
-  ageBuckets: 24
+  ageBuckets: 24,
 });
 
 export { register };

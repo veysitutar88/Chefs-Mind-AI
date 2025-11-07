@@ -1,28 +1,33 @@
-import React from 'react';
+'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-const Sidebar = () => (
-  <aside className="bg-gray-100 p-4 border-r">
-    <nav>
-      <ul className="space-y-2">
-        <li>
-          <Link href="/dashboard" className="text-blue-600 hover:underline">
-            Dashboard
+const items = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/agents', label: 'Agents' },
+  { href: '/media', label: 'Media' },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  return (
+    <nav className="p-4 space-y-1">
+      {items.map(it => {
+        const active = pathname?.startsWith(it.href);
+        return (
+          <Link
+            key={it.href}
+            href={it.href}
+            className={`block px-3 py-2 rounded-md border ${
+              active
+                ? 'bg-brand-blue text-white border-brand'
+                : 'text-white/80 border-transparent hover:border-brand hover:bg-brand-blue/10'
+            }`}
+          >
+            {it.label}
           </Link>
-        </li>
-        <li>
-          <Link href="/agents" className="text-blue-600 hover:underline">
-            Agents
-          </Link>
-        </li>
-        <li>
-          <Link href="/media" className="text-blue-600 hover:underline">
-            Media
-          </Link>
-        </li>
-      </ul>
+        );
+      })}
     </nav>
-  </aside>
-);
-
-export default Sidebar;
+  );
+}
