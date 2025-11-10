@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run dev:back\" \"npm run dev:front\"",
     "dev:back": "npm run dev:server",
     "dev:front": "npm run dev:client",
-    "dev:server": "cross-env NODE_ENV=development PORT=5003 tsx watch server/index.ts",
+    "dev:server": "cross-env NODE_ENV=development PORT=5001 tsx watch server/index.ts",
     "dev:client": "cd frontend-enhanced && npm run dev",
     "build": "npm run build:server",
     "build:server": "cross-env NODE_OPTIONS=--max_old_space_size=4096 tsc -p tsconfig.json",
