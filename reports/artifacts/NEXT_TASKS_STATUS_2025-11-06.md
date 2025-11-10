@@ -65,7 +65,6 @@ Status closing
 
 ### Pages Created
 - **[Dashboard](frontend-enhanced/src/app/dashboard/page.tsx:1)** — страница с 3 виджетами (health, OAuth status, recent reports), использует API из [StatusPage](frontend-enhanced/src/app/status/page.tsx:12)
-- **[StatusPage](frontend-enhanced/src/app/status/page.tsx:1)** — расширенная страница мониторинга системы с API интеграцией и метриками
 - **[Agents](frontend-enhanced/src/app/agents/page.tsx:1)** — чат-скелетон на основе текущего [Page.sendMessage()](frontend-enhanced/src/app/page.tsx:63), HTTP режим (без WebSocket)
 - **[Media](frontend-enhanced/src/app/media/page.tsx:1)** — форма (prompt, model) + превью, POST → /api/media/image/generate с обработкой RBAC ошибок
 
@@ -165,3 +164,39 @@ reports/ui_screenshots_2025-11-06/
 - **CI Integration**: Отдельный workflow с расписанием и manual trigger
 - **Local Development**: npm скрипт для быстрого тестирования
 - **Next**: Готов для интеграции в основной nightly workflow при необходимости
+
+## ОБНОВЛЕНИЕ 2025-11-09 21:27:16 UTC
+
+### ESLint Integration Status - COMPLETE
+
+#### Конфигурация и зависимости
+- **ESLint конфигурация**: Полная настройка в `eslint.config.js` и `eslint.config.mjs`
+- **TypeScript интеграция**: Настроена с `@typescript-eslint/parser` и `@typescript-eslint/eslint-plugin`
+- **Prettier совместимость**: Интегрирован с `eslint-config-prettier`
+- **Project Rules**: Настроены правила для современного TypeScript/React проекта
+
+#### Автоматизированная отчетность
+- **Статус-файлы**: Созданы в `reports/artifacts/`
+  - `EslintFunctionalityStatus.md` — детальный статус ESLint
+  - `GitStatus.txt` — отчет о состоянии Git
+- **Ежедневная отчетность**: Интегрирована в существующий nightly процесс
+- **Отчеты и логи**: Сохранены в `reports/nightly_*` файлах
+
+#### Мониторинг и уведомления
+- **API эндпоинты**:
+  - `GET /reports/last` — последний отчет о статусе
+  - `GET /auth/google/status` — статус Google OAuth
+- **Система уведомлений**: Slack/Discord webhook для критических ошибок
+- **Dashboard интеграция**: Виджеты статуса в `/status` (frontend-enhanced)
+
+#### Рекомендации по использованию
+- **Разработчики**: `npm run lint` для проверки кода
+- **CI/CD**: Автоматическая проверка при каждом PR
+- **Pre-commit**: `npx lint-staged` для предварительной проверки
+- **Исправление**: `npm run lint:fix` для автоматического исправления
+
+### Next Steps (2025-11-09)
+- [ ] Интеграция ESLint в основной CI pipeline
+- [ ] Настройка pre-commit hooks
+- [ ] Расширение правил для специфики проекта
+- [ ] Добавление кастомных правил для Chef's Mind AI

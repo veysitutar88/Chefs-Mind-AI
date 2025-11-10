@@ -619,3 +619,218 @@ Backend экспортирует HTTP‑метрики через prom-client в
   - Внешний volume для Prometheus data
   - Алертинг (Alertmanager) и дашборды (Grafana)
   - Базовые алерты: p95 latency, 5xx rate, UP/DOWN таргетов
+
+---
+
+## Known Issues — File Writes (2025‑11‑09)
+
+### File Write Operations in Development Environment
+
+При разработке в среде Windows/WSL могут возникать проблемы с записью файлов в следующих сценариях:
+
+1. **Locks и Permission Conflicts** - Временные файлы и логи могут блокироваться другими процессами, особенно при работе с Docker volumes.
+
+2. **Path Resolution Issues** - Относительные пути в ESM импортах (.js расширения) могут работать некорректно в разных рабочих директориях.
+
+3. **Database Migration Locks** - Параллельные процессы миграции БД могут создавать конфликтующие блокировки таблиц.
+
+4. **Session Storage Conflicts** - Express-session может конфликтовать при записи сессий в файловую систему в development режиме.
+
+5. **Cache File Writes** - Встроенные кэши (например, Drizzle table cache) могут не записываться корректно в mapped volumes.
+
+6. **Log Rotation Problems** - Лог-файлы могут оставаться открытыми процессами, препятствуя ротации.
+
+7. **Build Output Conflicts** - TypeScript build процессы могут конфликтовать при одновременной записи в dist/ папку.
+
+8. **Frontend Build Artifacts** - Next.js frontend может иметь проблемы с записью .next/ кэша при development сборке.
+
+**Workarounds:**
+- Используйте `SAFE_MODE=on` для write-операций с подтверждением
+- Запускайте процессы миграции последовательно через `npm run migrate`
+- Очищайте кэш командой `npm run clean` перед перезапуском
+- Используйте absolute paths в production окружении
+- Перезапускайте Docker контейнеры при конфликтах файловых locks
+
+### Severity: Medium
+### Status: Investigation Required
+### Components: File System, Database, Build Process
+### Reported: 2025-11-09
+
+## Dev Ports
+
+Политика портов для разработки (утверждена 2025-11-10):
+
+| Сервис | Порт | Назначение | Резерв |
+|--------|------|------------|--------|
+| API Backend | 5003 | Основной порт разработки | 5001 (legacy) |
+| Frontend Primary | 3000 | Next.js разработка | - |
+| Frontend Backup | 3001 | Альтернативный FE порт | - |
+| PostgreSQL | 5432 | База данных | - |
+| Prometheus | 9090 | Метрики | - |
+
+**Источники конфигурации:**
+- API порт: [server/index.ts](server/index.ts) - переменная `PORT`
+- ENV шаблоны: [.env.example](.env.example)
+- Frontend конфиг: [frontend-enhanced/.env.local](frontend-enhanced/.env.local)
+
+**Диаграмма топологии:**
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   PostgreSQL    │    │   API Backend   │    │   Frontend      │
+│     :5432       │────│     :5003       │────│   :3000/:3001   │
+│   (Database)    │    │   (Express)     │    │   (Next.js)     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+## Startup Order
+
+**Критический порядок запуска сервисов:**
+
+1. **База данных** → PostgreSQL (5432)
+2. **Backend API** → 5003 (зависит от БД)  
+3. **Frontend** → 3000/3001 (зависит от API)
+
+**Команды разработки:**
+```bash
+# 1. Запуск БД (обязательно первым)
+docker-compose -f docker-compose.prod.yml up -d db
+
+# 2. Ожидание готовности БД (рекомендуется)
+sleep 5 && docker-compose -f docker-compose.prod.yml ps db
+
+# 3. Запуск API
+npm run dev:server  # PORT=5003 по умолчанию
+
+# 4. Проверка API
+curl http://localhost:5003/health
+
+# 5. Запуск Frontend (в отдельном терминале)
+cd frontend-enhanced && npm run dev
+```
+
+**Проверка доступности:**
+- API: http://localhost:5003/health → `{ ok: true, uptime: ... }`
+- Frontend: http://localhost:3000 (или :3001)
+- Prometheus: http://localhost:9090 (опционально)
+
+**Таймауты и зависимости:**
+- БД: ~3-5 секунд до готовности
+- API: ожидает БД, health check через /health
+- Frontend: ожидает API (можно запускать параллельно)
+
+**Troubleshooting:**
+- Если API не стартует: проверьте БД и переменные DATABASE_URL
+- Если Frontend не подключается: проверьте NEXT_PUBLIC_API_URL
+## Дополнение (Addendum) — Политика разработки портов и логирования
+
+**Добавлено:** 2025-11-10 01:19:52 UTC  
+**Автор:** Kilo Code (architect)  
+**Основание:** Подтверждение конфигурации портов и правил логирования
+
+### Подтвержденная конфигурация портов разработки
+
+**Актуальные порты:**
+- **API Backend:** 5003 (основной порт разработки)
+- **Frontend Primary:** 3000 (Next.js разработка)
+- **Frontend Backup:** 3001 (альтернативный FE порт)
+- **PostgreSQL:** 5432 (база данных)
+- **Prometheus:** 9090 (метрики, опционально)
+
+**Источники подтверждения:**
+- API порт: `server/index.ts` - переменная `PORT`
+- ENV шаблоны: `.env.example` 
+- Frontend конфиг: `frontend-enhanced/.env.local`
+
+### Порядок запуска сервисов (КРИТИЧЕСКИЙ)
+
+**Обязательная последовательность:**
+
+1. **База данных** → PostgreSQL (5432)
+2. **Backend API** → 5003 (зависит от БД)
+3. **Frontend** → 3000/3001 (зависит от API)
+
+**Команды запуска:**
+```bash
+# 1. Запуск БД (обязательно первым)
+docker-compose -f docker-compose.prod.yml up -d db
+
+# 2. Ожидание готовности БД
+sleep 5 && docker-compose -f docker-compose.prod.yml ps db
+
+# 3. Запуск API
+npm run dev:server  # PORT=5003 по умолчанию
+
+# 4. Проверка API
+curl http://localhost:5003/health
+
+# 5. Запуск Frontend (в отдельном терминале)
+cd frontend-enhanced && npm run dev
+```
+
+### Правила логирования (APPEND-ONLY)
+
+**ACTION_LOG.md (append-only):**
+- **Путь:** `reports/ACTION_LOG.md`
+- **Политика:** Только добавление записей, запрет на редактирование существующих секций
+- **Формат:** Временная метка → Автор → Описание изменения → Затронутые файлы
+
+**Артефакты:**
+- **Базовая папка:** `reports/artifacts/`
+- **Структура:** `reports/artifacts/YYYY-MM-DD/HHMM/`
+- **Содержимое:** Логи, копии измененных файлов, отчеты валидации
+
+**Пример записи в ACTION_LOG.md:**
+```markdown
+# 2025-11-10 01:19:52 UTC - Kilo Code (architect)
+
+## Изменения конфигурации портов
+- Обновлены ENV файлы: добавлен PORT_API=5003
+- Подтверждены Frontend порты: 3000 (primary), 3001 (backup)
+- Зафиксирован порядок запуска: backend→frontend
+
+## Затронутые файлы
+- .env.example
+- frontend/.env.local  
+- frontend-enhanced/.env.local
+
+## Артефакты
+- reports/artifacts/2025-11-10/0119/
+```
+
+### Валидация конфигурации
+
+**Проверочные команды:**
+```bash
+# Проверка API
+curl http://localhost:5003/health
+
+# Проверка Frontend
+curl http://localhost:3000  # или 3001
+
+# Проверка БД
+docker-compose -f docker-compose.prod.yml ps db
+```
+
+**Ожидаемые результаты:**
+- API: `{ "ok": true, "uptime": ... }`
+- Frontend: 200 OK (HTML страница)
+- БД: Status "Up"
+
+### Политика изменений
+
+**Принципы:**
+- Существующие секции НЕ РЕДАКТИРУЮТСЯ
+- Новые данные добавляются только в конец файлов
+- Все изменения фиксируются в ACTION_LOG.md
+- Артефакты сохраняются в reports/artifacts/
+
+**В случае ошибок:**
+- Формируется Rollback‑аддендум
+- Откат через удаление добавленных секций
+- Восстановление из артефактов
+
+---
+
+**Конец Addendum**  
+*Этот раздел добавлен без изменения существующих секций документа*
+- Конфликты портов: используйте альтернативные порты (3001, 5002)
