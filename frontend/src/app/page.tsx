@@ -1,31 +1,52 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { ChatInterface } from '@/components/chat/ChatInterface'
-import { AgentSelector } from '@/components/AgentSelector'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Brain, MessageSquare, Activity } from 'lucide-react'
-import { checkHealth } from '@/lib/api'
+import { useState, useEffect } from 'react';
+import { ChatInterface } from '@/components/chat/ChatInterface';
+import { AgentSelector } from '@/components/AgentSelector';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Brain, MessageSquare, Activity } from 'lucide-react';
+import { checkHealth } from '@/lib/api';
 
 export default function Home() {
-  const [health, setHealth] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [health, setHealth] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [pingStatus, setPingStatus] = useState<string>('');
 
   useEffect(() => {
     const loadHealth = async () => {
       try {
-        const data = await checkHealth()
-        setHealth(data)
+        const data = await checkHealth();
+        setHealth(data);
       } catch (error) {
-        console.error('Error checking health:', error)
+        console.error('Error checking health:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadHealth()
-  }, [])
+    loadHealth();
+  }, []);
+
+  const handlePingApi = async () => {
+    setPingStatus('Пинг...');
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/health`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setPingStatus(`OK (${response.status}) - ${data.status}`);
+      } else {
+        setPingStatus(`Ошибка: ${response.status}`);
+      }
+    } catch (error) {
+      setPingStatus(
+        `Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -46,13 +67,26 @@ export default function Home() {
               {loading ? (
                 <Badge variant="outline">Проверка...</Badge>
               ) : health ? (
-                <Badge variant="default" className="bg-green-100 text-green-800">
+                <Badge
+                  variant="default"
+                  className="bg-green-100 text-green-800"
+                >
                   <Activity className="h-3 w-3 mr-1" />
                   Система активна
                 </Badge>
               ) : (
-                <Badge variant="destructive">
-                  Система недоступна
+                <Badge variant="destructive">Система недоступна</Badge>
+              )}
+              <Button onClick={handlePingApi} variant="outline" size="sm">
+                Ping API
+              </Button>
+              {pingStatus && (
+                <Badge
+                  variant={
+                    pingStatus.startsWith('OK') ? 'default' : 'destructive'
+                  }
+                >
+                  {pingStatus}
                 </Badge>
               )}
             </div>
@@ -77,15 +111,21 @@ export default function Home() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <strong>Оркестратор:</strong>
-                    <p className="text-muted-foreground">Анализирует запросы и направляет к нужному специалисту</p>
+                    <p className="text-muted-foreground">
+                      Анализирует запросы и направляет к нужному специалисту
+                    </p>
                   </div>
                   <div>
                     <strong>Шеф-повар:</strong>
-                    <p className="text-muted-foreground">Эксперт по кулинарии, рецептам и управлению кухней</p>
+                    <p className="text-muted-foreground">
+                      Эксперт по кулинарии, рецептам и управлению кухней
+                    </p>
                   </div>
                   <div>
                     <strong>Учётчик:</strong>
-                    <p className="text-muted-foreground">Финансовый специалист по отчётности и анализу</p>
+                    <p className="text-muted-foreground">
+                      Финансовый специалист по отчётности и анализу
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -115,11 +155,13 @@ export default function Home() {
       <footer className="border-t mt-12">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-sm text-muted-foreground">
-            <p>Chef's Mind AI - Демонстрация архитектуры мультиагентной системы</p>
+            <p>
+              Chef's Mind AI - Демонстрация архитектуры мультиагентной системы
+            </p>
             <p className="mt-1">Powered by LangGraph.js, Next.js, shadcn/ui</p>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

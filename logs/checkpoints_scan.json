@@ -1,0 +1,48 @@
+{
+  "status": "completed",
+  "timestamp": "2025-06-17T00:00:00.000Z",
+  "scan_type": "workspace_checkpoint_jsons",
+  "workspace_root": "c:\\Projects\\Chefs-Mind-AI",
+  "checkpoints_found": [
+    {
+      "filename": "LATEST.json",
+      "absolute_path": "c:\\Projects\\Chefs-Mind-AI\\checkpoints\\LATEST.json",
+      "mtime": "2025-10-13T14:54:00.000Z",
+      "type": "pointer",
+      "size_bytes": 7
+    },
+    {
+      "filename": "master_checkpoint_2025_06_17.json",
+      "absolute_path": "c:\\Projects\\Chefs-Mind-AI\\checkpoints\\master_checkpoint_2025_06_17.json",
+      "mtime": "2025-10-13T04:23:00.000Z",
+      "type": "baseline",
+      "size_bytes": 221
+    },
+    {
+      "filename": "master_checkpoint_2025_10_13.json",
+      "absolute_path": "c:\\Projects\\Chefs-Mind-AI\\checkpoints\\master_checkpoint_2025_10_13.json",
+      "mtime": "2025-10-13T14:54:00.000Z",
+      "type": "current",
+      "size_bytes": 0
+    },
+    {
+      "filename": "models_checkpoint_2025_06_17.json",
+      "absolute_path": "c:\\Projects\\Chefs-Mind-AI\\checkpoints\\models_checkpoint_2025_06_17.json",
+      "mtime": "2025-10-13T03:59:00.000Z",
+      "type": "models",
+      "size_bytes": 0
+    }
+  ],
+  "nested_checkpoints": {
+    "found": false,
+    "search_depth": "recursive",
+    "notes": "No nested checkpoints folders found"
+  },
+  "summary": {
+    "total_files": 4,
+    "active_checkpoint": "master_checkpoint_2025_10_13.json",
+    "latest_mtime": "2025-10-13T14:54:00.000Z",
+    "oldest_mtime": "2025-10-13T03:59:00.000Z",
+    "checkpoint_types": ["pointer", "baseline", "current", "models"]
+  }
+}

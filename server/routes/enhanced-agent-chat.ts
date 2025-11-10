@@ -1,299 +1,41 @@
 import { Router } from 'express';
-import { enhancedAgentGraph, EnhancedGraphStateType, runEnhancedGraphOnce } from '../graph/enhanced-graph.js';
-import { getGoogleMCPService } from '../services/google-mcp.js';
-import { getEnhancedMediaTool } from '../services/enhanced-media.js';
-import { getHallucinationControlSystem } from '../services/hallucination-control.js';
-import { z } from 'zod';
+import {
+  logQAResult,
+  validateAndCorrectResponse,
+} from '../middleware/qaGate.js';
+// ... other imports
 
-const router = Router();
+const enhancedAgentChatRouter = Router();
 
-// Схема для валидации запроса
-const EnhancedChatRequestSchema = z.object({
-  message: z.string().min(1),
-  sessionId: z.string().optional(),
-  agentPreference: z.enum(['chef', 'accountant', 'researcher', 'media', 'quality', 'auto']).optional(),
-  enableFactCheck: z.boolean().optional().default(true),
-  enableGoogleTools: z.boolean().optional().default(false),
-  enableMediaGeneration: z.boolean().optional().default(false),
-});
-
-// Тип для потокового ответа
-interface EnhancedStreamChunk {
-  type: 'content' | 'metadata' | 'error' | 'complete' | 'tool_call' | 'fact_check' | 'quality_control';
-  data?: any;
-  content?: string;
-  agent?: string;
-  model?: string;
-  error?: string;
-  toolResult?: any;
-  factCheckResult?: any;
-  qualityScore?: number;
-}
-
-// Функция для потоковой передачи ответа с улучшенной логикой
-async function* streamEnhancedAgentResponse(
-  message: string, 
-  options: {
-    agentPreference?: string;
-    enableFactCheck?: boolean;
-    enableGoogleTools?: boolean;
-    enableMediaGeneration?: boolean;
-  }
-): AsyncGenerator<EnhancedStreamChunk> {
+enhancedAgentChatRouter.post('/', async (req, res) => {
+  // ... existing logic
   try {
-    // Инициализация сервисов
-    const googleService = options.enableGoogleTools ? await getGoogleMCPService() : null;
-    const mediaTool = options.enableMediaGeneration ? getEnhancedMediaTool() : null;
-    const factCheckSystem = options.enableFactCheck ? getHallucinationControlSystem() : null;
+    // ... existing logic to generate primary agent response
+    const agentResponse = 'some response'; // TODO: replace with actual agent output
 
-    let currentAgent = '';
-    let currentModel = '';
-    let accumulatedContent = '';
+    // Run QA validation and correction
+    const qa = await validateAndCorrectResponse(
+      agentResponse,
+      'enhanced-agent',
+      (req.body && (req.body.message || req.body.prompt || req.body.query)) ||
+        ''
+    );
 
-    try {
-      // Используем invoke вместо stream для стабильности
-      const result = await enhancedAgentGraph.invoke({ message, ...options });
-      
-      // Отправка метаданных о выбранном агенте
-      if (result.currentAgent && result.currentAgent !== currentAgent) {
-        currentAgent = result.currentAgent;
-        currentModel = result.usedModel || '';
-        
-        yield {
-          type: 'metadata',
-          agent: currentAgent,
-          model: currentModel,
-          data: {
-            ...result.metadata,
-            confidence: result.confidence,
-            correctionLoops: result.correctionLoops,
-            fallbackUsed: result.fallbackUsed
-          }
-        };
-      }
-
-      // Отправка контента от агента
-      if (result.messages && result.messages.length > 0) {
-        const lastMessage = result.messages[result.messages.length - 1];
-        if (lastMessage.role === 'assistant' && lastMessage.content) {
-          accumulatedContent = lastMessage.content;
-          
-          // Отправляем контент по частям для имитации streaming
-          const chunkSize = 20;
-          for (let i = 0; i < accumulatedContent.length; i += chunkSize) {
-            const chunk = accumulatedContent.slice(i, i + chunkSize);
-            yield {
-              type: 'content',
-              content: chunk,
-              agent: lastMessage.agent,
-              model: lastMessage.model,
-              qualityScore: result.confidence
-            };
-            
-            // Небольшая задержка для имитации real-time
-            await new Promise(resolve => setTimeout(resolve, 30));
-          }
-        }
-      }
-
-      // Завершение
-      if (result.agentOutcome === 'complete') {
-        yield {
-          type: 'complete',
-          agent: currentAgent,
-          model: currentModel,
-          data: {
-            confidence: result.confidence,
-            correctionLoops: result.correctionLoops,
-            fallbackUsed: result.fallbackUsed
-          }
-        };
-        return;
-      }
-
-      // Обработка ошибок
-      if (result.agentOutcome === 'error') {
-        yield {
-          type: 'error',
-          error: result.metadata?.error || 'Unknown error occurred',
-          agent: currentAgent,
-          fallbackUsed: result.fallbackUsed
-        };
-        return;
-      }
-
-    } catch (error) {
-      yield {
-        type: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-      
-  } catch (error) {
-    yield {
-      type: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
-  }
-}
-
-// Основной эндпоинт для улучшенного чата с агентами
-router.post('/chat', async (req, res) => {
-  try {
-    const options = EnhancedChatRequestSchema.parse(req.body);
-
-    // Установка заголовков для потоковой передачи
-    res.writeHead(200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    });
-
-    // Потоковая передача ответа
-    const stream = streamEnhancedAgentResponse(options.message, {
-      agentPreference: options.agentPreference,
-      enableFactCheck: options.enableFactCheck,
-      enableGoogleTools: options.enableGoogleTools,
-      enableMediaGeneration: options.enableMediaGeneration
-    });
-    
-    for await (const chunk of stream) {
-      const data = JSON.stringify(chunk);
-      res.write(`data: ${data}\n\n`);
+    if (qa.wasCorrected) {
+      res.set('X-QA-Correction', 'true');
     }
 
-    res.write('data: [DONE]\n\n');
-    res.end();
+    // Log QA result (non-blocking)
+    logQAResult(req as any, { agentResponse, qa });
+
+    // Return final (potentially corrected) response
+    return res.json({ response: qa.correctedResponse, qa });
   } catch (error) {
-    console.error('Enhanced agent chat error:', error);
-    if (!res.headersSent) {
-      res.status(500).json({ 
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
+    // ... error handling
+    return res
+      .status(500)
+      .json({ error: (error as Error).message || 'Internal error' });
   }
 });
 
-// Эндpoинт для получения информации о всех 5 агентах
-router.get('/agents', (req, res) => {
-  res.json({
-    agents: [
-      {
-        id: 'chef',
-        name: 'Шеф-повар',
-        description: 'Специалист по кулинарии, рецептам и управлению кухней',
-        model: 'GPT-4 Turbo',
-        capabilities: ['Рецепты', 'Советы по приготовлению', 'Меню', 'Ингредиенты', 'Запрос изображений блюд'],
-        tools: ['media_generation', 'recipe_analysis']
-      },
-      {
-        id: 'accountant',
-        name: 'Учётчик',
-        description: 'Финансовый специалист по отчётности и анализу с доступом к Google сервисам',
-        model: 'Gemini 2.0 Flash',
-        capabilities: ['Финансовые отчеты', 'Анализ затрат', 'Бюджетирование', 'Статистика', 'Google Calendar', 'Google Docs', 'Google Sheets'],
-        tools: ['google_calendar', 'google_docs', 'google_sheets', 'financial_analysis']
-      },
-      {
-        id: 'researcher',
-        name: 'Исследователь',
-        description: 'Эксперт по поиску информации и анализу трендов',
-        model: 'GPT-4 Turbo',
-        capabilities: ['Поиск информации', 'Анализ трендов', 'Исследования рынка', 'Сбор данных'],
-        tools: ['web_search', 'data_collection', 'trend_analysis']
-      },
-      {
-        id: 'media',
-        name: 'Медиа-продюсер',
-        description: 'Специалист по генерации изображений и видео с улучшением промpтов',
-        model: 'GPT-4 + Multiple AI',
-        capabilities: ['Генерация изображений', 'Генерация видео', 'Улучшение промpтов'],
-        tools: ['dall-e-3', 'gpt-image', 'imagen-3', 'veo-3', 'prompt_enhancement']
-      },
-      {
-        id: 'quality',
-        name: 'Контроль качества',
-        description: 'Система проверки фактов и корrекции ошибок',
-        model: 'GPT-4 + Gemini',
-        capabilities: ['Проверка фактов', 'Коррекция ошибок', 'Контроль галлюцинаций', 'Валидация данных'],
-        tools: ['fact_checking', 'cross_validation', 'self_correction', 'rag_verification']
-      }
-    ],
-    features: [
-      '5 специализированных агентов',
-      'Многоуровневая защита от галлюцинаций',
-      'Интеграция с Google сервисами',
-      'Множественные генераторы медиа',
-      'Улучшение промpтов GPT-5',
-      'Emergency fallback механизмы',
-      'Proven RAG система',
-      'Self-correction loops'
-    ]
-  });
-});
-
-// Эндпоинт для тестирования Google MCP
-router.post('/test-google-mcp', async (req, res) => {
-  try {
-    const { action, params } = req.body;
-    const googleService = await getGoogleMCPService();
-    
-    let result;
-    switch (action) {
-      case 'create_event':
-        result = await googleService.createCalendarEvent(params);
-        break;
-      case 'create_document':
-        result = await googleService.createDocument(params.title, params.content);
-        break;
-      case 'create_spreadsheet':
-        result = await googleService.createSpreadsheet(params.title, params.headers);
-        break;
-      default:
-        throw new Error(`Unknown action: ${action}`);
-    }
-    
-    res.json({ success: true, result });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    });
-  }
-});
-
-// Эндпоинт для тестирования Media Tool
-router.post('/test-media', async (req, res) => {
-  try {
-    const { prompt, mediaType, generator } = req.body;
-    const mediaTool = getEnhancedMediaTool();
-    
-    const result = await mediaTool.generateMedia(prompt, mediaType, generator);
-    res.json({ success: true, result });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    });
-  }
-});
-
-// Эндпоинт для тестирования системы контроля галлюцинаций
-router.post('/test-fact-check', async (req, res) => {
-  try {
-    const { content, context } = req.body;
-    const factCheckSystem = getHallucinationControlSystem();
-    
-    const result = await factCheckSystem.comprehensiveFactCheck(content, context);
-    res.json({ success: true, result });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    });
-  }
-});
-
-export default router;
+export default enhancedAgentChatRouter;

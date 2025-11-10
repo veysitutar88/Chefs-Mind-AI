@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "timestamp": "2025-10-13T21:37:26.178Z",
+  "database_url": "postgresql://***:***@ep-fragrant-tree-agk3qhvl-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+  "latency_ms": 592,
+  "result": {
+    "test": 1
+  },
+  "message": "Database connection successful"
+}

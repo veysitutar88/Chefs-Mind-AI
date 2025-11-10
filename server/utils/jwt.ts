@@ -1,8 +1,8 @@
-import jwt from "jsonwebtoken";
-import { User } from "@shared/schema";
+import jwt from 'jsonwebtoken';
+import { User } from '@shared/schema.js';
 
-const JWT_SECRET = process.env.SESSION_SECRET || "fallback-secret-for-dev";
-const JWT_EXPIRES_IN = "7d";
+const JWT_SECRET = process.env.SESSION_SECRET || 'fallback-secret-for-dev';
+const JWT_EXPIRES_IN = '7d';
 
 export interface JWTPayload {
   userId: string;
@@ -14,7 +14,7 @@ export function generateToken(user: User): string {
     userId: user.id,
     username: user.username,
   };
-  
+
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });

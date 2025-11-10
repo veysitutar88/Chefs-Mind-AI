@@ -4,3 +4,16 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+checkpoints/
+logs/
+tmp/
+*.zip
+
+# Local database data
+/data
+postgres_data/
+checkpoint_$(date
+frontend-enhanced/.next/
+playwright-report/
+test-results/
+frontend-enhanced/.next/

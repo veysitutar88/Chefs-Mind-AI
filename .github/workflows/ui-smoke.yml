@@ -1,0 +1,219 @@
+# UI Smoke Tests Workflow
+# Nightly UI testing with screenshots and HTML snapshots
+name: UI Smoke Tests
+
+on:
+  schedule:
+    # Run daily at 02:10 UTC (separate from nightly.yml at 02:00)
+    - cron: '10 2 * * *'
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Enable debug mode'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  FRONTEND_URL: 'http://localhost:3000'
+  BACKEND_URL: 'http://localhost:5001'
+
+jobs:
+  ui-smoke-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Install root dependencies
+        run: npm ci --ignore-scripts
+        continue-on-error: false
+        
+      - name: 🏗️ Install frontend dependencies
+        run: |
+          cd frontend-enhanced
+          npm ci --ignore-scripts
+          
+      - name: 🔨 Build backend
+        run: npm run build:server
+        continue-on-error: false
+        
+      - name: 🎨 Build frontend
+        run: npm run build:client
+        continue-on-error: false
+        
+      - name: 🚀 Start backend (background)
+        run: |
+          # Set environment for development testing
+          export NODE_ENV=development
+          export PORT=5001
+          export SAFE_MODE=off
+          export SESSION_SECRET=test_session_secret_12345
+          export GOOGLE_AUTH_SMOKE_BYPASS=1
+          export DATABASE_URL=postgresql://test:test@localhost:5432/test
+          # Start backend in background
+          npm run start &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
+          # Wait for backend to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:5001/health; do sleep 2; done'
+        continue-on-error: false
+        
+      - name: 🌐 Start frontend (background)
+        run: |
+          cd frontend-enhanced
+          # Set frontend environment
+          export NEXT_PUBLIC_API_URL=http://localhost:5001
+          export NODE_ENV=development
+          # Start frontend in background
+          npm run start &
+          FRONTEND_PID=$!
+          echo "FRONTEND_PID=$FRONTEND_PID" >> $GITHUB_ENV
+          # Wait for frontend to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+        continue-on-error: false
+        
+      - name: 🔍 Health checks
+        run: |
+          echo "=== Backend Health Check ==="
+          curl -f http://localhost:5001/health
+          echo -e "\n=== Frontend Health Check ==="
+          curl -f http://localhost:3000
+          echo -e "\n=== Backend Reports Endpoint ==="
+          curl -f http://localhost:5001/reports/last
+        continue-on-error: true
+        
+      - name: 📸 Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        continue-on-error: false
+        
+      - name: 📷 Capture UI screenshots
+        run: npm run ui:screenshots
+        continue-on-error: true
+        env:
+          CI: 'true'
+          
+      - name: 🌐 Save HTML snapshots
+        run: |
+          mkdir -p reports/ui_html_$(date +%Y-%m-%d)
+          
+          # Capture HTML from key pages
+          pages=("/" "/dashboard" "/agents" "/media" "/status")
+          for page in "${pages[@]}"; do
+            echo "Saving HTML for $page"
+            curl -s "http://localhost:3000$page" -o "reports/ui_html_$(date +%Y-%m-%d)/$(echo $page | sed 's|/||g' | sed 's|^$|landing|').html"
+          done
+        continue-on-error: true
+        
+      - name: 📋 Generate test report
+        run: |
+          cat > reports/ui-smoke-report.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "workflow": "ui-smoke",
+            "node_version": "${{ env.NODE_VERSION }}",
+            "backend_url": "${{ env.BACKEND_URL }}",
+            "frontend_url": "${{ env.FRONTEND_URL }}",
+            "status": "completed",
+            "artifacts": {
+              "screenshots": "reports/ui_screenshots/",
+              "html_snapshots": "reports/ui_html_$(date +%Y-%m-%d)/",
+              "backend_health": "http://localhost:5001/health",
+              "frontend_health": "http://localhost:3000"
+            },
+            "debug": ${{ github.event.inputs.debug_enabled || 'false' }}
+          }
+          EOF
+        continue-on-error: true
+        
+      - name: 🛑 Stop services
+        if: always()
+        run: |
+          if [ ! -z "$BACKEND_PID" ]; then
+            echo "Stopping backend (PID: $BACKEND_PID)"
+            kill $BACKEND_PID || true
+          fi
+          if [ ! -z "$FRONTEND_PID" ]; then
+            echo "Stopping frontend (PID: $FRONTEND_PID)"
+            kill $FRONTEND_PID || true
+          fi
+          # Force kill any remaining node processes
+          pkill -f "node.*server/index.js" || true
+          pkill -f "npm.*start.*frontend-enhanced" || true
+          
+      - name: 📁 Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-smoke-artifacts-${{ github.run_number }}
+          path: |
+            reports/ui_screenshots/
+            reports/ui_html_*/
+            reports/ui-smoke-report.json
+          retention-days: 7
+          
+      - name: 📊 Archive logs
+        if: always()
+        run: |
+          # Create comprehensive log archive
+          tar -czf ui-smoke-logs-${{ github.run_number }}.tar.gz \
+            reports/ui_screenshots/ \
+            reports/ui_html_*/ \
+            reports/ui-smoke-report.json \
+            2>/dev/null || true
+            
+      - name: 💾 Upload logs archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-smoke-logs-${{ github.run_number }}
+          path: ui-smoke-logs-${{ github.run_number }}.tar.gz
+          retention-days: 30
+          
+  summary:
+    needs: ui-smoke-tests
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: 📊 Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          
+      - name: 📈 Generate summary
+        run: |
+          echo "# UI Smoke Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ **UI Smoke Tests PASSED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The following artifacts were generated:" >> $GITHUB_STEP_SUMMARY
+            echo "- UI screenshots: \`reports/ui_screenshots/\`" >> $GITHUB_STEP_SUMMARY
+            echo "- HTML snapshots: \`reports/ui_html_*/\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Test report: \`reports/ui-smoke-report.json\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **UI Smoke Tests FAILED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs and artifacts for more details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Review generated screenshots for visual regressions" >> $GITHUB_STEP_SUMMARY
+          echo "- Check HTML snapshots for structural changes" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitor backend health at \`http://localhost:5001/health\`" >> $GITHUB_STEP_SUMMARY

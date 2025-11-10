@@ -1,0 +1,581 @@
+Готово. Ниже — исправленный финальный CHECKPOINT.md с актуальными данными по нейросетям и ролям. Три ключевые правки:
+Media Generation — только gpt-image-1 (DALL·E 3), Imagen 4, Veo 2 (убрал Leonardo Alchemy v3, Freepik AI, Firefly v3).
+Researcher — модель sonar-pro (Perplexity) для веб-поиска.
+Manager/Admin — функции делегированы Accountant; Manager только RBAC-логика, без обработки заказов/закупок/инвойсов.
+Claude-3.5-sonnet Anthropic — корректная характеристика slow, highest quality (резерв).
+Скопируй текст целиком в CHECKPOINT.md в корень репозитория.
+
+
+CHECKPOINT — Chef's Mind AI (FULL MASTER CONTEXT v2.4)
+Версия: v2.4 FINAL (corrected models & roles)
+Дата: 2025-10-21T23:32 CEST
+Релиз: v2.1.1-stable
+Commit: см. checkpoints/LATEST_COMMIT.txt
+Compose snapshot: checkpoints/prod_effective_config_2025-10-21T19-54Z.yml
+Master checkpoint: checkpoints/master_checkpoint_2025_10_21_1954.json
+LATEST.json: только указатель { "latest": "checkpoints/master_checkpoint_2025_10_21_1954.json" }
+
+
+0) Суть проекта — контекст, цель, границы
+Название и миссия
+Chef's Mind AI — интеллектуальная система для ресторанной кухни и управления, объединяющая:
+Universal Ask — центральный эндпоинт для быстрых запросов шефа/менеджера с выбором модели.
+Multi-Agent System — оркестрация специализированных агентов (Chef, Accountant, Researcher, Media Studio, Quality Control).
+Kitchen ERP — управление ингредиентами, рецептами, закупками, заказами, инвойсами.
+Media Generation & Branding — gpt-image-1 (DALL·E 3), Imagen 4, Veo 2 для создания визуальной идентичности (логотипы, паттерны, видео-контент).
+Fine Dining Aesthetics — минимализм, вертикальная прокрутка, цветовая палитра Na'Vi Blue #3E6BA3 & Beige #B79F8C, шрифт Inter, Tailwind + Shadcn UI.
+Роли и агенты (актуализировано 2025-10-21)
+Роль/АгентСтатусФункцииМодель
+Chef
+✅ Реализован
+быстрые запросы рецептов, ингредиентов, калькуляции порций, Universal Ask с таймаутом 12s
+gpt-4o-mini
+Manager/Admin
+✅ RBAC only
+управление правами доступа (RBAC); НЕ обрабатывает заказы/закупки/инвойсы (делегировано Accountant)
+—
+Accountant
+✅ Реализован
+обработка инвойсов, финансовые расчёты, управление заказами, закупками, инвойсами, интеграция с Google Sheets/Calendar для событий оплаты/доставки
+gemini-2.5-pro
+Researcher
+✅ Реализован
+поиск информации, веб-запросы через Perplexity API, обновление контекста из внешних источников
+sonar-pro (Perplexity)
+Media Studio
+✅ Реализован
+генерация изображений через gpt-image-1 (DALL·E 3), Imagen 4; видео через Veo 2; промпты с Enhancer
+gpt-4o (prompts), imagen-4 / gpt-image-1 / veo-2 (generation)
+Quality Control
+⚠️ Повреждён
+валидация ответов; узел требует восстановления (см. architecture_review.md)
+—
+Orchestrator (GPT-5)
+✅ Реализован
+маршрутизация запросов между агентами по ключевым словам; планируется LLM-контроль
+gpt-4o или gemini-2.5-pro
+Архитектура (текущая и целевая)
+Backend: Node/TypeScript/Express на порту 5000 (контейнер) → 5001 (хост); entrypoint fallback: node dist/server/index.js → node dist/index.js → ts-node server/index.ts.
+Frontend: Next.js 14.x на 3000 (dev); UI клиент с базовым model-picker; требуется OSS-апгрейд (statuses, errors, green/red indicators).
+База данных: Postgres с Drizzle ORM; схемы users, chat_sessions, messages, uploads, generated_content, media_jobs, ingredients, recipes, invoices, agent_settings, units, suppliers, categories, ingredient_prices, recipe_components, snapshots.
+Сессии: Redis (prod обязательно); PgStore fallback разрешён временно по флагу ALLOW_NONREDIS_IN_PROD=true на стенде :5002; MemoryStore в production → FATAL process.exit(1).
+Кэши и очереди: Redis для session store, опционально для job queues (медиа).
+STT/Speech: отдельный сервис (может быть отключён).
+Docker Compose: db, redis, backend (api), frontend; llm_proxy УДАЛЁН, Novita выключен.
+Принципы разработки
+Максимум OSS-блоков, без изобретения велосипедов.
+Нестабильные провайдеры (Novita, llm_proxy) выключены и удалены из зависимостей.
+Все критичные операции под RBAC + SAFE_MODE с X-Confirm-Code.
+Миграции БД через Drizzle; SQL DDL консолидируется в миграции.
+Наблюдаемость: /health, /metrics (Prometheus), цели p95, логи операций.
+
+
+1) Модели и маршрутизация — Model Routing (актуализировано)
+Модель по умолчанию
+gpt-4o-mini — быстрая модель для роли Chef с таймаутом 12s; фолбэк на цепочку моделей по скорости (gpt-4o-mini → gpt-4o → gemini-2.0-flash-exp).
+Реестр моделей (см. server/utils/models.ts или аналог)
+modelIdПровайдерСкоростьКачествоРольПримечание
+gpt-4o-mini
+OpenAI
+fast
+balanced
+Chef, Quick Ask
+Default для Chef 12s timeout
+gpt-4o
+OpenAI
+medium
+high
+Manager, Orchestrator, Media Prompts
+Универсальная рабочая модель
+gemini-2.0-flash-exp
+Google
+fast
+medium
+Fallback
+Резервная быстрая модель
+gemini-2.5-pro
+Google
+slow
+highest
+Accountant, сложные расчёты
+Для финансовых расчётов и инвойсов
+sonar-pro
+Perplexity
+medium
+high (web search)
+Researcher
+Используется для веб-поиска и обновления контекста
+claude-3.5-sonnet
+Anthropic
+slow
+highest
+(резерв)
+Медленная, высочайшее качество; резерв для сложных задач
+gpt-image-1
+OpenAI (DALL·E 3)
+medium
+high
+Media Studio (images)
+Генерация изображений, логотипов, паттернов
+imagen-4
+Google
+medium
+highest
+Media Studio (images)
+Фотореалистичная генерация изображений
+veo-2
+Google
+slow
+highest
+Media Studio (video)
+Генерация видео-контента; пока в резерве
+Маршрутизация запросов (Graph-based, см. server/graph/enhanced-graph.ts)
+Orchestrator Node (enhancedOrchestratorNode) — анализирует запрос, выбирает целевого агента по ключевым словам или контексту; в будущем — LLM-планировщик с gpt-4o или gemini-2.5-pro.
+Router Node (enhancedRouteToAgent) — возвращает id узла для выполнения.
+Agent Nodes:
+Chef: gpt-4o-mini (fast queries, 12s timeout).
+Accountant: gemini-2.5-pro (invoices, orders, purchase_orders, financial calc).
+Researcher: sonar-pro (Perplexity) (web search, external context).
+Media Studio: gpt-4o (prompts) → gpt-image-1 / imagen-4 (images), veo-2 (video).
+Quality Control: (ПОВРЕЖДЁН; требует восстановления).
+Final Answer Node (finalAnswerNode) — собирает итоговый ответ; временно подменяет Quality Control Node из-за повреждённого файла quality_control.ts.
+QA-Gate Middleware (qaGateMiddleware, logQAResult) — валидация на HTTP-уровне; результаты логируются; требуется обёртка всех чат-эндпоинтов.
+Таймауты и фолбэки (запланировано — Universal Ask stabilization)
+Chef role: таймаут 12s; обёртка callLLM() в withTimeout(12000).
+Fallback chain: цепочка моделей по скорости; остановка на первом успехе.
+Response field: data.route.model — возвращает finalModelId в ответе.
+Streams: временно флаг STREAM_OFF=true для упрощённого JSON; после стабилизации вернуть стримы.
+
+
+2) База данных — схемы, таблицы, миграции
+Drizzle ORM схемы (shared/schema.ts)
+Реализованные таблицы:
+users — id, email, role (chef/manager/admin), created_at, updated_at.
+chat_sessions — id, user_id, agent_type, created_at.
+messages — id, session_id, role (user/assistant), content, model_id, timestamp.
+uploads — id, user_id, filename, mimetype, size, path, created_at.
+generated_content — id, user_id, type (image/video), prompt, provider (gpt-image-1, imagen-4, veo-2), url, created_at.
+media_jobs — id, user_id, status, provider (gpt-image-1, imagen-4, veo-2), prompt, result_url, created_at.
+ingredients — id, name, unit, category_id, supplier_id, price, created_at.
+recipes — id, name, description, servings, created_by, created_at.
+recipe_components — id, recipe_id, ingredient_id, quantity, unit, notes.
+invoices — id, supplier_id, total, date, status (pending/paid), created_at.
+agent_settings — id, agent_type, model_id, timeout_ms, fallback_models (JSON).
+SQL DDL таблицы (server/routes/dbadmin.ts — операционный слой)
+Таблицы, не описанные в Drizzle (требуется консолидация в миграции):
+units — id, name, abbreviation (кг, л, шт).
+suppliers — id, name, contact, address.
+categories — id, name (овощи, мясо, специи).
+ingredient_prices — id, ingredient_id, supplier_id, price, date.
+snapshots — id, type, data (JSON), created_at.
+Отсутствующие сущности (требуется добавить)
+По результатам architecture_review.md:
+orders — id, customer_id, order_date, status, total, items (JSON или separate table); обрабатывается Accountant.
+purchase_orders — id, supplier_id, order_date, delivery_date, status, items (JSON); обрабатывается Accountant.
+attachments — id, entity_type (order/recipe/invoice), entity_id, file_id (FK uploads).
+notes — id, entity_type, entity_id, user_id, content, created_at.
+calendar_links — id, entity_type (payment/delivery/followup), entity_id, google_event_id, event_date, reminder_24h, reminder_1h.
+Индексы и FK (обязательно при миграции)
+users.email UNIQUE; users.role indexed.
+chat_sessions.user_id FK → users.id.
+messages.session_id FK → chat_sessions.id; messages.model_id indexed.
+ingredients.category_id FK → categories.id; ingredients.supplier_id FK → suppliers.id.
+recipe_components.recipe_id FK → recipes.id; recipe_components.ingredient_id FK → ingredients.id.
+invoices.supplier_id FK → suppliers.id.
+orders.customer_id, purchase_orders.supplier_id, attachments.entity_id — FK с ON DELETE CASCADE или RESTRICT по бизнес-логике.
+Миграции (консолидация)
+Два источника истины (Drizzle vs SQL DDL) — это P1-риск.
+Решение: перенести все SQL DDL из server/routes/dbadmin.ts в Drizzle-миграции; привести shared/schema.ts к консенсусу; использовать upsert-паттерны для идемпотентности вставок (unique keys на бизнес-идентификаторы).
+
+
+3) API эндпоинты — ключевые роуты
+Служебные
+ПутьМетодОписаниеСтатус
+/health
+GET
+{ok, version, uptime, db:{ok}, ext:{openai,vertex,pplx}} без внешних вызовов
+✅
+/metrics
+GET
+Prometheus метрики (chefs_* process metrics); ДО /health и тест-роута; Content-Type из register
+✅
+/test/session
+GET
+защищённый тест-роут по ENABLE_SESSION_TEST_ROUTE=true; Set-Cookie headers
+✅ (отключить в проде)
+Аутентификация и OAuth
+ПутьМетодОписаниеСтатус
+/auth/google
+GET
+инициация OAuth Google; запрос scopes calendar+drive
+✅
+/auth/google/callback
+GET
+callback после OAuth; сохранение tokens в БД
+✅
+/api/auth/logout
+POST
+завершение сессии; очистка токенов
+✅
+Universal Ask и агенты
+ПутьМетодОписаниеСтатус
+/api/universal-ask
+POST
+{ role, query, systemPrompt?, timeoutMs? } → { success, data, route:{model} }
+⚠️ Нужен фолбэк
+/api/enhanced-agent-chat
+POST
+маршрутизация через Graph; QA-Gate middleware
+✅
+Импорт/экспорт
+ПутьМетодОписаниеСтатус
+/api/import/csv
+POST
+импорт ингредиентов/рецептов из CSV; RBAC+SAFE X-Confirm-Code
+⚠️ Не смонтирован в routes.ts
+/api/import/html
+POST
+парсинг HTML таблиц; whitelist полей
+⚠️ Не смонтирован
+База данных (админ/дебаг)
+ПутьМетодОписаниеСтатус
+/api/db/backup
+GET
+ручной бэкап; SAFE_MODE confirm; возвращает .sql.gz + sha256
+⚠️ Запланировано
+/api/db/restore
+POST
+восстановление из артефакта; валидация sha256
+⚠️ Запланировано
+/api/dbadmin/*
+GET/POST
+DDL операции (create tables, insert); RBAC admin only
+⚠️ Не смонтирован
+Google Calendar (интеграция для Accountant)
+ПутьМетодОписаниеСтатус
+/api/calendar/payment
+POST
+создание события оплаты; напоминания 24h+1h
+⚠️ Нет реализации createEvent
+/api/calendar/delivery
+POST
+событие доставки
+⚠️ Нет реализации
+/api/calendar/followup
+POST
+событие фоллоу-ап
+⚠️ Нет реализации
+Media Generation (актуализировано)
+ПутьМетодОписаниеСтатус
+/api/media/generate
+POST
+{ provider: "gpt-image-1" | "imagen-4" | "veo-2", prompt, style } → генерация
+✅
+/api/media/jobs/:id
+GET
+статус job'а генерации
+✅
+Резюме по монтированию роутов (критичная задача)
+server/routes.ts должен монтировать:
+/auth/google (auth.google.ts) ✅
+/api/import (importer.ts) ⚠️ НЕ СМОНТИРОВАН
+/api/dbadmin (dbadmin.ts) ⚠️ НЕ СМОНТИРОВАН
+/api/enhanced-agent-chat (enhanced-agent-chat.ts) ✅
+/api/calendar/* (auth.google.ts или отдельный calendar.ts) ⚠️ НЕТ РЕАЛИЗАЦИИ
+
+
+4) Security, RBAC, SAFE_MODE — безопасность
+SAFE_MODE (по умолчанию включён)
+Цель: защита от случайных/опасных write-операций.
+Механизм: эндпоинты с write-доступом требуют заголовок X-Confirm-Code: <generated_code> (см. requireWriteConfirm middleware).
+Покрытие: /api/import/*, /api/db/backup, /api/db/restore, dbadmin DDL операции.
+Статус: ✅ Реализован в server/middleware/safeMode.ts; требуется смонтировать на всех критичных роутах.
+RBAC (Role-Based Access Control)
+Роли: chef, manager (RBAC-логика только; НЕ обрабатывает orders/purchases/invoices), admin (см. users.role).
+Middleware: server/middleware/rbac.ts — проверка роли из JWT или session.
+Покрытие: admin-only для /api/dbadmin, /api/db/restore; chef для Universal Ask; Accountant для импорта, инвойсов, заказов, закупок.
+Статус: ✅ Реализован, но не все эндпоинты защищены; требуется аудит и обёртка.
+JWT и сессии
+JWT: server/middleware/jwtAuth.ts — проверка токена в Authorization: Bearer.
+Session: express-session с Redis (prod) или PgStore (временный fallback); cookie: { secure: true, httpOnly: true, sameSite: 'lax', domain: '.chefsmind.ai', name: 'sid' }.
+Статус: ✅ Реализовано; Redis обязателен в production; MemoryStore → FATAL.
+Helmet (security headers)
+Глобально включён: CSP, HSTS, X-Content-Type-Options, X-Frame-Options видны в /health headers.
+Порядок middleware: trust proxy → helmet → await setupAuth(app) → /metrics → /health → /test/session → registerRoutes(app).
+Статус: ✅ Финализировано; отклонения от порядка запрещены.
+Trust Proxy
+Настройка: app.set('trust proxy', 1) с явным логом "[security] trust proxy enabled count=1".
+Цель: корректный IP в req.ip за reverse proxy (nginx/cloudflare).
+Статус: ✅ Включён и залогирован.
+
+
+5) Сессии и аутентификация — Sessions & Auth
+Prod режим (RedisStore обязательно)
+RedisStore: connect-redis с hostname из REDIS_URL; логи "[redis] client ready host=…" и "[sessions] store=RedisStore".
+Cookie: secure=true, httpOnly=true, sameSite=lax, domain=.chefsmind.ai, name=sid, maxAge=24h.
+FATAL при MemoryStore: если в production детектится MemoryStore — process.exit(1) с ошибкой "MemoryStore detected in production; fatal".
+Dev/Staging fallback (PgStore)
+PgStore: connect-pg-simple с pg.Pool; таблица session создаётся автоматически.
+Флаг временного разрешения: ALLOW_NONREDIS_IN_PROD=true на prod-like стенде :5002; логируется предупреждение "[sessions] PgStore used in prod-like; temporary only".
+OAuth Google (calendar + drive scopes)
+server/auth/google.ts: OAuth2 client с scopes calendar, drive; refresh token сохраняется в БД (users.google_refresh_token или отдельная таблица oauth_tokens).
+server/routes/auth.google.ts: /auth/google, /auth/google/callback.
+Статус: ✅ Реализовано; требуется добавить createEvent для Calendar.
+JWT (опционально для API-only клиентов)
+Генерация: при /api/auth/login; хранение токена в Authorization: Bearer.
+Валидация: jwtAuth middleware проверяет signature и expiry.
+Статус: ✅ Реализовано в server/middleware/jwtAuth.ts.
+
+
+6) Observability — наблюдаемость, метрики, логи
+/health эндпоинт
+Возвращает: { ok: true, version, uptime, db: { ok }, external: { openai, vertex, perplexity } }.
+Без внешних вызовов: только проверка доступности ключей (наличие в env).
+Headers: CSP, HSTS, X-Content-Type-Options видны в ответах.
+Статус: ✅ Реализован server/routes/health.ts; монтируется ДО тест-роута.
+/metrics эндпоинт (Prometheus)
+Регистрация: ДО /health и остальных роутов; Content-Type берётся из prom-client register.contentType.
+Метрики: chefs_* process metrics (cpu, memory, event loop lag); требуется добавить Histogram/Summary для HTTP latency и AI operations с целями p95.
+Логи: "[metrics] endpoint registered at /metrics".
+Статус: ✅ Реализован server/metrics.ts; требуется добавить p95 цели и примеры алертов Prometheus.
+Логи операций
+QA-Gate: logQAResult(result, req, res) логирует валидацию ответов.
+Session: логи создания/разрушения сессии, store type, Redis ready.
+Import: требуется добавить логи операций импорта для трассировки.
+Backup: nightly logs в logs/task_B1_cron.json; ручные backup/restore требуют логирования.
+Артефакты curl (smoke tests)
+reports/metrics_dev_head.log, reports/metrics_prod_head.log — первые 20 строк метрик DEV/PROD-like.
+reports/health_dev_headers.log, reports/health_prod_headers.log — curl -i заголовки /health.
+reports/prod_like_session_set_cookie_headers_full.log — заголовки Set-Cookie с атрибутами.
+Статус: ✅ Артефакты собраны; ссылки в master_checkpoint smoke_artifacts.
+
+
+7) Backups и Disaster Recovery — резервные копии
+Nightly Scheduler (автоматизация)
+server/services/backupScheduler.ts: cron 03:00 UTC; pg_dump → .sql.gz + sha256; retention 7 daily + 4 weekly.
+Logs: logs/task_B1_cron.json содержит timestamp, sha256, size, retention status.
+Статус: ✅ Реализован; работает.
+Ручной backup/restore (запланировано)
+GET /api/db/backup: RBAC admin + SAFE X-Confirm-Code; возвращает .sql.gz + sha256 в заголовке; список артефактов.
+POST /api/db/restore: RBAC admin + SAFE; валидация sha256 перед восстановлением; rollback при ошибках.
+Документация: процедуры ручного prune и проверки артефакта (см. backups.md).
+Статус: ⚠️ Не реализовано; см. backups.md для детального плана.
+Retention и prune
+7 daily: последние 7 ночных бэкапов.
+4 weekly: один бэкап в неделю за последние 4 недели.
+Prune: автоматический по retention policy; ручной через CLI или API (требуется документация).
+
+
+8) Frontend — UI/UX, компоненты, дизайн
+Стек
+Next.js 14.x (dev на 3000); React 18; Tailwind CSS 3; Shadcn UI (headless components).
+Env: NEXT_PUBLIC_API_URL=[http://localhost:5001](http://localhost:5001/) (dev).
+Build: npm run build; npm start (production); docker compose frontend service.
+Цветовая палитра (Na'Vi Blue & Beige)
+Dark Base: #0B0F13
+Surface: #131821
+Accent Blue (Na'Vi): #3E6BA3
+Beige: #B79F8C
+Применение: фон, акценты кнопок, заголовки, hover states; вертикальная прокрутка; минимализм; драматические тени (June Six style).
+Компоненты (текущие и требуемые)
+КомпонентСтатусОписание
+Model Picker
+⚠️ Базовый
+выбор Fast/Balanced/Quality → modelId; требуется OSS-апгрейд (dropdown, icons)
+Status Indicators
+⚠️ Нет
+"calling… / ok / timeout / fallback used" — нужны toaster/alerts (Shadcn UI)
+Unified Form
+⚠️ Базовый
+поле запроса + роль (Chef/Manager) + кнопка Ask; требуется валидация и loading state
+Green/Red Indicators
+⚠️ Нет
+статус health check, DB, Redis; требуется badge или icon
+Skeleton Loaders
+⚠️ Нет
+для загрузки ответов/медиа; использовать Shadcn Skeleton
+OSS-блоки для апгрейда
+Shadcn UI: Button, Input, Select, Alert, Badge, Skeleton, Toast (для уведомлений).
+Headless UI / Radix UI: для dropdown, modal, accordion.
+React Hook Form + Zod: для валидации форм.
+Принцип: максимум готовых компонентов, минимум кастома; консистентность с Na'Vi palette.
+
+
+9) Universal Ask — стабилизация (ближайшие задачи)
+Цели
+Таймаут 12s для Chef: обёртка callLLM() в withTimeout(12000); вне models.ts.
+Fallback chain: цепочка моделей по скорости; остановка на первом успехе.
+Route field: data.route.model = finalModelId в ответе.
+Streams временно OFF: флаг STREAM_OFF=true для упрощённого JSON; после стабилизации вернуть SSE.
+Псевдокод (вставка в server/routes/universal.ts или аналог)
+typescript
+async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  let t: NodeJS.Timeout;
+  const timeout = new Promise<never>((_, rej) =>
+    t = setTimeout(() => rej(new Error("Timeout")), ms)
+  );
+  try { return await Promise.race([p, timeout]); }
+  finally { clearTimeout(t); }
+}
+
+async function callWithFallbacks(run: (modelId: string) => Promise<any>, models: string[], timeoutMs?: number) {
+  let lastErr;
+  for (const m of models) {
+    try {
+      const p = run(m);
+      const res = timeoutMs ? await withTimeout(p, timeoutMs) : await p;
+      return { ok: true, model: m, data: res };
+    } catch (e) { lastErr = e; }
+  }
+  return { ok: false, error: String(lastErr ?? "Unknown error") };
+}
+
+export async function universalAsk(params: { role: string; query: string; systemPrompt?: string; timeoutMs?: number }) {
+  const isChef = params.role?.toLowerCase() === "chef";
+  const route = pickModelsFor(params);          // вернёт массив моделей по скорости (gpt-4o-mini → gpt-4o → gemini-2.0-flash-exp)
+  const timeout = isChef ? 12_000 : (params.timeoutMs ?? 30_000);
+
+  const result = await callWithFallbacks(
+    (modelId) => callLLM({ ...params, modelId }),
+    route.models,
+    timeout
+  );
+
+  if (!result.ok) return { success: false, error: result.error, route: { model: null } };
+  return { success: true, data: result.data, route: { model: result.model } };
+}
+
+
+
+10) Чистка мусора и запрещённые зависимости
+Удалить из кодовой базы
+llm_proxy: контейнер и зависимость из docker-compose.yml; импорты из кода.
+Novita API: выключить и удалить из .env и server/services.
+Leonardo Alchemy v3, Freepik AI, Firefly v3: удалить зависимости; использовать только gpt-image-1, imagen-4, veo-2.
+Прочие нестабильные провайдеры: не подключать, пока не будет стабильности.
+Добавлять провайдеров по одному
+Порядок: OpenAI (gpt-*, gpt-image-1) → Google (Gemini/Vertex, imagen-4, veo-2) → Perplexity (sonar-pro) → Anthropic (Claude) → остальные.
+Валидация: smoke test, таймаут, fallback, логирование перед добавлением в prod.
+
+
+11) Выполненные изменения (что сделано за последние итерации)
+Security и Middleware (✅ Финализировано)
+Включён trust proxy count=1 с логом "[security] trust proxy enabled count=1".
+Глобально подключён Helmet с логом "[security] helmet enabled"; заголовки CSP/HSTS/X-Content-Type-Options видны на /health.
+Порядок middleware строго зафиксирован: trust proxy → helmet → await setupAuth(app) → /metrics → /health → /test/session → registerRoutes(app); отклонения запрещены.
+Сессии (✅ Финализировано)
+Redis обязателен в production: при детекте MemoryStore — FATAL process.exit(1).
+Временный PgStore-fallback разрешён по флагу ALLOW_NONREDIS_IN_PROD=true на стенде :5002; логируется предупреждение.
+Cookie атрибуты: secure=true, httpOnly=true, sameSite=lax, domain=.chefsmind.ai, name=sid.
+Логи: "[redis] client ready host=…", "[sessions] store=RedisStore", "[sessions] cookie domain=.chefsmind.ai secure=true".
+Observability (✅ Финализировано)
+/metrics регистрируется ДО /health; Content-Type из prom-client register; логи "[metrics] endpoint registered at /metrics".
+/health вынесен ДО тест-роута; защищённый /test/session включается только по ENABLE_SESSION_TEST_ROUTE=true.
+Артефакты curl собраны: metrics_head.log, health_headers.log, prod_like_session_set_cookie_headers_full.log.
+Prod-like стенд на :5002 (✅ Проверено)
+Set-Cookie заголовки с корректными атрибутами Secure/HttpOnly/SameSite=Lax/Domain=.chefsmind.ai.
+Smoke tests подтверждают работу /health, /metrics, тест-роута; логи в reports/*.
+Docker Compose Snapshot (✅ Зафиксировано)
+checkpoints/prod_effective_config_2025-10-21T19-54Z.yml: backend 5001:5000, frontend 3000:3000, ENV флаги, рестарты; llm_proxy удалён.
+LATEST.json (✅ Исправлено)
+Ранее был «раздутый» JSON с полным чекпоинтом внутри; признан ошибочным.
+Теперь только указатель: { "latest": "checkpoints/master_checkpoint_2025_10_21_1954.json" }; без других полей.
+Модели и роли (✅ Актуализировано 2025-10-21T23:32)
+Media Generation: убраны Leonardo Alchemy v3, Freepik AI, Firefly v3; добавлены gpt-image-1 (DALL·E 3), imagen-4, veo-2.
+Researcher: модель уточнена — sonar-pro (Perplexity) для веб-поиска.
+Manager/Admin роль: исправлено — НЕ обрабатывает orders/purchases/invoices; только RBAC-логика; эти функции делегированы Accountant.
+Claude-3.5-sonnet: характеристика скорректирована — slow, highest quality (резерв для сложных задач).
+
+
+12) Запланированные изменения (что нужно доделать)
+P1 — Критичные задачи
+Восстановить Quality Control Node: починить server/graph/nodes/quality_control.ts (сейчас повреждён бинарным мусором); корректно импортировать в runEnhancedGraphOnce.
+Смонтировать критичные роуты в server/routes.ts: /api/import, /api/dbadmin, /api/calendar/* (payment/delivery/followup).
+Реализовать createEvent для Google Calendar: server/services/google-mcp.ts — создание событий с напоминаниями 24h+1h; REST-эндпоинты для Accountant.
+Консолидировать БД-схемы: перенести SQL DDL из dbadmin.ts в Drizzle-миграции; добавить orders, purchase_orders, attachments, notes, calendar_links в shared/schema.ts с индексами и FK.
+Обязать QA-Gate на всех чат-эндпоинтах: обёртка и логирование результатов валидации.
+P2 — Важные доработки
+Ручной backup/restore API: GET /api/db/backup, POST /api/db/restore с RBAC+SAFE и sha256 валидацией.
+Расширенный /health: добавить проверку db.pool.connect(), redis.ping(), external API keys валидность.
+p95 метрики и алерты: Histogram/Summary для HTTP latency и AI operations; примеры правил Prometheus в docs/prometheus_alerts_example.yaml.
+RBAC+SAFE на всех write-эндпоинтах: аудит и обёртка; проверить покрытие.
+UI OSS-апгрейд: Model Picker, Status Indicators, Green/Red badges, Skeleton loaders из Shadcn UI.
+P3 — Улучшения
+LLM-контроль в Orchestrator: переход от эвристического роутинга к LLM-планировщику с контекстными правилами.
+Streams для Universal Ask: вернуть SSE после стабилизации таймаутов и фолбэков.
+Документация операторов: процедуры ручного prune, восстановления, валидации артефактов бэкапов.
+
+
+13) Порядок запуска агента с этим контекстом
+Что приложить при старте нового чата
+CHECKPOINT.md (этот файл) — полный контекст проекта.
+checkpoints/master_checkpoint_2025_10_21_1954.json — последний мастер-чекпоинт с релизом, портами, security, sessions, observability, артефактами.
+checkpoints/LATEST.json — только указатель на мастер-чекпоинт; { "latest": "checkpoints/master_checkpoint_2025_10_21_1954.json" }.
+checkpoints/prod_effective_config_2025-10-21T19-54Z.yml — Docker Compose snapshot.
+checkpoints/LATEST_COMMIT.txt — текущий git commit hash.
+Инструкция для агента
+Скопируй этот файл в корень репозитория как CHECKPOINT.md.
+В новом чате напиши: «Вот контекст проекта (CHECKPOINT.md). Работай строго по нему: сначала P1-задачи, потом P2, затем P3. Пиши короткими шагами вида "Goal → Do → Deliver". Нестабильных провайдеров не включать; следуй порядку middleware; проверяй RBAC+SAFE на всех write-операциях.»
+Конкретные задачи формулируй в стиле: «Восстанови Quality Control Node и обязай QA-Gate на чат-эндпоинтах» или «Реализуй createEvent для Calendar и REST /api/calendar/payment|delivery|followup с RBAC+SAFE».
+
+
+14) Правила перед production deployment
+Что выключить
+ENABLE_SESSION_TEST_ROUTE=false в .env.production — тест-роут не должен быть доступен в бою.
+ALLOW_NONREDIS_IN_PROD убрать — только RedisStore; ожидать логи "[redis] client ready host=…" и "[sessions] store=RedisStore".
+DEBUG-логи: убрать избыточные console.log; оставить только info/warn/error.
+Что проверить
+Redis доступен: hostname корректный, port 6379 открыт, client.ready логируется.
+Helmet заголовки: CSP/HSTS/X-Content-Type-Options видны на /health.
+Cookie Secure: Set-Cookie содержит Secure; SameSite=Lax; Domain=.chefsmind.ai.
+Backup артефакты: nightly cron работает, sha256 валиден, retention 7+4.
+/metrics доступен: curl localhost:5001/metrics возвращает chefs_* метрики.
+QA-Gate логирует: результаты валидации в логах; провалы блокируются.
+Smoke tests (минимум)
+curl -i http://localhost:5001/health — 200 OK, CSP/HSTS заголовки.
+curl http://localhost:5001/metrics | head -20 — prometheus метрики.
+POST /api/universal-ask { "role": "chef", "query": "how to cook steak?" } — 200 OK, data.route.model заполнен.
+POST /api/calendar/payment { ... } (после реализации) — 200 OK, google_event_id в ответе.
+
+
+15) Заключение и ссылки
+Текущий статус проекта
+Release: v2.1.1-stable
+Core готовность: ✅ Backend, API, Database, Sessions, Security, Observability базово реализованы.
+Critical gaps (P1): ❌ Quality Control Node повреждён; Calendar createEvent отсутствует; роуты не смонтированы; БД-схемы не консолидированы.
+UI готовность: ⚠️ Базовый клиент; требуется OSS-апгрейд компонентов.
+Production readiness: ⚠️ После закрытия P1-задач; smoke tests; backup/restore API; p95 метрики.
+Ключевые файлы и пути (для справки)
+server/graph/enhanced-graph.ts — runEnhancedGraphOnce, агентный граф.
+server/graph/nodes/orchestrator.ts — enhancedOrchestratorNode.
+server/graph/nodes/router.ts — enhancedRouteToAgent, finalAnswerNode.
+server/graph/nodes/quality_control.ts — qualityControlNode (ПОВРЕЖДЁН).
+server/middleware/qaGate.ts — qaGateMiddleware, logQAResult.
+server/routes.ts — registerRoutes; монтирование всех роутов.
+server/routes/auth.google.ts — OAuth Google, callback.
+server/routes/importer.ts — импорт CSV/HTML; НЕ СМОНТИРОВАН.
+server/routes/dbadmin.ts — DDL операции; НЕ СМОНТИРОВАН.
+server/services/google-mcp.ts — listCalendars, createDoc, createSheet; НЕТ createEvent.
+server/services/backupScheduler.ts — nightly backup cron.
+server/middleware/safeMode.ts — requireWriteConfirm.
+server/middleware/rbac.ts — role checks.
+server/middleware/jwtAuth.ts — JWT validation.
+server/metrics.ts — getMetricsHandler, prom-client.
+shared/schema.ts — Drizzle ORM схемы; требуется добавить orders, purchase_orders, attachments, notes, calendar_links.
+docs/architecture_review.md — детальный архитектурный аудит с рисками и рекомендациями.
+docs/backups.md — план backup/restore API и процедур.
+SYSTEM_PROMPT_CHEFS_MIND_AI.md — роли, агенты, тон, стиль общения Orchestrator.
+Ссылки на checkpoint-артефакты
+checkpoints/master_checkpoint_2025_10_21_1954.json — мастер-файл с релизом, портами, security, sessions, observability, артефактами.
+checkpoints/LATEST.json — только указатель: { "latest": "checkpoints/master_checkpoint_2025_10_21_1954.json" }.
+checkpoints/LATEST_COMMIT.txt — git commit hash (git rev-parse HEAD).
+checkpoints/prod_effective_config_2025-10-21T19-54Z.yml — Docker Compose snapshot.
+Контакты и документация
+System Prompt: SYSTEM_PROMPT_CHEFS_MIND_AI.md v2.2 — миссия, роли, агенты, тон, приоритеты Orchestrator.
+Architecture Review: docs/architecture_review.md v0.1 — детальный аудит агентного слоя, БД, импорта, OAuth, backup, observability с рисками P1/P2/P3 и рекомендациями.
+Backups Plan: docs/backups.md — риски, retention, ручной backup/restore API, процедуры.
+
+
+© Chef's Mind AI 2025 — FINAL MASTER CHECKPOINT v2.4
+Markdown-файл готов для вставки в корень репозитория как CHECKPOINT.md.
+Используй вместе с master_checkpoint_2025_10_21_1954.json, LATEST.json, prod_effective_config_2025-10-21T19-54Z.yml и LATEST_COMMIT.txt при старте нового чата. О з накомься со всей информацией. С начала составьте четкий и подробный план  Дальнейшей работы. учитывая все проделанная работы. Нам еч аешь работу в контексте нашего проекта , не раздувая проект лишними Ф унк циями и не у корачивая. Что должно быть? Очень рацион ально . Г отов ится практически полностью для персонального использования.

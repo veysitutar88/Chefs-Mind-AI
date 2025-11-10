@@ -1,0 +1,11 @@
+﻿{
+    "ok":  true,
+    "latencyMs":  4,
+    "statusCode":  200,
+    "response":  {
+                     "provider":  "google",
+                     "ok":  false,
+                     "has_refresh":  false,
+                     "expiry_date":  null
+                 }
+}

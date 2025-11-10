@@ -1,0 +1,214 @@
+# HELP chefs_mind_process_cpu_user_seconds_total Total user CPU time spent in seconds.
+# TYPE chefs_mind_process_cpu_user_seconds_total counter
+chefs_mind_process_cpu_user_seconds_total 7.109
+
+# HELP chefs_mind_process_cpu_system_seconds_total Total system CPU time spent in seconds.
+# TYPE chefs_mind_process_cpu_system_seconds_total counter
+chefs_mind_process_cpu_system_seconds_total 2.469
+
+# HELP chefs_mind_process_cpu_seconds_total Total user and system CPU time spent in seconds.
+# TYPE chefs_mind_process_cpu_seconds_total counter
+chefs_mind_process_cpu_seconds_total 9.578
+
+# HELP chefs_mind_process_start_time_seconds Start time of the process since unix epoch in seconds.
+# TYPE chefs_mind_process_start_time_seconds gauge
+chefs_mind_process_start_time_seconds 1760423872
+
+# HELP chefs_mind_process_resident_memory_bytes Resident memory size in bytes.
+# TYPE chefs_mind_process_resident_memory_bytes gauge
+chefs_mind_process_resident_memory_bytes 122486784
+
+# HELP chefs_mind_nodejs_eventloop_lag_seconds Lag of event loop in seconds.
+# TYPE chefs_mind_nodejs_eventloop_lag_seconds gauge
+chefs_mind_nodejs_eventloop_lag_seconds 0.0023265
+
+# HELP chefs_mind_nodejs_eventloop_lag_min_seconds The minimum recorded event loop delay.
+# TYPE chefs_mind_nodejs_eventloop_lag_min_seconds gauge
+chefs_mind_nodejs_eventloop_lag_min_seconds 0.013377536
+
+# HELP chefs_mind_nodejs_eventloop_lag_max_seconds The maximum recorded event loop delay.
+# TYPE chefs_mind_nodejs_eventloop_lag_max_seconds gauge
+chefs_mind_nodejs_eventloop_lag_max_seconds 0.019251199
+
+# HELP chefs_mind_nodejs_eventloop_lag_mean_seconds The mean of the recorded event loop delays.
+# TYPE chefs_mind_nodejs_eventloop_lag_mean_seconds gauge
+chefs_mind_nodejs_eventloop_lag_mean_seconds 0.01554310558677686
+
+# HELP chefs_mind_nodejs_eventloop_lag_stddev_seconds The standard deviation of the recorded event loop delays.
+# TYPE chefs_mind_nodejs_eventloop_lag_stddev_seconds gauge
+chefs_mind_nodejs_eventloop_lag_stddev_seconds 0.0003478894809478671
+
+# HELP chefs_mind_nodejs_eventloop_lag_p50_seconds The 50th percentile of the recorded event loop delays.
+# TYPE chefs_mind_nodejs_eventloop_lag_p50_seconds gauge
+chefs_mind_nodejs_eventloop_lag_p50_seconds 0.015523839
+
+# HELP chefs_mind_nodejs_eventloop_lag_p90_seconds The 90th percentile of the recorded event loop delays.
+# TYPE chefs_mind_nodejs_eventloop_lag_p90_seconds gauge
+chefs_mind_nodejs_eventloop_lag_p90_seconds 0.016007167
+
+# HELP chefs_mind_nodejs_eventloop_lag_p99_seconds The 99th percentile of the recorded event loop delays.
+# TYPE chefs_mind_nodejs_eventloop_lag_p99_seconds gauge
+chefs_mind_nodejs_eventloop_lag_p99_seconds 0.016310271
+
+# HELP chefs_mind_nodejs_active_resources Number of active resources that are currently keeping the event loop alive, grouped by async resource type.
+# TYPE chefs_mind_nodejs_active_resources gauge
+chefs_mind_nodejs_active_resources{type="PipeWrap"} 2
+chefs_mind_nodejs_active_resources{type="TCPServerWrap"} 1
+chefs_mind_nodejs_active_resources{type="FSEventWrap"} 129
+chefs_mind_nodejs_active_resources{type="TCPSocketWrap"} 1
+chefs_mind_nodejs_active_resources{type="Timeout"} 1
+chefs_mind_nodejs_active_resources{type="Immediate"} 1
+
+# HELP chefs_mind_nodejs_active_resources_total Total number of active resources.
+# TYPE chefs_mind_nodejs_active_resources_total gauge
+chefs_mind_nodejs_active_resources_total 135
+
+# HELP chefs_mind_nodejs_active_handles Number of active libuv handles grouped by handle type. Every handle type is C++ class name.
+# TYPE chefs_mind_nodejs_active_handles gauge
+chefs_mind_nodejs_active_handles{type="Socket"} 3
+chefs_mind_nodejs_active_handles{type="Server"} 1
+chefs_mind_nodejs_active_handles{type="FSWatcher"} 129
+
+# HELP chefs_mind_nodejs_active_handles_total Total number of active handles.
+# TYPE chefs_mind_nodejs_active_handles_total gauge
+chefs_mind_nodejs_active_handles_total 133
+
+# HELP chefs_mind_nodejs_active_requests Number of active libuv requests grouped by request type. Every request type is C++ class name.
+# TYPE chefs_mind_nodejs_active_requests gauge
+
+# HELP chefs_mind_nodejs_active_requests_total Total number of active requests.
+# TYPE chefs_mind_nodejs_active_requests_total gauge
+chefs_mind_nodejs_active_requests_total 0
+
+# HELP chefs_mind_nodejs_heap_size_total_bytes Process heap size from Node.js in bytes.
+# TYPE chefs_mind_nodejs_heap_size_total_bytes gauge
+chefs_mind_nodejs_heap_size_total_bytes 108335104
+
+# HELP chefs_mind_nodejs_heap_size_used_bytes Process heap size used from Node.js in bytes.
+# TYPE chefs_mind_nodejs_heap_size_used_bytes gauge
+chefs_mind_nodejs_heap_size_used_bytes 104087208
+
+# HELP chefs_mind_nodejs_external_memory_bytes Node.js external memory size in bytes.
+# TYPE chefs_mind_nodejs_external_memory_bytes gauge
+chefs_mind_nodejs_external_memory_bytes 13436291
+
+# HELP chefs_mind_nodejs_heap_space_size_total_bytes Process heap space size total from Node.js in bytes.
+# TYPE chefs_mind_nodejs_heap_space_size_total_bytes gauge
+chefs_mind_nodejs_heap_space_size_total_bytes{space="read_only"} 0
+chefs_mind_nodejs_heap_space_size_total_bytes{space="new"} 1048576
+chefs_mind_nodejs_heap_space_size_total_bytes{space="old"} 51933184
+chefs_mind_nodejs_heap_space_size_total_bytes{space="code"} 6553600
+chefs_mind_nodejs_heap_space_size_total_bytes{space="shared"} 0
+chefs_mind_nodejs_heap_space_size_total_bytes{space="trusted"} 4743168
+chefs_mind_nodejs_heap_space_size_total_bytes{space="new_large_object"} 0
+chefs_mind_nodejs_heap_space_size_total_bytes{space="large_object"} 43900928
+chefs_mind_nodejs_heap_space_size_total_bytes{space="code_large_object"} 155648
+chefs_mind_nodejs_heap_space_size_total_bytes{space="shared_large_object"} 0
+chefs_mind_nodejs_heap_space_size_total_bytes{space="trusted_large_object"} 0
+
+# HELP chefs_mind_nodejs_heap_space_size_used_bytes Process heap space size used from Node.js in bytes.
+# TYPE chefs_mind_nodejs_heap_space_size_used_bytes gauge
+chefs_mind_nodejs_heap_space_size_used_bytes{space="read_only"} 0
+chefs_mind_nodejs_heap_space_size_used_bytes{space="new"} 326256
+chefs_mind_nodejs_heap_space_size_used_bytes{space="old"} 49993096
+chefs_mind_nodejs_heap_space_size_used_bytes{space="code"} 5872064
+chefs_mind_nodejs_heap_space_size_used_bytes{space="shared"} 0
+chefs_mind_nodejs_heap_space_size_used_bytes{space="trusted"} 4029856
+chefs_mind_nodejs_heap_space_size_used_bytes{space="new_large_object"} 0
+chefs_mind_nodejs_heap_space_size_used_bytes{space="large_object"} 43731496
+chefs_mind_nodejs_heap_space_size_used_bytes{space="code_large_object"} 138304
+chefs_mind_nodejs_heap_space_size_used_bytes{space="shared_large_object"} 0
+chefs_mind_nodejs_heap_space_size_used_bytes{space="trusted_large_object"} 0
+
+# HELP chefs_mind_nodejs_heap_space_size_available_bytes Process heap space size available from Node.js in bytes.
+# TYPE chefs_mind_nodejs_heap_space_size_available_bytes gauge
+chefs_mind_nodejs_heap_space_size_available_bytes{space="read_only"} 0
+chefs_mind_nodejs_heap_space_size_available_bytes{space="new"} 704656
+chefs_mind_nodejs_heap_space_size_available_bytes{space="old"} 923912
+chefs_mind_nodejs_heap_space_size_available_bytes{space="code"} 271136
+chefs_mind_nodejs_heap_space_size_available_bytes{space="shared"} 0
+chefs_mind_nodejs_heap_space_size_available_bytes{space="trusted"} 628816
+chefs_mind_nodejs_heap_space_size_available_bytes{space="new_large_object"} 1048576
+chefs_mind_nodejs_heap_space_size_available_bytes{space="large_object"} 0
+chefs_mind_nodejs_heap_space_size_available_bytes{space="code_large_object"} 0
+chefs_mind_nodejs_heap_space_size_available_bytes{space="shared_large_object"} 0
+chefs_mind_nodejs_heap_space_size_available_bytes{space="trusted_large_object"} 0
+
+# HELP chefs_mind_nodejs_version_info Node.js version info.
+# TYPE chefs_mind_nodejs_version_info gauge
+chefs_mind_nodejs_version_info{version="v22.17.0",major="22",minor="17",patch="0"} 1
+
+# HELP chefs_mind_nodejs_gc_duration_seconds Garbage collection duration by kind, one of major, minor, incremental or weakcb.
+# TYPE chefs_mind_nodejs_gc_duration_seconds histogram
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.001",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.01",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.1",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="1",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="2",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="5",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="+Inf",kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_sum{kind="incremental"} 0.0046281000077724455
+chefs_mind_nodejs_gc_duration_seconds_count{kind="incremental"} 10
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.001",kind="major"} 0
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.01",kind="major"} 8
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.1",kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="1",kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="2",kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="5",kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="+Inf",kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_sum{kind="major"} 0.03581360003352165
+chefs_mind_nodejs_gc_duration_seconds_count{kind="major"} 9
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.001",kind="minor"} 27
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.01",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="0.1",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="1",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="2",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="5",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_bucket{le="+Inf",kind="minor"} 36
+chefs_mind_nodejs_gc_duration_seconds_sum{kind="minor"} 0.026237199932336804
+chefs_mind_nodejs_gc_duration_seconds_count{kind="minor"} 36
+
+# HELP http_request_duration_seconds Duration of HTTP requests in seconds
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{le="0.1",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="0.5",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="1",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="2",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="5",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="10",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="+Inf",method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_sum{method="GET",route="/",status_code="200",user_id="anonymous"} 0.06000000000000001
+http_request_duration_seconds_count{method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_request_duration_seconds_bucket{le="0.1",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="0.5",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="1",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="2",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="5",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="10",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="+Inf",method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_sum{method="GET",route="/api/test",status_code="200",user_id="anonymous"} 0.004
+http_request_duration_seconds_count{method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_request_duration_seconds_bucket{le="0.1",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 0
+http_request_duration_seconds_bucket{le="0.5",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 0
+http_request_duration_seconds_bucket{le="1",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+http_request_duration_seconds_bucket{le="2",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+http_request_duration_seconds_bucket{le="5",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+http_request_duration_seconds_bucket{le="10",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+http_request_duration_seconds_bucket{le="+Inf",method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+http_request_duration_seconds_sum{method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 0.608
+http_request_duration_seconds_count{method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+
+# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",route="/",status_code="200",user_id="anonymous"} 6
+http_requests_total{method="GET",route="/api/test",status_code="200",user_id="anonymous"} 16
+http_requests_total{method="GET",route="/api/test/db",status_code="500",user_id="anonymous"} 1
+
+# HELP database_queries_total Total number of database queries
+# TYPE database_queries_total counter
+
+# HELP ai_api_calls_total Total number of AI API calls
+# TYPE ai_api_calls_total counter
+
+# HELP backup_operations_total Total number of backup operations
+# TYPE backup_operations_total counter

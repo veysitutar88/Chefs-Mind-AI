@@ -1,0 +1,129 @@
+=== ESLint deps install 2025-11-10T03:56:42.956Z === 
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: vite@7.1.12
+npm warn Found: @types/node@20.16.11
+npm warn node_modules/@types/node
+npm warn   @types/node@"*" from @types/pg@8.11.6
+npm warn   node_modules/@neondatabase/serverless/node_modules/@types/pg
+npm warn     @types/pg@"8.11.6" from @neondatabase/serverless@0.10.4
+npm warn     node_modules/@neondatabase/serverless
+npm warn   15 more (@types/body-parser, @types/connect, @types/cors, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.1.12
+npm warn node_modules/vitest/node_modules/vite
+npm warn   vite@"^5.0.0 || ^6.0.0 || ^7.0.0-0" from vitest@3.2.4
+npm warn   node_modules/vitest
+npm warn   1 more (@vitest/mocker)
+npm warn
+npm warn Conflicting peer dependency: @types/node@24.10.0
+npm warn node_modules/@types/node
+npm warn   peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.1.12
+npm warn   node_modules/vitest/node_modules/vite
+npm warn     vite@"^5.0.0 || ^6.0.0 || ^7.0.0-0" from vitest@3.2.4
+npm warn     node_modules/vitest
+npm warn     1 more (@vitest/mocker)
+
+up to date, audited 697 packages in 3s
+
+99 packages are looking for funding
+  run `npm fund` for details
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+"Checking TypeScript status..."  
+rest-express@1.0.0 c:\Projects\Chefs-Mind-AI
+└── (empty)
+
+"Current TypeScript version check:"  
+rest-express@1.0.0 c:\Projects\Chefs-Mind-AI
+└── (empty)
+
+"TypeScript not found, installing..." 
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: vite@7.1.12
+npm warn Found: @types/node@20.16.11
+npm warn node_modules/@types/node
+npm warn   @types/node@"*" from @types/pg@8.11.6
+npm warn   node_modules/@neondatabase/serverless/node_modules/@types/pg
+npm warn     @types/pg@"8.11.6" from @neondatabase/serverless@0.10.4
+npm warn     node_modules/@neondatabase/serverless
+npm warn   15 more (@types/body-parser, @types/connect, @types/cors, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.1.12
+npm warn node_modules/vitest/node_modules/vite
+npm warn   vite@"^5.0.0 || ^6.0.0 || ^7.0.0-0" from vitest@3.2.4
+npm warn   node_modules/vitest
+npm warn   1 more (@vitest/mocker)
+npm warn
+npm warn Conflicting peer dependency: @types/node@24.10.0
+npm warn node_modules/@types/node
+npm warn   peerOptional @types/node@"^20.19.0 || >=22.12.0" from vite@7.1.12
+npm warn   node_modules/vitest/node_modules/vite
+npm warn     vite@"^5.0.0 || ^6.0.0 || ^7.0.0-0" from vitest@3.2.4
+npm warn     node_modules/vitest
+npm warn     1 more (@vitest/mocker)
+
+up to date, audited 697 packages in 1s
+
+99 packages are looking for funding
+  run `npm fund` for details
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+-e "\n=== Installed Tool Versions ==="  
+"Node version:"  
+v22.17.0
+"npm version:"  
+10.9.2
+"ESLint version:"  
+v9.39.1
+"TypeScript version:"  
+
+[41m                                                                               [0m
+[41m[37m                This is not the tsc command you are looking for                [0m
+[41m                                                                               [0m
+
+To get access to the TypeScript compiler, [34mtsc[0m, from the command line either:
+
+- Use [1mnpm install typescript[0m to first add TypeScript to your project [1mbefore[0m using npx
+- Use [1myarn[0m to avoid accidentally running code from un-installed packages
+"TypeScript check failed, checking manually..." 
+-e "\n=== Final Package Status ==="  
+"ESLint 9 packages from package.json:"  
+"Manual package check:"  
+"Checking ESLint 9 packages from package.json manually..."  
+""  
+"Key ESLint dependencies (from package.json devDependencies):"  
+"- eslint: ^9.39.1"  
+"- @eslint/js: ^9.39.1"  
+"- @typescript-eslint/parser: ^8.46.3"  
+"- @typescript-eslint/eslint-plugin: ^8.46.3"  
+"- eslint-plugin-import-x: ^4"  
+"- eslint-import-resolver-typescript: ^3"  
+"- eslint-plugin-unused-imports: ^4"  
+"- eslint-plugin-simple-import-sort: ^12"  
+"- @next/eslint-plugin-next: ^15"  
+"- eslint-plugin-react: ^7"  
+"- eslint-plugin-react-hooks: ^5"  
+"- globals: ^16"  
+"- typescript: ^5.9.3 (note: install issue detected)" 
+""  
+"=== Installation Summary ==="  
+"Status: ESLint 9 flat-config dependencies successfully configured"  
+"Log file: UTF-8 encoding, LF line endings"  
+"Installation method: Pre-configured in package.json (no changes needed)"  
+"Issues detected: TypeScript CLI access issue (npx tsc -v fails)"  
+"Security: 1 high severity vulnerability detected (npm audit recommended)"  
+"Peer dependencies: @types/node version conflict with vite@7.1.12"  
+""  
+"=== ESLint 9 Flat-Config Setup Complete ===" 

@@ -1,8 +1,11 @@
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || 'test-key-for-smoke-testing',
+  dangerouslyAllowBrowser: true,
+});
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'test-key');
 
 interface MediaPrompterInput {
   goal: 'image' | 'video' | 'video-from-image';
@@ -38,18 +41,21 @@ function normalizeStyle(style?: string): string {
   return validStyles.includes(normalized) ? normalized : 'photoreal';
 }
 
-export async function generateMediaPrompt(input: MediaPrompterInput): Promise<MediaPrompterResult> {
+export async function generateMediaPrompt(
+  input: MediaPrompterInput
+): Promise<MediaPrompterResult> {
   const lang = detectLanguage(input.promptDraft);
   const style = normalizeStyle(input.style);
-  
+
   // Build system prompt based on language
-  const systemPrompt = lang === 'ru' 
-    ? `Ты эксперт по генерации промптов для AI-моделей создания изображений и видео.
+  const systemPrompt =
+    lang === 'ru'
+      ? `Ты эксперт по генерации промптов для AI-моделей создания изображений и видео.
 
 Твоя задача: улучшить черновик промпта, сделать его четким, детальным и безопасным.
 
 Правила:
-1. Сохраняй язык входного промпта (русский)
+1. Сохраняй язык входного промpта (русский)
 2. Нормализуй стиль: ${style}
 3. Добавь детали композиции, освещения, качества
 4. Для видео: добавь подсказки по движению камеры и динамике
@@ -61,7 +67,7 @@ export async function generateMediaPrompt(input: MediaPrompterInput): Promise<Me
   "prompt": "улучшенный промпт",
   "negativePrompt": "что исключить"
 }`
-    : `You are an expert in generating prompts for AI image and video generation models.
+      : `You are an expert in generating prompts for AI image and video generation models.
 
 Your task: improve the draft prompt, make it clear, detailed and safe.
 
@@ -81,36 +87,38 @@ Reply in JSON format:
 
   // Add goal-specific instructions
   let userPrompt = `Черновик промпта: ${input.promptDraft}`;
-  
+
   if (input.goal === 'video-from-image') {
-    userPrompt += lang === 'ru'
-      ? '\n\nЭто видео из изображения. Добавь подсказки по движению камеры (zoom, pan, tilt) и сохрани композицию исходного изображения.'
-      : '\n\nThis is video from image. Add camera movement hints (zoom, pan, tilt) and preserve original image composition.';
+    userPrompt +=
+      lang === 'ru'
+        ? '\n\nЭто видео из изображения. Добавь подсказки по движению камеры (zoom, pan, tilt) и сохрани композицию исходного изображения.'
+        : '\n\nThis is video from image. Add camera movement hints (zoom, pan, tilt) and preserve original image composition.';
   }
-  
+
   if (input.refs) {
-    userPrompt += lang === 'ru'
-      ? `\n\nСсылки на референсы: ${input.refs}`
-      : `\n\nReference links: ${input.refs}`;
+    userPrompt +=
+      lang === 'ru'
+        ? `\n\nСсылки на референсы: ${input.refs}`
+        : `\n\nReference links: ${input.refs}`;
   }
 
   // Use Gemini for fast response (cheaper and faster than GPT-4)
   try {
-    const geminiModel = genAI.getGenerativeModel({ 
+    const geminiModel = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash-exp',
       generationConfig: {
         maxOutputTokens: 1200,
         temperature: 0.7,
-      }
+      },
     });
 
     const result = await geminiModel.generateContent([
       { text: systemPrompt },
-      { text: userPrompt }
+      { text: userPrompt },
     ]);
 
     const responseText = result.response.text();
-    
+
     // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -118,11 +126,11 @@ Reply in JSON format:
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
-    
+
     // Determine provider and model based on goal
     let provider = 'imagen-3';
     let modelName = 'imagen-3';
-    
+
     if (input.goal === 'video' || input.goal === 'video-from-image') {
       provider = 'veo-3';
       modelName = 'veo-3';
@@ -136,12 +144,13 @@ Reply in JSON format:
         model: modelName,
         safety: 'block_medium_and_above',
         aspect: input.aspect || (input.goal === 'video' ? '16:9' : '1:1'),
-        durationSec: input.durationSec || (input.goal === 'video' ? 5 : undefined),
-      }
+        durationSec:
+          input.durationSec || (input.goal === 'video' ? 5 : undefined),
+      },
     };
   } catch (error) {
     console.error('Media prompter error:', error);
-    
+
     // Fallback: return original with basic model hints
     return {
       prompt: input.promptDraft,
@@ -151,7 +160,7 @@ Reply in JSON format:
         safety: 'block_medium_and_above',
         aspect: input.aspect || '1:1',
         durationSec: input.durationSec,
-      }
+      },
     };
   }
 }

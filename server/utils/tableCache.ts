@@ -1,4 +1,4 @@
-import { pool } from '../db';
+import { pool } from '../db.js';
 
 // Simple in-memory cache for table list (10 minute TTL)
 interface TableCacheEntry {
@@ -19,13 +19,15 @@ export async function getAvailableTables(): Promise<string[]> {
   const tablesQuery = await pool.query(
     "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND (table_name LIKE 'imported_%' OR table_name IN ('ingredients', 'recipes', 'invoices', 'users', 'chat_sessions', 'messages'))"
   );
-  
-  const tables = tablesQuery.rows.map(row => row.table_name);
+
+  const tables = tablesQuery.rows.map(
+    (row: { table_name: string }) => row.table_name
+  );
 
   // Cache the result
   tableCache = {
     tables,
-    expiresAt: Date.now() + CACHE_TTL_MS
+    expiresAt: Date.now() + CACHE_TTL_MS,
   };
 
   return tables;

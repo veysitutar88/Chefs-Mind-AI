@@ -1,0 +1,80 @@
+flowchart LR
+  %% ARCH-01 Flow — Chef's Mind AI
+
+  subgraph Agents
+    ORCH[Orchestrator]
+    CHEF[Chef]
+    ACC[Accountant]
+    RES[Researcher]
+    MED[Media]
+    QUAL[Quality]
+  end
+
+  subgraph Services
+    S_OPENAI[OpenAI GPT]
+    S_GOOGLE[Google Models]
+    S_MEDIA[Media Generation]
+    S_GAUTH[Google OAuth]
+    S_GTOOLS[Google Calendar Docs Sheets]
+    S_BACKUP[Backup Scheduler]
+  end
+
+  subgraph Data
+    DB[Postgres via Drizzle]
+    FILES[Uploads Files]
+    BACKUPS[Backup Artifacts]
+  end
+
+  subgraph Controls
+    RBAC[RBAC]
+    SAFE[SAFE X-Confirm-Code]
+    QA[QA Gate]
+  end
+
+  subgraph Observability
+    HEALTH[Health]
+    METRICS[Metrics Prometheus p95]
+    LOGS[Logs]
+  end
+
+  %% Orchestration and agent routing
+  ORCH --> CHEF
+  ORCH --> ACC
+  ORCH --> RES
+  ORCH --> MED
+  ORCH --> QUAL
+
+  %% Agent to services
+  CHEF --> S_OPENAI
+  ACC --> S_GOOGLE
+  RES --> S_GOOGLE
+  MED --> S_MEDIA
+
+  %% Google integration
+  S_GAUTH --> S_GTOOLS
+  ACC -->|events payment delivery followup| S_GTOOLS
+
+  %% Data flows
+  CHEF --> DB
+  ACC --> DB
+  RES --> DB
+  MED --> FILES
+
+  %% Controls guard rails
+  RBAC -. guard .-> CHEF
+  RBAC -. guard .-> ACC
+  RBAC -. guard .-> RES
+  RBAC -. guard .-> MED
+  SAFE -. confirm writes .-> CHEF
+  SAFE -. confirm writes .-> ACC
+  SAFE -. confirm writes .-> RES
+  SAFE -. confirm writes .-> MED
+  QA -. validate outputs .-> ORCH
+
+  %% Backup and artifacts
+  S_BACKUP --> BACKUPS
+
+  %% Observability surfaces
+  HEALTH --> ORCH
+  METRICS --> ORCH
+  LOGS --> ORCH

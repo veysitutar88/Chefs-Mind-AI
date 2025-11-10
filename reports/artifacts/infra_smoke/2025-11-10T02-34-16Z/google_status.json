@@ -1,0 +1,12 @@
+{
+  "url": "http://localhost:5003/auth/google/status",
+  "ok": false,
+  "status": 0,
+  "headers": {},
+  "duration_ms": 3,
+  "ts_utc": "2025-11-10T02:34:16.734Z",
+  "body": null,
+  "body_text": "",
+  "error": "",
+  "name": "google_status"
+}

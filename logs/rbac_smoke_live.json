@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-10-15T12:24:35.752Z",
+  "baseUrl": "http://127.0.0.1:5002",
+  "media_path": "/api/media/ping",
+  "roles": ["admin", "chef", "accountant"],
+  "results": [
+    {
+      "role": "admin",
+      "method": "POST",
+      "path": "/api/db/backup",
+      "status": 200,
+      "allow": true,
+      "latency_ms": null
+    },
+    {
+      "role": "admin",
+      "method": "POST",
+      "path": "/api/db/restore",
+      "status": null,
+      "allow": null,
+      "latency_ms": null
+    },
+    {
+      "role": "admin",
+      "method": "GET",
+      "path": "/api/media/ping",
+      "status": 200,
+      "allow": true,
+      "latency_ms": null
+    }
+  ],
+  "notes": {
+    "rbac_smoke_admin_env": "",
+    "admin_bypass_used": false
+  },
+  "problems": ["⚠️ НОВАЯ ПРОБЛЕМА: dev-token endpoint returns HTML instead of JSON", "⚠️ НОВАЯ ПРОБЛЕМА: backup endpoint returns HTML instead of expected response", "⚠️ НОВАЯ ПРОБЛЕМА: no backup files found after backup request"]
+}

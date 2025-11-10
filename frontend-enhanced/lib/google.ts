@@ -1,1 +1,9 @@
-export async function googleStatus() { const r = await fetch('http://localhost:5002/auth/google/status', { credentials:'include' }); return r.json(); } export function googleConnectUrl() { return 'http://localhost:5002/auth/google/start'; } 
+export async function googleStatus() {
+  const r = await fetch('http://localhost:5001/auth/google/status', {
+    credentials: 'include',
+  });
+  return r.json();
+}
+export function googleConnectUrl() {
+  return 'http://localhost:5001/auth/google/start';
+}

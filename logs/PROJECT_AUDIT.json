@@ -1,1 +1,48 @@
-{}  
+{
+  "ts": "2025-10-12T13:51:54.177Z",
+  "summary": {
+    "typescript_errors": 0,
+    "files_map": {
+      "server/app.ts": false,
+      "server/graph/enhanced-graph.ts": true,
+      "server/graph/stream-utils.ts": true,
+      "frontend-enhanced/app/layout.tsx": true,
+      "frontend-enhanced/app/page.tsx": true,
+      "server/mcp/media/enhancer.ts": false,
+      "server/mcp/media/providers/registry.ts": false,
+      "server/mcp/qa/gate.ts": false
+    },
+    "routes": {
+      "health": false,
+      "media": false
+    },
+    "env_keys": [
+      "SAFE_MODE",
+      "CONFIRM_CODE",
+      "OPENAI_API_KEY",
+      "OPENAI_ORG_ID",
+      "GOOGLE_API_KEY",
+      "GOOGLE_VERTEX_API_KEY",
+      "VERTEX_PROJECT_ID",
+      "VERTEX_LOCATION",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "GOOGLE_REDIRECT_URI",
+      "SESSION_SECRET",
+      "GOOGLE_SERVICE_ACCOUNT_KEY",
+      "GOOGLE_SERVICE_ACCOUNT_EMAIL",
+      "ENABLE_GOOGLE_MCP",
+      "ENABLE_MEDIA_GENERATION",
+      "ENABLE_HALLUCINATION_CONTROL",
+      "ENABLE_PROMPT_ENHANCEMENT",
+      "ENABLE_CROSS_VALIDATION",
+      "ENABLE_MEDIA_STREAMING",
+      "GOOGLE_SCOPES"
+    ]
+  },
+  "next_steps": [
+    "Монтировать /health и /api/media в server/app.ts",
+    "Проверить/вернуть frontend-enhanced (layout.tsx, page.tsx)",
+    "Добавить MCP minimal stubs до ключей"
+  ]
+}

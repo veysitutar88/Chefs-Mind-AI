@@ -5,7 +5,8 @@ import path from 'path';
 import os from 'os';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || 'test-key-for-smoke-testing',
+  dangerouslyAllowBrowser: true,
 });
 
 export interface STTMetrics {
@@ -29,7 +30,7 @@ export interface STTResult {
 export function normalizeMimeType(mimeType: string): string {
   // Remove codec suffixes (e.g., audio/webm;codecs=opus -> audio/webm)
   const baseMimeType = mimeType.split(';')[0].trim();
-  
+
   // Map to Whisper-supported formats
   const mimeMap: Record<string, string> = {
     'audio/webm': 'audio/webm',
@@ -40,7 +41,7 @@ export function normalizeMimeType(mimeType: string): string {
     'audio/m4a': 'audio/m4a',
     'audio/x-m4a': 'audio/m4a',
   };
-  
+
   return mimeMap[baseMimeType] || 'audio/webm';
 }
 
@@ -54,38 +55,47 @@ export async function transcribeAudioBuffer(
   language: string = 'ru'
 ): Promise<string> {
   let tempFilePath: string | null = null;
-  
+
   try {
     // Normalize MIME type for Whisper compatibility
     const normalizedMimeType = normalizeMimeType(mimeType);
-    
+
     // Determine file extension from normalized MIME type
-    const extension = normalizedMimeType.includes('webm') ? 'webm' : 
-                     normalizedMimeType.includes('ogg') ? 'ogg' : 
-                     normalizedMimeType.includes('mp4') ? 'mp4' : 
-                     normalizedMimeType.includes('m4a') ? 'm4a' : 
-                     normalizedMimeType.includes('wav') ? 'wav' : 
-                     normalizedMimeType.includes('mpeg') ? 'mp3' : 'webm';
-    
+    const extension = normalizedMimeType.includes('webm')
+      ? 'webm'
+      : normalizedMimeType.includes('ogg')
+        ? 'ogg'
+        : normalizedMimeType.includes('mp4')
+          ? 'mp4'
+          : normalizedMimeType.includes('m4a')
+            ? 'm4a'
+            : normalizedMimeType.includes('wav')
+              ? 'wav'
+              : normalizedMimeType.includes('mpeg')
+                ? 'mp3'
+                : 'webm';
+
     // Create temporary file path
     tempFilePath = path.join(os.tmpdir(), `whisper-${Date.now()}.${extension}`);
-    
+
     // Write buffer to temporary file
     fs.writeFileSync(tempFilePath, audioBuffer);
-    
+
     // Create file stream for OpenAI
     const fileStream = fs.createReadStream(tempFilePath);
-    
+
     const response = await openai.audio.transcriptions.create({
       file: fileStream as any,
       model: 'whisper-1',
       language,
     });
-    
+
     return response.text;
   } catch (error) {
     console.error('Whisper transcription error:', error);
-    throw new Error(`Transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Transcription failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   } finally {
     // Clean up temporary file
     if (tempFilePath && fs.existsSync(tempFilePath)) {
@@ -136,7 +146,7 @@ export class STTStreamHandler {
     try {
       // Combine all chunks so far
       const combinedBuffer = Buffer.concat(this.audioChunks);
-      
+
       // Only process if we have enough data (at least 0.5 seconds of audio ~8KB for webm)
       if (combinedBuffer.length < 8000) return;
 
@@ -186,8 +196,8 @@ export class STTStreamHandler {
         type: 'final',
         text,
         metrics: {
-          t_first_partial: this.metrics.t_first_partial 
-            ? this.metrics.t_first_partial - this.metrics.t_start 
+          t_first_partial: this.metrics.t_first_partial
+            ? this.metrics.t_first_partial - this.metrics.t_start
             : undefined,
           t_final: this.metrics.t_final - this.metrics.t_start,
           audio_duration_ms: this.audioChunks.length * 100, // Rough estimate
@@ -197,19 +207,23 @@ export class STTStreamHandler {
       this.sendResult(result);
     } catch (error) {
       console.error('Final transcription error:', error);
-      this.sendError(error instanceof Error ? error.message : 'Transcription failed');
+      this.sendError(
+        error instanceof Error ? error.message : 'Transcription failed'
+      );
     }
   }
 
   private sendResult(result: STTResult) {
     if (this.isClosed) return;
-    
+
     try {
-      this.ws.send(JSON.stringify({
-        success: true,
-        data: result,
-        requestId: this.generateRequestId(),
-      }));
+      this.ws.send(
+        JSON.stringify({
+          success: true,
+          data: result,
+          requestId: this.generateRequestId(),
+        })
+      );
     } catch (error) {
       console.error('Error sending result:', error);
     }
@@ -217,13 +231,15 @@ export class STTStreamHandler {
 
   private sendError(message: string) {
     if (this.isClosed) return;
-    
+
     try {
-      this.ws.send(JSON.stringify({
-        success: false,
-        error: message,
-        requestId: this.generateRequestId(),
-      }));
+      this.ws.send(
+        JSON.stringify({
+          success: false,
+          error: message,
+          requestId: this.generateRequestId(),
+        })
+      );
     } catch (error) {
       console.error('Error sending error message:', error);
     }
@@ -242,7 +258,11 @@ export class STTStreamHandler {
 /**
  * Check if STT service is available
  */
-export async function checkSTTHealth(): Promise<{ ok: boolean; provider: string; error?: string }> {
+export async function checkSTTHealth(): Promise<{
+  ok: boolean;
+  provider: string;
+  error?: string;
+}> {
   try {
     if (!process.env.OPENAI_API_KEY) {
       return {

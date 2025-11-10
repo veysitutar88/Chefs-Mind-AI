@@ -1,8 +1,18 @@
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
 import enhancedAgentRouter from './routes/enhanced-agent-chat.js';
 
 const app = express();
+const server = http.createServer(app); // Создаем HTTP сервер
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST'],
+  },
+});
+
 const PORT = process.env.PORT || 5002;
 
 // Middleware
@@ -22,8 +32,8 @@ app.get('/api/health', (req, res) => {
       'GET /': 'Root endpoint',
       'GET /api/health': 'Health check',
       'POST /api/enhanced-agent/chat': 'Enhanced agent chat',
-      'GET /api/enhanced-agent/agents': 'Get enhanced agents'
-    }
+      'GET /api/enhanced-agent/agents': 'Get enhanced agents',
+    },
   });
 });
 
@@ -32,14 +42,15 @@ app.get('/', (req, res) => {
   res.json({
     name: "Chef's Mind AI - Enhanced Version",
     version: '2.0.0',
-    description: 'AI-powered restaurant management system with 5 specialized agents',
+    description:
+      'AI-powered restaurant management system with 5 specialized agents',
     agents: {
       orchestrator: 'Intelligent query routing',
       chef: 'Culinary expertise and recipes',
       accountant: 'Financial management with Google integration',
       researcher: 'Market research and data analysis',
       media: 'Image and video generation with multiple AI models',
-      quality: 'Fact-checking and hallucination control'
+      quality: 'Fact-checking and hallucination control',
     },
     features: [
       'LangGraph.js architecture',
@@ -49,30 +60,39 @@ app.get('/', (req, res) => {
       '5-level hallucination protection',
       'Emergency fallback systems',
       'Real-time streaming',
-      'Cross-model validation'
+      'Cross-model validation',
     ],
     endpoints: {
       'POST /api/enhanced-agent/chat': 'Enhanced chat with all agents',
       'GET /api/enhanced-agent/agents': 'Get all 5 agents info',
       'POST /api/media/image/generate': 'Generate image',
       'POST /api/media/video/generate': 'Generate video',
-      'GET /api/media/video/status/:id': 'Check the status of a generated video'
-    }
+      'GET /api/media/video/status/:id':
+        'Check the status of a generated video',
+    },
   });
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('🚨 System Error:', err);
-  
-  // Emergency fallback response
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'The system encountered an error and is using emergency protocols.',
-    fallback: true,
-    timestamp: new Date().toISOString()
-  });
-});
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error('🚨 System Error:', err);
+
+    // Emergency fallback response
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message:
+        'The system encountered an error and is using emergency protocols.',
+      fallback: true,
+      timestamp: new Date().toISOString(),
+    });
+  }
+);
 
 // 404 handler
 app.use((req, res) => {
@@ -86,8 +106,8 @@ app.use((req, res) => {
       'GET /api/enhanced-agent/agents',
       'POST /api/media/image/generate',
       'POST /api/media/video/generate',
-      'GET /api/media/video/status/:id'
-    ]
+      'GET /api/media/video/status/:id',
+    ],
   });
 });
 
@@ -102,12 +122,46 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// WebSocket обработчики
+io.on('connection', socket => {
+  console.log('Пользователь подключился:', socket.id);
+
+  // Отправляем приветственное сообщение при подключении
+  socket.emit('welcome', {
+    message: "Добро пожаловать в Chef's Mind AI WebSocket!",
+  });
+
+  // Обработчик события chat_message
+  socket.on('chat_message', data => {
+    console.log('Получено сообщение:', data);
+
+    // Эмулируем ответ агента
+    const response = {
+      id: Date.now(),
+      text: `Это эмуляция ответа агента на ваше сообщение: "${data.text}"`,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Отправляем ответ обратно клиенту
+    socket.emit('agent_response', response);
+  });
+
+  // Обработчик отключения
+  socket.on('disconnect', () => {
+    console.log('Пользователь отключился:', socket.id);
+  });
+});
+
 // Start server
-app.listen(PORT, () => {
+server.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`🚀 Chef's Mind AI Enhanced Server running on port ${PORT}`);
   console.log(`📖 API Documentation: http://localhost:${PORT}/`);
-  console.log(`🤖 Enhanced Agent Chat: POST http://localhost:${PORT}/api/enhanced-agent/chat`);
-  console.log(`📊 All Agents: GET http://localhost:${PORT}/api/enhanced-agent/agents`);
+  console.log(
+    `🤖 Enhanced Agent Chat: POST http://localhost:${PORT}/api/enhanced-agent/chat`
+  );
+  console.log(
+    `📊 All Agents: GET http://localhost:${PORT}/api/enhanced-agent/agents`
+  );
   console.log(`🏥 Health Check: GET http://localhost:${PORT}/api/health`);
   console.log('\n🎯 Enhanced Features Active:');
   console.log('   ✅ 5 Specialized Agents');

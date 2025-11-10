@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-06-17T00:00:00.000Z",
+  "defaults": {
+    "text": "gpt-5",
+    "images": {
+      "primary": "gpt-image-1",
+      "fallback": ["dall-e-3", "imagen-3"]
+    },
+    "video": {
+      "primary": "veo-3",
+      "fallback": ["sora-1"]
+    },
+    "research": {
+      "provider": "perplexity",
+      "models": ["sonar-large", "sonar-pro"],
+      "endpoint": "https://api.perplexity.ai/chat/completions"
+    }
+  },
+  "providers": {
+    "openai": {
+      "endpoint": "https://api.openai.com/v1",
+      "models": {
+        "gpt-5": {
+          "id": "gpt-5",
+          "name": "GPT-5",
+          "type": "text",
+          "cost_per_token": 0.015,
+          "max_tokens": 16000,
+          "speed": "slow",
+          "capabilities": ["chat", "analysis", "coding", "reasoning", "creative"],
+          "context_window": 200000
+        },
+        "gpt-image-1": {
+          "id": "gpt-image-1",
+          "name": "GPT Image Generation v1",
+          "type": "image",
+          "cost_per_image": 0.02,
+          "max_size": "1024x1024",
+          "speed": "medium",
+          "capabilities": ["image_generation", "creative", "detailed"]
+        },
+        "dall-e-3": {
+          "id": "dall-e-3",
+          "name": "DALL-E 3",
+          "type": "image",
+          "cost_per_image": 0.04,
+          "max_size": "1024x1024",
+          "speed": "slow",
+          "capabilities": ["image_generation", "creative", "high_quality"]
+        },
+        "sora-1": {
+          "id": "sora-1",
+          "name": "Sora v1",
+          "type": "video",
+          "cost_per_second": 0.05,
+          "max_duration": 60,
+          "speed": "slow",
+          "capabilities": ["video_generation", "creative", "cinematic"],
+          "available": false
+        }
+      }
+    },
+    "google": {
+      "endpoint": "https://generativelanguage.googleapis.com/v1",
+      "models": {
+        "imagen-3": {
+          "id": "imagen-3",
+          "name": "Imagen 3",
+          "type": "image",
+          "cost_per_image": 0.015,
+          "max_size": "1024x1024",
+          "speed": "medium",
+          "capabilities": ["image_generation", "creative", "photorealistic"]
+        },
+        "veo-3": {
+          "id": "veo-3",
+          "name": "Veo 3",
+          "type": "video",
+          "cost_per_second": 0.03,
+          "max_duration": 120,
+          "speed": "medium",
+          "capabilities": ["video_generation", "creative", "high_quality"]
+        }
+      }
+    },
+    "perplexity": {
+      "endpoint": "https://api.perplexity.ai/chat/completions",
+      "models": {
+        "sonar-large": {
+          "id": "sonar-large",
+          "name": "Perplexity Sonar Large",
+          "type": "text",
+          "cost_per_token": 0.001,
+          "max_tokens": 4096,
+          "speed": "medium",
+          "capabilities": ["search", "research", "analysis", "web_access"],
+          "context_window": 127000
+        },
+        "sonar-pro": {
+          "id": "sonar-pro",
+          "name": "Perplexity Sonar Pro",
+          "type": "text",
+          "cost_per_token": 0.0015,
+          "max_tokens": 4096,
+          "speed": "medium",
+          "capabilities": ["search", "research", "analysis", "web_access", "deep_reasoning"],
+          "context_window": 127000
+        }
+      }
+    }
+  },
+  "agent_routing": {
+    "chef": {
+      "primary_model": "gpt-5",
+      "fallback_models": ["gpt-4o", "gemini-1.5-pro"],
+      "capabilities": ["recipe_generation", "cooking_instructions", "ingredient_analysis", "creative_cooking"],
+      "specialization": "culinary_arts"
+    },
+    "accountant": {
+      "primary_model": "gpt-5",
+      "fallback_models": ["gemini-1.5-pro", "gpt-4o"],
+      "capabilities": ["financial_analysis", "tax_calculation", "spreadsheet_operations", "data_interpretation"],
+      "specialization": "finance_accounting"
+    },
+    "research": {
+      "primary_model": "sonar-pro",
+      "fallback_models": ["sonar-large", "gpt-4o"],
+      "capabilities": ["web_search", "current_events", "data_research", "fact_checking"],
+      "specialization": "research_analysis"
+    },
+    "media": {
+      "primary_models": {
+        "text": "gpt-5",
+        "image": "gpt-image-1",
+        "video": "veo-3"
+      },
+      "fallback_models": {
+        "text": ["gpt-4o", "gemini-1.5-pro"],
+        "image": ["dall-e-3", "imagen-3"],
+        "video": ["sora-1"]
+      },
+      "capabilities": ["content_creation", "media_generation", "creative_writing", "multimedia_production"],
+      "specialization": "creative_media"
+    },
+    "universal": {
+      "primary_model": "auto",
+      "fallback_models": ["gpt-5", "gpt-4o", "gemini-1.5-pro"],
+      "capabilities": ["general_assistance", "multi_domain", "adaptive_reasoning"],
+      "specialization": "general_purpose"
+    }
+  },
+  "routing_rules": {
+    "text_generation": {
+      "creative": "gpt-5",
+      "analytical": "gemini-1.5-pro",
+      "research": "sonar-pro",
+      "coding": "gpt-4o",
+      "simple": "gpt-4o-mini"
+    },
+    "image_generation": {
+      "primary": "gpt-image-1",
+      "fallback_sequence": ["dall-e-3", "imagen-3"],
+      "selection_criteria": "quality_first"
+    },
+    "video_generation": {
+      "primary": "veo-3",
+      "fallback_sequence": ["sora-1"],
+      "selection_criteria": "availability_first"
+    }
+  }
+}

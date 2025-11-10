@@ -1,0 +1,53 @@
+{
+  "test_name": "DEV-PORTS SMOKE TEST",
+  "timestamp": "2025-11-10T08:30:04.427Z",
+  "test_status": "COMPLETED",
+  "services": {
+    "backend_api": {
+      "port": 5003,
+      "url": "http://localhost:5003/health",
+      "status": "RUNNING",
+      "response": "OK - Server responds on PORT 5003",
+      "csp_connect_src": "http://localhost:3000, http://localhost:3001",
+      "cors_origins": "CORS_ORIGIN env var + localhost:3000,3001"
+    },
+    "frontend_enhanced": {
+      "port": 3001,
+      "url": "http://localhost:3001",
+      "status": "RUNNING",
+      "response": "OK - Next.js dev server running",
+      "dev_script": "next dev -p 3001"
+    },
+    "frontend_basic": {
+      "port": 3000,
+      "url": "http://localhost:3000",
+      "status": "NOT_STARTED",
+      "response": null,
+      "note": "Basic frontend not running in this test"
+    }
+  },
+  "config_validation": {
+    "package_json_dev_scripts": "VERIFIED - PORT=5003 for backend",
+    "frontend_enhanced_package": "VERIFIED - dev script uses port 3001",
+    "server_index_csp": "VERIFIED - connectSrc includes 3000,3001,5003",
+    "server_index_socketio": "VERIFIED - CORS includes 3000,3001",
+    "env_example_ports": "VERIFIED - documents 3000,3001,5003"
+  },
+  "cors_csp_compliance": {
+    "csp_connect_src": "http://localhost:3000, http://localhost:3001, http://localhost:5003",
+    "socket_io_cors": "process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:3001']",
+    "status": "COMPLIANT"
+  },
+  "port_3002_removal": {
+    "status": "COMPLETED",
+    "csp_connect_src_3002": "REMOVED",
+    "socket_io_cors_3002": "REMOVED",
+    "frontend_enhanced_3002": "NORMALIZED to 3001"
+  },
+  "test_results": {
+    "overall_status": "PASSED",
+    "critical_issues": [],
+    "warnings": [],
+    "passed_checks": 5
+  }
+}

@@ -1,0 +1,277 @@
+# Markdown Document
+# Chef’s Mind AI — Дорожная карта и контекст
+
+## О проекте
+Chef’s Mind AI — минималистичная, кинематографичная ERP‑платформа для ресторана, объединяющая кухню, дизайн и автоматизацию через многоагентную архитектуру. Веб‑стек: Next.js App Router (frontend‑enhanced), Node/FastAPI backend, Docker Compose, CI/CD. Визуальная идентичность: Na’Vi Blue #3E6BA3 и Beige #B79F8C, Tailwind + shadcn UI. Цель — стабильная, умная система, которая связывает управление, медиа‑студию и агентов.
+
+## Цели и KPI
+- TTV: развернуть рабочий «каркас» с Auth, навигацией и базовыми страницами ≤ 1 нед.
+- Надежность: CI green по lint, type‑check, unit и smoke e2e в каждом PR.
+- UX: 95% Lighthouse PWA/Perf на ключевых страницах.
+- Observability: health/metrics, централизованные логи и артефакты билдов.
+
+## Архитектура (высокоуровнево)
+- Frontend: Next.js 14/15, App Router, server components, Tailwind/shadcn, grid‑layout [64px, 1fr] x [280px, 1fr].
+- Backend: Node/FastAPI сервис(ы) с REST/OpenAPI, прокси к AI‑провайдерам.
+- Data: Postgres (пользователи, роли, агенты, ассеты, логи), S3/MinIO для медиа.
+- Инфра: Docker Compose, GitHub Actions/GitLab CI, артефакты в reports/artifacts.
+- Безопасность: OAuth (Google), cookie‑session, role‑guard, CSP/Headers.
+
+## Модули продукта
+- Shell/Layout: Header, Sidebar, Main с CSS Grid, бренд‑палитра.
+- Auth & Accounts: Google OAuth, сессии/refresh, роли Owner/Manager/Chef/Staff, защищённые роуты, профиль.
+- Agents: управление агентами (списки/детали/запуски/логи).
+- Media Studio: генерация логотипов/паттернов/визуалов (Imagen/Leonardo/Firefly), библиотека ассетов.
+- Dashboard: метрики, действия, уведомления.
+- Settings: профили, ключи интеграций, лимиты, аудит.
+
+## Интеграции AI (не про OAuth)
+- GPT, Perplexity, Imagen 4, Firefly v3, Leonardo v3 — через server‑side proxy и квоты, логирование запросов, маппинг ролей к правам.
+
+## Пайплайны качества
+- Lint (ESLint flat), type‑check, unit/integration, e2e (Playwright), визуальные снапшоты.
+- Отчёты и логи в reports/artifacts; статус — в reports/NEXT_TASKS_STATUS_YYYY‑MM‑DD.md.
+
+## Фазы и вехи
+1) Foundations (День 1–3)
+- Репо, Docker Compose, базовые конфиги tsconfig/eslint/tailwind/shadcn.
+- Grid‑layout, навигация, алиасы, globals.css, бренд‑палитра.
+
+2) Auth & Shell Hardening (День 3–6)
+- Google OAuth + sessions + roles, middleware guards.
+- Профиль пользователя, меню, редиректы; smoke e2e для входа/выхода.
+
+3) Pages & Contracts (Неделя 2)
+- Страницы /dashboard, /agents, /media, /settings — каркас и маршруты.
+- Контракты API (OpenAPI/zod), клиент SDK, базовые данные/моки.
+
+4) Agents & Media (Неделя 3–4)
+- Экран агентов: CRUD/Run/Logs, лимиты и статусы.
+- Media Studio: загрузка/генерация, галерея ассетов, метаданные.
+
+5) Observability & CI/CD (Неделя 4)
+- Метрики/логи/health, visual snapshots в CI, артефакты.
+- Release pipeline, preview на Staging, smoke‑тест после деплоя.
+
+6) Hardening & GA (Неделя 5)
+- Безопасность (CSP, headers), перфоманс (code‑split, кэш).
+- Документация, runbooks, релизные заметки.
+
+## Пошаговый чек‑лист (сквозной)
+- Repo/DX: VS Code tasks, Koda/Kilo режимы, Husky hooks.
+- UI: grid‑layout, Header/Sidebar/Main, бренд‑цвета, токены.
+- Auth: Google OAuth, session cookies, roles, guards, профиль.
+- Routes: dashboard/agents/media/settings, 404/500, loading/error boundary.
+- API: OpenAPI, zod схемы, SDK, proxy к AI, лимиты.
+- Data: миграции, сиды, S3/MinIO, CDN политика.
+- Tests: unit/integration, e2e, visual snapshots.
+- CI: build + type + lint + tests + e2e + snapshots + artifacts.
+- Docs: README, ROADMAP, NEXT_TASKS_STATUS, CHANGELOG, ADRs.
+- Ops: logging/metrics, health, feature flags, rollout/rollback.
+
+## Правила PR
+- Conventional Commits; один модуль — один PR; артефакты приложены.
+- Обязательные проверки: lint/type/tests/e2e/snapshots — все зелёные.
+- В PR описании: что, почему, ссылки на артефакты и маршрут превью.
+
+## Роли и доступ
+- Owner: все права; Manager: операционка/медиа; Chef: меню/медиа; Staff: ограниченный доступ.
+- Маппинг ролей → guard middleware; аудит действий.
+
+## Следующие 2 недели (план)
+- Неделя 1:
+  - Завершить Auth guards, профиль, меню пользователя.
+  - Скелеты страниц + OpenAPI контракты, клиент SDK, smoke‑e2e навигации.
+  - Включить визуальные снапшоты для layout.
+- Неделя 2:
+  - Agents: список/деталь/запуск; логирование.
+  - Media Studio: загрузка + галерея; интеграция одного генератора.
+  - Observability: health/metrics, лог‑поток, дашборд.
+
+## Скрипты и артефакты
+- Скрипты: `npm run dev|build|lint|type-check|test|e2e`.
+- Артефакты CI: `reports/artifacts/*` (eslint_latest.log, тест‑логи, снимки).
+- Статус: `reports/NEXT_TASKS_STATUS_YYYY‑MM‑DD.md` — обновлять каждый PR.
+
+## Контакты и правила
+- Стиль: минимализм, точность, тёплая кино‑эстетика.
+- Комм‑канал: в PR/тредах — формат Goal → Do → Deliver.
+- Решения фиксируем ADR; несоответствия дизайну — создаём issue с скрином.
+
+
+## Introduction
+
+Markdown is a plain text formatting syntax.
+
+Paragraphs are separated by empty lines.
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+## Character Styles
+
+These spans result in 'em' tags:
+
+- *single asterisks*
+- _single underscores_
+
+These spans result in 'strong' tags:
+
+- **double asterisks**
+- __double underscores__
+
+These spans result in 'del' tags:
+
+- ~~double tildes~~
+
+## Links and Images
+
+This is an [example inline link](https://www.actiprosoftware.com "Actipro Software") with tooltip text specified.
+[This link](https://www.actiprosoftware.com) has no tooltip text specified.
+
+URLs and e-mail addresses can be turned into links by enclosing them in angle braces:
+
+- <https://www.actiprosoftware.com>  
+- <support@microsoft.com>
+
+[This link](#markdown-document) links to the first heading in this document via custom ID.
+
+## Images
+
+This is an example of an image:
+
+![Image](https://www.microsoft.com/favicon.ico)
+
+This is an example of an image with a link:
+
+[![Image](https://www.google.com/favicon.ico)](https://www.google.com)
+
+## Blockquotes
+
+Markdown said:
+
+> This is the first level of quoting.
+>
+> > This is a nested blockquote.
+>
+> Back to the first level.
+
+## Lists
+
+Unordered list using minus signs (-):
+
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
+
+Unordered list using plus signs (+):
+
++ Step 1
++ Step 2
++ Step 3
+  + Step 3a
+  + Step 3b
+  + Step 3c
+
+Unordered list using asterisks (*):
+
+* Step 1
+* Step 2
+* Step 3
+  * Step 3a
+  * Step 3b
+  * Step 3c
+
+Ordered list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    1. Step 3a
+    1. Step 3b
+    1. Step 3c
+
+Nested (unordered within ordered) list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    - Step 3a
+    - Step 3b
+    - Step 3c
+
+Definition list:
+
+Term #1
+: This is the definition of term #1.
+
+Term #2
+: This is the definition of term #2.
+
+## Code Blocks
+
+Inline `code` can be delimited with characters.
+
+This code block is fenced with three backticks and has its language specified:
+
+```javascript
+var oldUnload = window.onbeforeunload;
+window.onbeforeunload = function() {
+    saveCoverage();
+    if (oldUnload) {
+        return oldUnload.apply(this, arguments);
+    }
+};
+```
+
+This code block is fenced with three tildes and has its language specified:
+
+~~~ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+~~~
+
+This code block is created by indenting the code, but no language can be specified:
+
+    var foo = 1;
+
+## Tables
+
+| Fruit  | Color  |
+|--------|--------|
+| Apples | Red    |
+| Grapes | Purple |
+| Lemons | Yellow |
+
+## Horizontal Rules
+
+Horizontal rules are formed by placing three or more hyphens, asterisks, or underscores on a line by themselves.
+
+---
+
+***
+
+___
+
+## HTML Tags
+
+<strong>HTML tags</strong> can optionally be used in <em>Markdown</em>.
+
+## Special Characters
+
+Unescaped:
+\ ` * _ { } [ ] ( ) # + - . !
+
+Backslash-Escaped:
+\\ \` \* \_ \{ \} \[ \] \( \) \# \+ \- \. \!

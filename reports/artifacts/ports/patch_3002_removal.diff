@@ -1,0 +1,80 @@
+--- server/index.ts.orig	2025-11-10 01:59:28 UTC
++++ server/index.ts	2025-11-10 01:59:28 UTC
+@@ -46,7 +46,7 @@ import { registerRoutes } from './routes.js';
+     // Удаляем 3002 из CSP connectSrc, добавляем 3000/3001
+     contentSecurityPolicy: {
+       useDefaults: true,
+-      directives: {
++      directives: {
+         connectSrc: [
+           "'self'",
+           'http://localhost:5001',
+           'http://localhost:5003',
+-          'http://localhost:3002', // ← УДАЛЕНО: legacy порт
++          'http://localhost:3000', // ← ДОБАВЛЕНО: стандартный frontend
++          'http://localhost:3001', // ← ДОБАВЛЕНО: backup/preview frontend
++          // ENV-driven origins (для production)
++          ...(process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || [])
+         ],
+         defaultSrc: ["'self'"],
+         scriptSrc: ["'self'"],
+@@ -79,11 +79,18 @@ import { registerRoutes } from './routes.js';
+ 
+   // Socket.IO CORS - удаляем 3002, добавляем ENV-driven конфигурацию
+   const io = new Server(httpServer, {
+-    cors: {
+-      origin: 'http://localhost:3002', // ← УДАЛЕНО: legacy порт
+-      methods: ['GET', 'POST'],
+-    },
++    cors: {
++      origin: (origin, callback) => {
++        const allowedOrigins = [
++          'http://localhost:3000',
++          'http://localhost:3001',
++          ...(process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || [])
++        ];
++        // Разрешить запросы без origin (Postman, мобильные)
++        if (!origin) return callback(null, true);
++        if (allowedOrigins.includes(origin)) return callback(null, true);
++        callback(new Error('Not allowed by CORS'));
++      },
++      methods: ['GET', 'POST'],
++    },
+     path: '/socket.io/',
+   });
+ 
+@@ -141,7 +148,7 @@ import { registerRoutes } from './routes.js';
+ 
+   // CORS middleware - уже использует CORS_ORIGIN, нет изменений
+   app.use(cors({
+-    origin: 'http://localhost:3002', // ← УДАЛЕНО: дублирование с Socket.IO
++    origin: process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3001,http://localhost:5003',
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+     allowedHeaders: ['Content-Type', 'Authorization', 'X-Confirm-Code'],
+     credentials: true,
+@@ -151,7 +158,7 @@ import { registerRoutes } from './routes.js';
+   // Logging middleware
+   app.use(morgan('combined'));
+ 
+-  // Routes registration (без изменений)
++  // Routes registration (без изменений)
+   registerRoutes(app, io);
+ 
+   // Health check
+@@ -159,7 +166,7 @@ import { registerRoutes } from './routes.js';
+ 
+   // Error handler (без изменений)
+   app.use(errorHandler);
+ 
+-  return { app, httpServer, io };
++  return { app, httpServer, io };
+ }
+ 
+ // Production startup
+@@ -198,4 +205,4 @@ if (require.main === module) {
+ }
+ 
+ export { createServer };
+-// Export type definitions
++// Export type definitions
+ export type { Server as IOServer } from 'socket.io';

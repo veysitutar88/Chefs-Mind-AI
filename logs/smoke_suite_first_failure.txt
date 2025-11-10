@@ -1,0 +1,13 @@
+Первый провал: import
+Статус: failed
+Задержка: 868 ms
+Ошибка: {"error":"relation \"ingredients\" does not exist"}
+Статус код: 500
+
+Полный ответ из logs/import_smoke.json:
+{
+    "ok": false,
+    "error": "{\"error\":\"relation \\\"ingredients\\\" does not exist\"}",
+    "latencyMs": 868,
+    "statusCode": 500
+}
