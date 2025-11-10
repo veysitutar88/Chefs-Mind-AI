@@ -1,0 +1,41 @@
+﻿{
+    "checks":  {
+                   "calendar":  {
+                                    "ok":  true,
+                                    "status":  "passed",
+                                    "latencyMs":  50
+                                },
+                   "rbac":  {
+                                "ok":  true,
+                                "status":  "passed",
+                                "latencyMs":  1
+                            },
+                   "oauth":  {
+                                 "ok":  true,
+                                 "status":  "passed",
+                                 "latencyMs":  4
+                             },
+                   "health":  {
+                                  "ok":  true,
+                                  "status":  "passed",
+                                  "latencyMs":  1
+                              },
+                   "import":  {
+                                  "ok":  true,
+                                  "status":  "passed",
+                                  "latencyMs":  704
+                              },
+                   "metrics":  {
+                                   "ok":  true,
+                                   "status":  "passed",
+                                   "latencyMs":  2
+                               }
+               },
+    "overall":  {
+                    "passed":  6,
+                    "skipped":  0,
+                    "totalChecks":  6,
+                    "ok":  true,
+                    "failed":  0
+                }
+}

@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-10-19T10:00:00Z",
+  "git_commit": "d7242c76d97dd1f60cef55aff4a86fa23444e1c0",
+  "release": "v2.2.0-next15",
+  "frontend": {
+    "framework": "next@15.x",
+    "env_clean": true,
+    "env": ["NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_BUILD_TS"],
+    "ui_components": ["button", "build-badge"],
+    "build": {
+      "status": "success",
+      "logs": ["reports/next15_build_2025_10_19.log"]
+    },
+    "lint": {
+      "status": "clean",
+      "logs": ["reports/next15_lint_2025_10_19.log"]
+    },
+    "types": {
+      "status": "clean",
+      "logs": ["reports/next15_tsc_2025_10_19.log"]
+    }
+  },
+  "backend": {
+    "port": 5000,
+    "host_mapping": 5001,
+    "entry_point": "server/index.ts"
+  },
+  "docker": {
+    "compose_version_field": "removed",
+    "ports": ["5001:5000"]
+  },
+  "notes": [
+    "Upgrade to Next 15.x",
+    "React 18 maintained for compatibility",
+    "ESLint 9 and TypeScript 5 updated",
+    "Build, lint, and type checks all clean"
+  ]
+}

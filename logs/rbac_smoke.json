@@ -1,0 +1,11 @@
+﻿{
+    "ok":  true,
+    "latencyMs":  1,
+    "statusCode":  200,
+    "response":  {
+                     "ok":  true,
+                     "role":  "anonymous",
+                     "ts":  1760655014361,
+                     "rbacSmoke":  true
+                 }
+}

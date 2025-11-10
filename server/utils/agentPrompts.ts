@@ -1,4 +1,4 @@
-import { storage } from '../storage';
+import { storage } from '../storage.js';
 
 // Simple in-memory cache for system prompts (5 minute TTL)
 interface CacheEntry {

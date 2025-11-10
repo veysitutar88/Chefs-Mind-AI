@@ -1,0 +1,280 @@
+{
+  "plan_id": "action_plan_2025_10_14",
+  "timestamp": "2025-10-14T04:12:00Z",
+  "project": "Chef's Mind AI",
+  "current_status": {
+    "overall_readiness": 78,
+    "backend_core": 95,
+    "mcp_layer": 45,
+    "frontend_enhanced": 55,
+    "qa_audit": 80,
+    "critical_issues": {
+      "typescript_errors": 44,
+      "test_coverage": 0,
+      "documentation_coverage": 40
+    }
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "CRITICAL_FIXES",
+      "duration": "3 days",
+      "dates": "2025-10-14 to 2025-10-16",
+      "priority": "P0",
+      "tasks": [
+        {
+          "id": "FIX_TS_ERRORS",
+          "task": "Исправить 44 TypeScript ошибки",
+          "effort": "8h",
+          "responsible": "code_agent",
+          "steps": [
+            "Запустить tsc --noEmit для полного списка ошибок",
+            "Группировать ошибки по типам",
+            "Исправить критические ошибки типизации",
+            "Добавить типы для enhanced-agent-chat.ts",
+            "Исправить импорты (.js vs .ts)"
+          ]
+        },
+        {
+          "id": "UNIFY_SERVERS",
+          "task": "Унификация архитектуры серверов",
+          "effort": "4h",
+          "responsible": "architect_agent",
+          "steps": [
+            "Выбрать enhanced-server.ts как основной",
+            "Мигрировать все routes из server/index.ts",
+            "Удалить дубликаты",
+            "Обновить package.json scripts"
+          ]
+        },
+        {
+          "id": "SMOKE_TESTS",
+          "task": "Добавить smoke тесты для критических путей",
+          "effort": "6h",
+          "responsible": "test_agent",
+          "steps": [
+            "Создать tests/smoke/health.test.ts",
+            "Тест для каждого агента",
+            "Тест для media generation",
+            "Тест для QA gate"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "STABILITY_IMPROVEMENTS",
+      "duration": "4 days",
+      "dates": "2025-10-17 to 2025-10-20",
+      "priority": "P1",
+      "tasks": [
+        {
+          "id": "UNIT_TESTS",
+          "task": "Добавить unit тесты для агентов",
+          "effort": "12h",
+          "responsible": "test_agent",
+          "steps": [
+            "tests/agents/chef.test.ts",
+            "tests/agents/accountant.test.ts",
+            "tests/agents/researcher.test.ts",
+            "tests/agents/media.test.ts",
+            "tests/middleware/qa-gate.test.ts"
+          ]
+        },
+        {
+          "id": "ERROR_HANDLING",
+          "task": "Улучшить error handling",
+          "effort": "6h",
+          "responsible": "code_agent",
+          "steps": [
+            "Создать shared/errors/AgentError.ts",
+            "Добавить structured error types",
+            "Implement error recovery strategies",
+            "Add error logging with context"
+          ]
+        },
+        {
+          "id": "MONITORING",
+          "task": "Настроить мониторинг и observability",
+          "effort": "8h",
+          "responsible": "ops_agent",
+          "steps": [
+            "Настроить Grafana dashboard",
+            "Добавить трейсинг с OpenTelemetry",
+            "Создать алерты для критических метрик",
+            "Health check для каждого агента"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "PERFORMANCE_OPTIMIZATION",
+      "duration": "3 days",
+      "dates": "2025-10-21 to 2025-10-23",
+      "priority": "P1",
+      "tasks": [
+        {
+          "id": "CACHING",
+          "task": "Реализовать кеширование",
+          "effort": "8h",
+          "responsible": "code_agent",
+          "steps": [
+            "Настроить Redis для кеширования",
+            "Кешировать ответы агентов",
+            "TTL стратегия для разных типов",
+            "Invalidation logic"
+          ]
+        },
+        {
+          "id": "DB_OPTIMIZATION",
+          "task": "Оптимизация работы с БД",
+          "effort": "6h",
+          "responsible": "db_agent",
+          "steps": [
+            "Connection pooling настройка",
+            "Индексы для частых запросов",
+            "Prepared statements",
+            "Query optimization"
+          ]
+        },
+        {
+          "id": "LAZY_LOADING",
+          "task": "Lazy loading для моделей",
+          "effort": "4h",
+          "responsible": "code_agent",
+          "steps": [
+            "Загрузка моделей по требованию",
+            "Warm-up для критических моделей",
+            "Memory management"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "FRONTEND_INTEGRATION",
+      "duration": "4 days",
+      "dates": "2025-10-24 to 2025-10-27",
+      "priority": "P2",
+      "tasks": [
+        {
+          "id": "API_INTEGRATION",
+          "task": "Завершить интеграцию frontend-enhanced с API",
+          "effort": "10h",
+          "responsible": "frontend_agent",
+          "steps": [
+            "Настроить API client",
+            "Подключить все endpoints",
+            "State management с Zustand",
+            "Error handling на frontend"
+          ]
+        },
+        {
+          "id": "WEBSOCKET",
+          "task": "Real-time updates через WebSocket",
+          "effort": "8h",
+          "responsible": "fullstack_agent",
+          "steps": [
+            "WebSocket server setup",
+            "Client connection management",
+            "Real-time agent responses",
+            "Connection recovery"
+          ]
+        },
+        {
+          "id": "RESPONSIVE_DESIGN",
+          "task": "Mobile responsive design",
+          "effort": "6h",
+          "responsible": "ui_agent",
+          "steps": [
+            "Responsive layout",
+            "Touch-friendly UI",
+            "Mobile optimization",
+            "PWA features"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "DOCUMENTATION_AND_DEPLOYMENT",
+      "duration": "3 days",
+      "dates": "2025-10-28 to 2025-10-30",
+      "priority": "P2",
+      "tasks": [
+        {
+          "id": "API_DOCS",
+          "task": "API документация",
+          "effort": "6h",
+          "responsible": "docs_agent",
+          "steps": [
+            "OpenAPI спецификация",
+            "Swagger UI setup",
+            "Примеры использования",
+            "Postman collection"
+          ]
+        },
+        {
+          "id": "USER_DOCS",
+          "task": "Пользовательская документация",
+          "effort": "8h",
+          "responsible": "docs_agent",
+          "steps": [
+            "User guide",
+            "Admin guide",
+            "Agent capabilities",
+            "FAQ"
+          ]
+        },
+        {
+          "id": "DEPLOYMENT_PREP",
+          "task": "Подготовка к production",
+          "effort": "10h",
+          "responsible": "devops_agent",
+          "steps": [
+            "Docker containerization",
+            "CI/CD pipeline",
+            "Environment configs",
+            "Security audit",
+            "Load testing"
+          ]
+        }
+      ]
+    }
+  ],
+  "success_criteria": {
+    "typescript_errors": 0,
+    "test_coverage": ">80%",
+    "documentation_coverage": ">90%",
+    "performance_metrics": {
+      "response_time_p95": "<2s",
+      "error_rate": "<0.1%",
+      "availability": ">99.9%"
+    }
+  },
+  "risks": [
+    {
+      "risk": "TypeScript errors блокируют development",
+      "mitigation": "Приоритет на исправление в Phase 1",
+      "probability": "high"
+    },
+    {
+      "risk": "Интеграция frontend займет больше времени",
+      "mitigation": "Параллельная работа frontend и backend команд",
+      "probability": "medium"
+    },
+    {
+      "risk": "Performance issues под нагрузкой",
+      "mitigation": "Load testing и оптимизация в Phase 3",
+      "probability": "medium"
+    }
+  ],
+  "next_actions": [
+    "Запустить tsc --noEmit и сохранить вывод",
+    "Создать branch fix/typescript-errors",
+    "Начать с исправления critical errors",
+    "Настроить test framework (Vitest)",
+    "Создать первый smoke test"
+  ]
+}

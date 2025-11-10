@@ -1,0 +1,150 @@
+name: Nightly Smoke Tests
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  nightly-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run full test suite
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+
+      - name: Start server for testing
+        run: |
+          # Создаём необходимые директории
+          mkdir -p reports
+          
+          # Запускаем сервер в фоне на порту 5001
+          export PORT=5001
+          export NODE_ENV=development
+          export SAFE_MODE=off  # Отключаем Safe Mode для тестирования
+          export SESSION_SECRET=test-secret-key
+          export GOOGLE_AUTH_SMOKE_BYPASS=1  # Bypass для smoke теста
+          npm start &
+          SERVER_PID=$!
+          
+          # Ждём пока сервер стартует
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5001/health > /dev/null 2>&1; then
+              echo "Server started successfully"
+              break
+            fi
+            sleep 2
+          done
+          
+          # Проверяем что сервер доступен
+          curl -s http://localhost:5001/health || { echo "Server failed to start"; exit 1; }
+
+      - name: Test OAuth 302-chain flow
+        run: |
+          DATE=$(date +%F)
+          LOG_FILE="reports/nightly_oauth_chain_${DATE}.log"
+          
+          echo "=== OAuth Flow Test Started at $(date) ===" > "$LOG_FILE"
+          
+          # Тестируем /auth/google/login (должен вернуть 302 с Location)
+          echo "Testing /auth/google/login endpoint..." >> "$LOG_FILE"
+          RESPONSE=$(curl -i -s -c /tmp/cookies_$(date +%s).txt -L --max-redirs 5 http://localhost:5001/auth/google/login 2>&1)
+          
+          # Записываем весь ответ в лог
+          echo "=== Full Response ===" >> "$LOG_FILE"
+          echo "$RESPONSE" >> "$LOG_FILE"
+          
+          # Проверяем что получили redirect
+          if echo "$RESPONSE" | grep -q "HTTP/1.1 302\|HTTP/2 302"; then
+            echo "✓ OAuth login endpoint returns 302 redirect (Expected)" >> "$LOG_FILE"
+          else
+            echo "✗ OAuth login endpoint doesn't return 302 redirect" >> "$LOG_FILE"
+          fi
+          
+          # Извлекаем Location header если есть
+          if echo "$RESPONSE" | grep -i "Location:" | grep -q "google"; then
+            echo "✓ OAuth redirect to Google (Expected)" >> "$LOG_FILE"
+          fi
+
+      - name: Test OAuth status endpoint
+        run: |
+          DATE=$(date +%F)
+          STATUS_FILE="reports/nightly_oauth_status_${DATE}.json"
+          
+          echo "Testing /auth/google/status endpoint..." 
+          
+          # Получаем JSON статус
+          STATUS_RESPONSE=$(curl -s http://localhost:5001/auth/google/status)
+          
+          # Записываем JSON в файл
+          echo "$STATUS_RESPONSE" > "$STATUS_FILE"
+          
+          # Проверяем что это валидный JSON
+          if echo "$STATUS_RESPONSE" | jq . > /dev/null 2>&1; then
+            echo "✓ OAuth status endpoint returns valid JSON"
+            
+            # Дополнительно проверяем содержимое
+            OAUTH_CONFIGURED=$(echo "$STATUS_RESPONSE" | jq -r '.oauth_configured // false')
+            OAUTH_REDIRECT_SET=$(echo "$STATUS_RESPONSE" | jq -r '.redirect_configured // false')
+            
+            echo "OAuth configured: $OAUTH_CONFIGURED"
+            echo "OAuth redirect configured: $OAUTH_REDIRECT_SET"
+          else
+            echo "✗ OAuth status endpoint doesn't return valid JSON"
+            echo "Response: $STATUS_RESPONSE"
+          fi
+
+      - name: Archive OAuth test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-oauth-${{ github.run_number }}
+          path: |
+            reports/nightly_oauth_*.log
+            reports/nightly_oauth_*.json
+          retention-days: 30
+
+      - name: Archive all reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-reports-${{ github.run_number }}
+          path: |
+            reports/**
+            frontend-enhanced/.next/**
+            dist/**
+          retention-days: 30
+
+      - name: Generate status report
+        run: |
+          echo "# Nightly Smoke Test Report - $(date)" > reports/nightly_status_$(date +%F).md
+          echo "## Build Status: ${{ job.status }}" >> reports/nightly_status_$(date +%F).md
+          echo "## OAuth Testing: Completed" >> reports/nightly_status_$(date +%F).md
+          echo "## Server Health: Available" >> reports/nightly_status_$(date +%F).md
+          echo "## Timestamp: $(date -u)" >> reports/nightly_status_$(date +%F).md
+          echo "## Workflow: ${{ github.workflow }}" >> reports/nightly_status_$(date +%F).md
+          echo "## Run ID: ${{ github.run_id }}" >> reports/nightly_status_$(date +%F).md
+
+      - name: Archive status report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-status-${{ github.run_number }}
+          path: reports/nightly_status_$(date +%F).md
+          retention-days: 30

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "@shared/schema";
+import { User } from "@shared/schema.js";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "fallback-secret-for-dev";
 const JWT_EXPIRES_IN = "7d";

@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Собираем список проиндексированных файлов (TypeScript), включая drizzle.config.ts
+STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$|(^|/)[^/]*drizzle\.config\.ts$' || true)"
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "Running ESLint and Prettier on staged files..."
+  # Безопасно передаем пути с пробелами через нулевой разделитель
+  echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 -I {} npx eslint --fix "{}"
+  echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 -I {} npx prettier --write "{}"
+  # Добавляем исправленные файлы обратно в индекс
+  echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 -I {} git add "{}"
+fi

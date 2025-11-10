@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-10-14T23:21:00.000Z",
+  "container_status": "restarting",
+  "exit_code": 1,
+  "error_message": "Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js",
+  "root_cause": "esbuild включает vite.ts в production бандл, несмотря на условную загрузку только в development",
+  "missing_dependencies": [],
+  "env_issues": [
+    "NODE_ENV установлено как 'development' в контейнере вместо 'production'",
+    "Код в dist/index.js пытается импортировать vite даже в production"
+  ],
+  "recommendations": [
+    "Изменить NODE_ENV в контейнере на 'production'",
+    "Модифицировать server/index.ts для корректной обработки vite в production",
+    "Обновить Dockerfile для правильной установки переменных окружения",
+    "Рассмотреть возможность выноса vite в devDependencies с соответствующей настройкой esbuild"
+  ],
+  "technical_details": {
+    "esbuild_command": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "problem_location": "server/index.ts строки 55-58",
+    "issue": "Динамический импорт vite обрабатывается esbuild как статический импорт",
+    "container_restart_count": 13
+  },
+  "solution_result": {
+    "applied": "NODE_ENV=production in Dockerfile",
+    "image_id_after_fix": "224b2ae477cd",
+    "container_stable": false,
+    "health_accessible": false
+  }
+}

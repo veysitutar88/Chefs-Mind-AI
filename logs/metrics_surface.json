@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-10-15T12:21:40.674Z",
+  "baseUrl": "http://127.0.0.1:5002",
+  "metrics_status": 200,
+  "http_p50_ms": null,
+  "http_p95_ms": null,
+  "http_source": "approx_bucket",
+  "db_rtt_ms": 0,
+  "problems": []
+}

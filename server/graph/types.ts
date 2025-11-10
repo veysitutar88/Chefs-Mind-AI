@@ -17,10 +17,25 @@ export interface Plan {
   template?: any;           // сюда enhancer может положить провайдер-payload
 }
 
+export interface QualityCheck {
+  passed: boolean;
+  reason?: string;           // причина неудачи (одна строка)
+  score?: number;            // оценка качества
+}
+
+export interface GraphError {
+  type: string;
+  message: string;
+  score?: number;
+}
+
 export interface GraphState {
   input: string;            // последний пользовательский ввод
   messages: Message[];      // история
   agent?: Agent;            // выбранный агент
   plan?: Plan;              // что делать дальше (медиа/текст)
+  response?: string;        // сгенерированный ответ (для QA проверки)
+  qualityCheck?: QualityCheck; // результаты проверки качества
+  errors?: GraphError[];     // ошибки выполнения
   meta?: Record<string, unknown>;
 }

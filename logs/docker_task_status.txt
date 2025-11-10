@@ -1,0 +1,2 @@
+NAME                  IMAGE               COMMAND                  SERVICE   CREATED          STATUS                             PORTS
+chefs-mind-ai-app-1   chefs-mind-ai-app   "docker-entrypoint.s…"   app       51 seconds ago   Up 50 seconds (health: starting)   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp, 0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp

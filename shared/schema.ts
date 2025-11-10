@@ -19,6 +19,7 @@ export const chatSessions = pgTable("chat_sessions", {
 }, (table) => ({
   userIdIdx: index("chat_sessions_user_id_idx").on(table.userId),
   createdAtIdx: index("chat_sessions_created_at_idx").on(table.createdAt),
+  userIdAgentTypeIdx: index("chat_sessions_user_id_agent_type_idx").on(table.userId, table.agentType),
 }));
 
 export const messages = pgTable("messages", {
@@ -31,6 +32,7 @@ export const messages = pgTable("messages", {
 }, (table) => ({
   sessionIdIdx: index("messages_session_id_idx").on(table.sessionId),
   createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+  sessionIdCreatedAtIdx: index("messages_session_id_created_at_idx").on(table.sessionId, table.createdAt),
 }));
 
 export const uploads = pgTable("uploads", {
@@ -46,6 +48,7 @@ export const uploads = pgTable("uploads", {
 }, (table) => ({
   userIdIdx: index("uploads_user_id_idx").on(table.userId),
   createdAtIdx: index("uploads_created_at_idx").on(table.createdAt),
+  userIdProcessedIdx: index("uploads_user_id_processed_idx").on(table.userId, table.processed),
 }));
 
 export const generatedContent = pgTable("generated_content", {
@@ -60,6 +63,8 @@ export const generatedContent = pgTable("generated_content", {
 }, (table) => ({
   userIdIdx: index("generated_content_user_id_idx").on(table.userId),
   createdAtIdx: index("generated_content_created_at_idx").on(table.createdAt),
+  userIdTypeIdx: index("generated_content_user_id_type_idx").on(table.userId, table.type),
+  typeModelIdx: index("generated_content_type_model_idx").on(table.type, table.model),
 }));
 
 export const mediaJobs = pgTable("media_jobs", {
@@ -76,6 +81,8 @@ export const mediaJobs = pgTable("media_jobs", {
 }, (table) => ({
   statusIdx: index("media_jobs_status_idx").on(table.status),
   inputHashIdx: index("media_jobs_input_hash_idx").on(table.inputHash),
+  statusProviderIdx: index("media_jobs_status_provider_idx").on(table.status, table.provider),
+  createdAtIdx: index("media_jobs_created_at_idx").on(table.createdAt),
 }));
 
 export const ingredients = pgTable("ingredients", {
@@ -89,7 +96,12 @@ export const ingredients = pgTable("ingredients", {
   category: text("category"), // vegetables, meat, dairy, etc.
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("ingredients_name_idx").on(table.name),
+  categoryIdx: index("ingredients_category_idx").on(table.category),
+  supplierIdx: index("ingredients_supplier_idx").on(table.supplier),
+  nameCategoryIdx: index("ingredients_name_category_idx").on(table.name, table.category),
+}));
 
 export const recipes = pgTable("recipes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -106,7 +118,13 @@ export const recipes = pgTable("recipes", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("recipes_name_idx").on(table.name),
+  categoryIdx: index("recipes_category_idx").on(table.category),
+  isActiveIdx: index("recipes_is_active_idx").on(table.isActive),
+  nameCategoryIdx: index("recipes_name_category_idx").on(table.name, table.category),
+  categoryActiveIdx: index("recipes_category_active_idx").on(table.category, table.isActive),
+}));
 
 export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -121,7 +139,13 @@ export const invoices = pgTable("invoices", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  supplierIdx: index("invoices_supplier_idx").on(table.supplier),
+  statusIdx: index("invoices_status_idx").on(table.status),
+  dateIdx: index("invoices_date_idx").on(table.date),
+  supplierStatusIdx: index("invoices_supplier_status_idx").on(table.supplier, table.status),
+  dateStatusIdx: index("invoices_date_status_idx").on(table.date, table.status),
+}));
 
 export const agentSettings = pgTable("agent_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -133,7 +157,73 @@ export const agentSettings = pgTable("agent_settings", {
 }, (table) => ({
   userIdIdx: index("agent_settings_user_id_idx").on(table.userId),
   userAgentIdx: index("agent_settings_user_agent_idx").on(table.userId, table.agentType),
+  agentTypeIdx: index("agent_settings_agent_type_idx").on(table.agentType),
 }));
+
+export const suppliers = pgTable("suppliers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  contact_info: jsonb("contact_info"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const orders = pgTable("orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customer_id: varchar("customer_id").references(() => users.id),
+  order_date: timestamp("order_date").defaultNow(),
+  status: text("status").notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }),
+  items: jsonb("items"),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("orders_customer_id_idx").on(table.customer_id),
+  statusIdx: index("orders_status_idx").on(table.status),
+}));
+
+export const purchase_orders = pgTable("purchase_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplier_id: varchar("supplier_id").references(() => suppliers.id),
+  order_date: timestamp("order_date").defaultNow(),
+  delivery_date: timestamp("delivery_date"),
+  status: text("status").notNull(),
+  items: jsonb("items"),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  supplierIdIdx: index("po_supplier_id_idx").on(table.supplier_id),
+  statusIdx: index("po_status_idx").on(table.status),
+}));
+
+export const attachments = pgTable("attachments", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(), // e.g., 'invoice', 'recipe'
+    entity_id: varchar("entity_id").notNull(),
+    file_id: varchar("file_id").references(() => uploads.id),
+    created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+    entityIdx: index("attachments_entity_idx").on(table.entity_type, table.entity_id),
+}));
+
+export const notes = pgTable("notes", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(), // e.g., 'customer', 'order'
+    entity_id: varchar("entity_id").notNull(),
+    user_id: varchar("user_id").references(() => users.id),
+    content: text("content").notNull(),
+    created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+    entityIdx: index("notes_entity_idx").on(table.entity_type, table.entity_id),
+}));
+
+export const calendar_links = pgTable("calendar_links", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    entity_type: text("entity_type").notNull(),
+    entity_id: varchar("entity_id").notNull(),
+    google_event_id: text("google_event_id"),
+    event_date: timestamp("event_date"),
+    reminder_24h: boolean("reminder_24h").default(false),
+    reminder_1h: boolean("reminder_1h").default(false),
+    created_at: timestamp("created_at").defaultNow(),
+});
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -223,3 +313,43 @@ export type Invoice = typeof invoices.$inferSelect;
 export type InsertAgentSettings = z.infer<typeof insertAgentSettingsSchema>;
 export type UpdateAgentSettings = z.infer<typeof updateAgentSettingsSchema>;
 export type AgentSettings = typeof agentSettings.$inferSelect;
+
+
+export const insertSupplierSchema = createInsertSchema(suppliers).omit({
+  id: true,
+  created_at: true,
+});
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  created_at: true,
+});
+export const insertPurchaseOrderSchema = createInsertSchema(purchase_orders).omit({
+  id: true,
+  created_at: true,
+});
+export const insertAttachmentSchema = createInsertSchema(attachments).omit({
+  id: true,
+  created_at: true,
+});
+export const insertNoteSchema = createInsertSchema(notes).omit({
+  id: true,
+  created_at: true,
+});
+export const insertCalendarLinkSchema = createInsertSchema(calendar_links).omit({
+  id: true,
+  created_at: true,
+});
+
+
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type PurchaseOrder = typeof purchase_orders.$inferSelect;
+export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type Attachment = typeof attachments.$inferSelect;
+export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
+export type Note = typeof notes.$inferSelect;
+export type InsertNote = z.infer<typeof insertNoteSchema>;
+export type CalendarLink = typeof calendar_links.$inferSelect;
+export type InsertCalendarLink = z.infer<typeof insertCalendarLinkSchema>;

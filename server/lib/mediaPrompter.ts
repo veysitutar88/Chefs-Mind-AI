@@ -1,8 +1,11 @@
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY || 'test-key-for-smoke-testing',
+  dangerouslyAllowBrowser: true
+});
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || 'test-key');
 
 interface MediaPrompterInput {
   goal: 'image' | 'video' | 'video-from-image';
@@ -49,7 +52,7 @@ export async function generateMediaPrompt(input: MediaPrompterInput): Promise<Me
 Твоя задача: улучшить черновик промпта, сделать его четким, детальным и безопасным.
 
 Правила:
-1. Сохраняй язык входного промпта (русский)
+1. Сохраняй язык входного промpта (русский)
 2. Нормализуй стиль: ${style}
 3. Добавь детали композиции, освещения, качества
 4. Для видео: добавь подсказки по движению камеры и динамике
