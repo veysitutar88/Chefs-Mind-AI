@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import 'dotenv/config';
+import swaggerUi from 'swagger-ui-express';
 
 // --- Environment Validation ---
 const envResult = envSchema.safeParse(process.env);
@@ -75,6 +76,17 @@ app.use(
 app.use(metricsMiddleware);
 
 registerRoutes(app);
+
+// Swagger UI documentation - статические файлы из директории docs
+app.use('/docs', express.static('docs'));
+
+// Swagger UI настройка - загрузка спецификации с /docs/openapi.json
+const swaggerOptions = {
+  swaggerUrl: '/docs/openapi.json',
+  explorer: true,
+  customSiteTitle: "Chef's Mind API Docs"
+};
+app.use('/docs/api', swaggerUi.serve, swaggerUi.setup(undefined, swaggerOptions));
 
 const httpServer = createServer(app);
 

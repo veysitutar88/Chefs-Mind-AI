@@ -1,0 +1,495 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Chef's Mind AI API",
+    "version": "1.0.0",
+    "description": "Многоагентная ИИ-платформа для управления рестораном. Политика безопасности: RBAC (роль admin) и Safe Mode (заголовок X-Confirm-Code) для write-операций."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Относительный путь сервера"
+    },
+    {
+      "url": "http://localhost:5001",
+      "description": "Локальный сервер разработки"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT токен для аутентификации"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionId",
+        "description": "Сессионная cookie для аутентификации"
+      },
+      "rbacAdmin": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-User-Role",
+        "description": "Требование роли admin для доступа к эндпоинту. Принимает значения: admin, chef, accountant. Admin имеет доступ ко всем ресурсам."
+      },
+      "safeMode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Confirm-Code",
+        "description": "Код подтверждения для write-операций в Safe Mode. Устанавливается через переменную окружения CONFIRM_CODE."
+      }
+    },
+    "schemas": {
+      "TranscribeRequest": {
+        "type": "object",
+        "required": ["file"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Аудио файл для транскрибации. Поддерживаемые форматы: audio/webm, audio/ogg, audio/mp4, audio/wav, audio/mpeg, audio/m4a"
+          },
+          "language": {
+            "type": "string",
+            "default": "ru",
+            "description": "Язык аудио для распознавания (по умолчанию русский)"
+          }
+        }
+      },
+      "TranscribeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Статус успешности операции"
+          },
+          "text": {
+            "type": "string",
+            "description": "Распознанный текст"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Уникальный идентификатор запроса"
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "t_start": {
+                "type": "number",
+                "description": "Время начала обработки (timestamp)"
+              },
+              "t_first_partial": {
+                "type": "number",
+                "description": "Время до первого частичного результата (мс)"
+              },
+              "t_final": {
+                "type": "number",
+                "description": "Время до финального результата (мс)"
+              },
+              "audio_duration_ms": {
+                "type": "number",
+                "description": "Продолжительность аудио (мс)"
+              }
+            }
+          }
+        }
+      },
+      "SessionResumeResponse": {
+        "type": "object",
+        "properties": {
+          "authenticated": {
+            "type": "boolean",
+            "description": "Статус аутентификации пользователя"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Уникальный идентификатор пользователя"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "Email пользователя"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["admin", "chef", "accountant"],
+                "description": "Роль пользователя в системе"
+              }
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Время истечения сессии"
+          }
+        }
+      },
+      "BackupResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Статус успешности создания бэкапа"
+          },
+          "message": {
+            "type": "string",
+            "description": "Сообщение о результате операции"
+          },
+          "backup": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "string",
+                "description": "Имя файла бэкапа"
+              },
+              "path": {
+                "type": "string",
+                "description": "Полный путь к файлу бэкапа"
+              },
+              "sha256": {
+                "type": "string",
+                "description": "SHA256 хеш файла для проверки целостности"
+              },
+              "size": {
+                "type": "integer",
+                "description": "Размер файла в байтах"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Время создания бэкапа"
+              }
+            }
+          }
+        }
+      },
+      "OAuthRedirectResponse": {
+        "type": "object",
+        "properties": {
+          "redirect": {
+            "type": "boolean",
+            "description": "Индикатор перенаправления"
+          },
+          "location": {
+            "type": "string",
+            "description": "URL для перенаправления на Google OAuth"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [false]
+          },
+          "error": {
+            "type": "string",
+            "description": "Сообщение об ошибке"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Уникальный идентификатор запроса для отслеживания"
+          }
+        }
+      },
+      "PrometheusMetricsResponse": {
+        "type": "string",
+        "description": "Метрики в формате Prometheus text exposition format версии 0.0.4"
+      }
+    }
+  },
+  "paths": {
+    "/api/db/backup": {
+      "post": {
+        "summary": "Создание ручного бэкапа базы данных",
+        "description": "Создает сжатый SQL дамп базы данных с использованием pg_dump. Эндпоинт защищен JWT аутентификацией, RBAC (роль admin) и Safe Mode подтверждением.",
+        "tags": ["Database Administration"],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "rbacAdmin": []
+          },
+          {
+            "safeMode": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Тело запроса не требуется, операция выполняется без параметров"
+        },
+        "responses": {
+          "200": {
+            "description": "Бэкап успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Manual backup created successfully",
+                  "backup": {
+                    "filename": "manual_backup_20251110_130000.sql.gz",
+                    "path": "/app/out/backups/manual_backup_20251110_130000.sql.gz",
+                    "sha256": "a1b2c3d4e5f6...",
+                    "size": 1024768,
+                    "created_at": "2025-11-10T13:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный запрос"
+          },
+          "401": {
+            "description": "Неавторизован - требуется JWT токен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": "Unauthorized - Authentication required",
+                  "requestId": "req-123456"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ запрещен - недостаточно прав или неподтвержденная write-операция",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "insufficientRole": {
+                    "summary": "Недостаточно прав",
+                    "value": {
+                      "success": false,
+                      "error": "Forbidden - Insufficient permissions",
+                      "required_roles": ["admin"],
+                      "user_role": "chef",
+                      "requestId": "req-123456"
+                    }
+                  },
+                  "unconfirmedWrite": {
+                    "summary": "Неподтвержденная write-операция",
+                    "value": {
+                      "success": false,
+                      "error": "Write operation requires confirmation",
+                      "how_to_confirm": "Add header X-Confirm-Code: <CONFIRM_CODE>",
+                      "detail": "SAFE_MODE is ON. Reads are allowed, writes require confirmation."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера при создании бэкапа",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Confirm-Code",
+            "in": "header",
+            "required": true,
+            "description": "Код подтверждения для Safe Mode",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/sessions/resume": {
+      "get": {
+        "summary": "Возобновление сессии пользователя",
+        "description": "Возобновляет пользовательскую сессию на основе cookies или JWT токена. Возвращает информацию о текущем пользователе и статусе аутентификации.",
+        "tags": ["Session Management"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Сессия успешно возобновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResumeResponse"
+                },
+                "examples": {
+                  "authenticated": {
+                    "summary": "Аутентифицированный пользователь",
+                    "value": {
+                      "authenticated": true,
+                      "user": {
+                        "id": "user-123",
+                        "email": "chef@restaurant.com",
+                        "role": "chef"
+                      },
+                      "expiresAt": "2025-11-10T14:00:00.000Z"
+                    }
+                  },
+                  "anonymous": {
+                    "summary": "Анонимный пользователь",
+                    "value": {
+                      "authenticated": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Недействительная или истекшая сессия"
+          }
+        }
+      }
+    },
+    "/api/auth/google": {
+      "post": {
+        "summary": "Инициация Google OAuth аутентификации",
+        "description": "Начинает процесс OAuth аутентификации с Google. Возвращает HTTP 302 redirect с Location заголовком, указывающим на Google OAuth URL.",
+        "tags": ["Authentication"],
+        "security": [],
+        "responses": {
+          "302": {
+            "description": "Перенаправление на Google OAuth",
+            "headers": {
+              "Location": {
+                "description": "URL для перенаправления на Google OAuth",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "example": "https://accounts.google.com/oauth/authorize?response_type=code&client_id=...&redirect_uri=...&scope=..."
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный запрос - отсутствуют необходимые параметры OAuth"
+          },
+          "500": {
+            "description": "Ошибка конфигурации Google OAuth"
+          }
+        }
+      }
+    },
+    "/api/transcribe": {
+      "post": {
+        "summary": "Транскрибация аудио в текст",
+        "description": "Преобразует аудио файл в текст с использованием OpenAI Whisper API. Поддерживает различные аудио форматы и автоматически определяет язык (по умолчанию русский).",
+        "tags": ["Speech-to-Text"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscribeRequest"
+              },
+              "examples": {
+                "webm_audio": {
+                  "summary": "WebM аудио файл",
+                  "value": {
+                    "file": "audio_data_here",
+                    "language": "ru"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Транскрибация успешно завершена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscribeResponse"
+                },
+                "example": {
+                  "success": true,
+                  "text": "Привет, как дела?",
+                  "requestId": "stt-1699017600-abc123def",
+                  "metrics": {
+                    "t_start": 1699017600000,
+                    "t_first_partial": 1500,
+                    "t_final": 3200,
+                    "audio_duration_ms": 5000
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный формат файла или отсутствует аудио данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неавторизован - требуется JWT токен"
+          },
+          "422": {
+            "description": "Неподдерживаемый формат аудио файла"
+          },
+          "500": {
+            "description": "Ошибка при обращении к STT сервису"
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Получение метрик Prometheus",
+        "description": "Возвращает метрики системы в формате Prometheus text exposition format версии 0.0.4. Включает системные метрики, метрики HTTP запросов, Node.js процесс метрики и бизнес-метрики.",
+        "tags": ["Monitoring"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Метрики успешно получены",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrometheusMetricsResponse"
+                },
+                "example": "# HELP nodejs_version_info Node.js version info\n# TYPE nodejs_version_info gauge\nnodejs_version_info{version=\"v18.17.0\"} 1\n# HELP http_requests_total Total number of HTTP requests\n# TYPE http_requests_total counter\nhttp_requests_total{method=\"GET\",route=\"/health\",status=\"200\"} 42\n# HELP process_uptime_seconds Process uptime in seconds\n# TYPE process_uptime_seconds gauge\nprocess_uptime_seconds 1234.567\n"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

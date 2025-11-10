@@ -2,4 +2,7 @@
 
 Error: Timed out waiting 60000ms from config.webServer.
 
-[1A[2K
+[1A[2K"[2025-11-10T17:30:04.000Z] E2E smoke run" 
+"Health check: FAIL (curl exit code 7 - connection refused to http://localhost:5001/health)" 
+"E2E test execution: FAILED (timeout waiting 120000ms from config.webServer - server not available on port 5001)" 
+"E2E: FAILED 0/0 (сервер недоступен на порту 5001)" 

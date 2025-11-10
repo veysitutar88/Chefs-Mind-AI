@@ -2,6 +2,9 @@
 
 Многоагентная ИИ‑платформа для управления рестораном: Orchestrator API, агенты (Chef, Accountant, Researcher, Media), UI и интеграции. Бэкенд (Express/TypeScript), фронтенд (Next.js), PostgreSQL (Drizzle ORM), метрики Prometheus, RBAC/SafeMode.
 
+## API Docs
+- [API Docs](#api-docs)
+
 ## Чекпоинты
 
 - Мастер-чекпоинт (2025-10-29): docs/MASTER_CHECKPOINT_2025-10-29.md
@@ -193,6 +196,64 @@ PostgreSQL: 5432            # БД порт
 
 **Конец P/D/R/L Addendum**  
 *Этот раздел добавлен как финальная фаза P/D/R/L плана*
+
+## API Docs
+
+Документация API доступна через Swagger UI и в формате OpenAPI JSON.
+
+- **Swagger UI**: [http://localhost:5001/docs/api](http://localhost:5001/docs/api) (относительный путь: /docs/api)
+- **OpenAPI JSON**: [http://localhost:5001/docs/openapi.json](http://localhost:5001/docs/openapi.json) (относительный путь: /docs/openapi.json)
+
+Swagger UI автоматически загружает спецификацию API с `/docs/openapi.json`, как это настроено в [server/index.ts](server/index.ts).
+
+### Запуск сервера
+
+Для запуска сервера API используйте команду `npm run dev:server` (см. [package.json](package.json)) или обратитесь к разделу [Startup Order](#startup-order) в этом README. По умолчанию сервер запускается на порту 5001.
+
+### Покрытые эндпоинты
+
+Текущая спецификация OpenAPI включает следующие эндпоинты:
+
+- `POST /api/db/backup`
+- `GET /api/sessions/resume`
+- `POST /api/auth/google`
+- `POST /api/transcribe`
+- `GET /api/metrics`
+
+### Безопасность
+
+API использует несколько механизмов безопасности:
+
+-   **JWT Bearer Token**: Для аутентификации используйте заголовок `Authorization: Bearer <token>`.
+-   **RBAC (Role-Based Access Control)**: Для некоторых операций (например, write-операций) требуется роль `admin`. Это смоделировано в спецификации как `rbacAdmin`.
+-   **Safe Mode**: Для write-операций требуется заголовок `X-Confirm-Code` со значением, соответствующим переменной окружения `CONFIRM_CODE`.
+-   **Session/Cookie**: Используется для управления сессиями, например, для эндпоинта `/api/sessions/resume`.
+
+### MIME-типы
+
+-   `GET /api/metrics`: Возвращает данные в формате `text/plain` (формат Prometheus).
+-   `POST /api/transcribe`: Ожидает данные в формате `multipart/form-data` с полем `file`.
+
+### Примеры cURL
+
+**1. Резервное копирование базы данных (требуется авторизация и Safe Mode):**
+
+```bash
+curl -X POST http://localhost:5001/api/db/backup \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "X-Confirm-Code: YOUR_CONFIRM_CODE"
+```
+
+**2. Получение метрик Prometheus:**
+
+```bash
+curl http://localhost:5001/api/metrics
+```
+
+### Примечания по поддержке
+
+-   Спецификация OpenAPI находится в файле [docs/openapi.json](docs/openapi.json). Обновляйте этот файл при изменении API.
+-   Порт по умолчанию для сервера API — 5001, как указано в [server/index.ts](server/index.ts).
 
 ## Addendum — Context Handoff (P/D/R/L) + Links + Ports matrix
 
