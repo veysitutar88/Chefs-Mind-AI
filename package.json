@@ -1,6 +1,6 @@
 {
   "name": "rest-express",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -30,13 +30,13 @@
     "test:mcp": "vitest tests/mcp/prompt-enhancer.spec.ts",
     "smoke:media": "sh scripts/smoke-media.sh",
     "smoke:media:auth": "sh scripts/smoke-media-auth.sh",
-    "lint": "npx eslint --config eslint.config.mjs .",
-    "lint:fix": "npx eslint --config eslint.config.mjs . --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "ci:lint-tsc": "npm run lint && npm run check",
     "ui:screenshots": "node scripts/capture-ui-screenshots.mjs",
     "format": "prettier --write .",
-    "prepare": "husky",
-    "smoke:ci:local": "bash scripts/smoke-local.sh"
+    "smoke:ci:local": "bash scripts/smoke-local.sh",
+    "prepare": "husky"
   },
   "dependencies": {
     "@google-cloud/vertexai": "^1.10.0",
@@ -175,6 +175,7 @@
     "eslint-config-next": "^15.5.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.4",

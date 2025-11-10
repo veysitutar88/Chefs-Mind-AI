@@ -1,91 +1,77 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
-// Плагины установлены, но на первом цикле не включаем строгие правила:
-// import importX from 'eslint-plugin-import-x';
-// import unusedImports from 'eslint-plugin-unused-imports';
-// import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import nextPlugin from '@next/eslint-plugin-next';
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import importPlugin from "eslint-plugin-import";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import unusedImports from "eslint-plugin-unused-imports";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Type-aware конфиги применяются только к src/** и tests/**
+const typeAwareFiles = ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"];
+
+const typeAwareConfigs = tseslint.configs.recommendedTypeChecked.map((cfg) => ({
+  ...cfg,
+  files: typeAwareFiles,
+  languageOptions: {
+    ...cfg.languageOptions,
+    parserOptions: {
+      ...(cfg.languageOptions?.parserOptions ?? {}),
+      project: ["./tsconfig.json"],
+      tsconfigRootDir: __dirname,
+    },
+  },
+  rules: {
+    ...(cfg.rules ?? {}),
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/unbound-method": "warn",
+    "@typescript-eslint/await-thenable": "warn",
+    "@typescript-eslint/require-await": "warn",
+    "@typescript-eslint/no-unsafe-assignment": "warn",
+    "@typescript-eslint/no-unsafe-call": "warn",
+    "@typescript-eslint/no-unsafe-member-access": "warn",
+    "@typescript-eslint/no-unsafe-return": "warn",
+    "@typescript-eslint/no-unsafe-argument": "warn",
+    "@typescript-eslint/restrict-template-expressions": "warn",
+    "@typescript-eslint/no-base-to-string": "warn",
+    "@typescript-eslint/only-throw-error": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/prefer-reduce-type-parameter": "warn",
+  },
+}));
 
 export default [
-  // Игноры на уровне корня
   {
     ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/.next/**',
-      'coverage/**',
-      'reports/**',
-      'logs/**',
-      'drizzle/migrations/meta/**',
-      'out/**',
-      'tmp/**',
-      'uploads/**',
-      '**/*.tsbuildinfo'
-    ]
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/.turbo/**",
+      "reports/**",
+      "logs/**"
+    ],
   },
-
-  // Базовые рекомендации для JS
   js.configs.recommended,
-
-  // Рекомендации для TypeScript
   ...tseslint.configs.recommended,
-
-  // Глобальные настройки для TS/ESM (минимальные правила)
   {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: ['./tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-        sourceType: 'module',
-        ecmaVersion: 'latest'
-      }
-    },
-    rules: {
-      // Минимальный baseline без усиления.
-      // Политика проекта: ESM Above All — относительные импорты в .ts оканчиваются на .js.
-      // Не включаем строгую проверку сейчас; будет добавлена на следующем цикле.
-    }
-  },
-
-  // Backend / Shared / Tests — Node окружение
-  {
-    files: [
-      'server/**/*.{ts,tsx,js,mjs}',
-      'shared/**/*.{ts,tsx,js,mjs}',
-      'tests/**/*.{ts,tsx,js,mjs}'
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.node
-      }
-    },
-    rules: {}
-  },
-
-  // Frontend пакеты — браузерное окружение
-  {
-    files: [
-      'frontend/**/*.{ts,tsx,js,mjs}',
-      'frontend-enhanced/**/*.{ts,tsx,js,mjs}',
-      'frontend-simple/**/*.{ts,tsx,js,mjs}'
-    ],
     plugins: {
-      react,
-      'react-hooks': reactHooks,
-      '@next/next': nextPlugin
-    },
-    languageOptions: {
-      globals: {
-        ...globals.browser
-      }
+      import: importPlugin,
+      "simple-import-sort": simpleImportSort,
+      "unused-imports": unusedImports,
     },
     rules: {
-      // Минимальный baseline без строгих правил React/Next на первом цикле.
-    }
-  }
+      "no-unused-vars": "warn",
+      "import/order": ["warn", {
+        groups: ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+        "newlines-between": "always",
+        alphabetize: { order: "asc", caseInsensitive: true }
+      }],
+      "simple-import-sort/imports": "warn",
+      "simple-import-sort/exports": "warn",
+      "unused-imports/no-unused-imports": "warn",
+    },
+  },
+  ...typeAwareConfigs,
 ];

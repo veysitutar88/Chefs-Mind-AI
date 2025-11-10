@@ -1,0 +1,22 @@
+
+c:\Projects\Chefs-Mind-AI\scripts\backup-smoke-test.js
+  7:7  warning  'execAsync' is assigned a value but never used  no-unused-vars
+
+c:\Projects\Chefs-Mind-AI\scripts\db-verify.js
+  7:7  warning  '__dirname' is assigned a value but never used  no-unused-vars
+
+c:\Projects\Chefs-Mind-AI\scripts\fix-imports.mjs
+  26:10  warning  'exists' is defined but never used             no-unused-vars
+  36:10  warning  'resolveCandidates' is defined but never used  no-unused-vars
+  44:9   warning  'basedir' is assigned a value but never used   no-unused-vars
+  48:20  warning  'group' is assigned a value but never used     no-unused-vars
+
+c:\Projects\Chefs-Mind-AI\scripts\models-smoke.js
+  6:7  warning  '__dirname' is assigned a value but never used  no-unused-vars
+
+c:\Projects\Chefs-Mind-AI\scripts\test-rbac.js
+  1:10  warning  'createServer' is defined but never used  no-unused-vars
+  2:10  warning  'parse' is defined but never used         no-unused-vars
+
+✖ 9 problems (0 errors, 9 warnings)
+

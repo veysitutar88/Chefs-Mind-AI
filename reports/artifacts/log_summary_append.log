@@ -52,3 +52,4 @@
 
 === END LOG SUMMARY ===
 2025‑11‑10 09:41 — [Ports] — Normalized to 5003/3000/3001; removed 3002; ENV‑driven CORS/CSP; Artifacts: reports/artifacts/ports/* — Result: smoke OK
+2025‑11‑10 09:52 — [Merge] — Ports normalization + CSP/CORS env‑driven merged — Artifacts: reports/artifacts/ports/* — Result: branch closed
