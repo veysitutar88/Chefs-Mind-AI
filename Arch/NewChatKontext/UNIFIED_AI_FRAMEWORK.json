@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "purpose": "Создать универсальную модель взаимодействия человека и AI-агентов для постановки целей, разработки и контроля качества.",
+  "structure": {
+    "context_layer": "Описывает текущее состояние проекта (Context, Session, Checkpoint)",
+    "agent_layer": "Определяет роли и задачи каждого агента",
+    "instruction_layer": "Фиксирует правила поведения (Agent Instructions)",
+    "vibe_layer": "Задаёт когнитивный режим и стиль выполнения (Vibe-Coding)",
+    "execution_layer": "Выполняет задачу (Plan → Code → Test → Review)",
+    "qa_logging_layer": "Оценивает результат, записывает логи, обновляет контекст"
+  },
+  "workflow": [
+    "User → ставит цель",
+    "Orchestrator → выбирает агента",
+    "Agent → уточняет задачу (ASK / PLAN)",
+    "Agent → выполняет (EXECUTE / CODE)",
+    "QA-Gate → валидирует результат",
+    "System → обновляет CONTEXT + SESSION + CHANGELOG"
+  ],
+  "principles": [
+    "Context First — сначала прочти контекст",
+    "Plan Before Code — спланируй, потом пиши",
+    "Minimal Assumptions — не додумывай без фактов",
+    "QA Everywhere — валидация на каждом шаге",
+    "Log Continuity — всё фиксируется в SESSION / CHANGELOG"
+  ],
+  "goal": "Единая среда, где любые модели (GPT, Gemini, Claude, Perplexity, Koda, Kilo Code и др.) работают по одной системе правил, без потери контекста и архитектуры."
+}

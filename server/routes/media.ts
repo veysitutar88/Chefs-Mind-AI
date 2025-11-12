@@ -29,6 +29,8 @@ router.post(
   qaGateMiddleware,
   async (req: QARequest, res: Response) => {
     try {
+      const startTime = Date.now();
+      
       const { prompt, generator, negativePrompt } =
         req.body as MediaGenerationParams;
 
@@ -151,8 +153,21 @@ router.post(
   requireAuth,
   requireRole(['admin', 'chef']),
   qaGateMiddleware,
-  async (req: QARequest, res: Response) => {
+async (req: QARequest, res: Response) => {
     try {
+      const startTime = Date.now();
+      
+      // Проверка feature-флагов
+      const enableVideo = process.env.ENABLE_VIDEO === 'true';
+      
+      if (!enableVideo) {
+        console.log('🎬 Video generation disabled by feature flag');
+        return res.status(200).json({
+          ok: false,
+          reason: 'video_disabled'
+        });
+      }
+      
       const { prompt, generator, durationSec, negativePrompt } =
         req.body as MediaGenerationParams;
 

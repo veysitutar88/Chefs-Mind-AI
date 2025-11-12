@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import io from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import ModelPicker from '../../components/ui/ModelPicker';
-import SkeletonLoader from '../../components/ui/SkeletonLoader';
-import StatusDashboard from '../../components/StatusDashboard';
-import { RBACGuard } from '../components/RBACGuard';
+import ModelPicker from '@/components/ui/ModelPicker';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
+import StatusDashboard from '@/components/StatusDashboard';
+import { RBACGuard } from '@/components/RBACGuard';
 
 type ChatMessage = {
   text: string;

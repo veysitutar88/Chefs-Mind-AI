@@ -1,0 +1,6 @@
+
+> rest-express@1.0.1 dev:server
+> cross-env NODE_ENV=development tsx watch server/index.ts
+
+'cross-env' is not recognized as an internal or external command,
+operable program or batch file.
