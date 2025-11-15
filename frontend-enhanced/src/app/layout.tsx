@@ -1,12 +1,8 @@
-// layout.tsx — финальная разметка с брендовым бэкграундом
-import '../styles/globals.css';
-import { useEffect } from 'react';
+'use client';
 
-export const metadata = {
-  title: "Chef's Mind AI - Управление рестораном",
-  description:
-    'Многоагентная ИИ‑платформа для управления рестораном с 5 специализированными агентами',
-};
+// layout.tsx — финальная разметка с брендовым бэкграундом
+import '../../styles/globals.css';
+import { useEffect } from 'react';
 
 function AuthShim() {
   'use client';
@@ -71,15 +67,24 @@ export default function RootLayout({
             <div className="p-4">
               <h2 className="font-medium text-gray-900 mb-3">Навигация</h2>
               <div className="space-y-2">
-                <div className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                <a href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
                   Главная
-                </div>
-                <div className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                </a>
+                <a href="/chat-history" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                  История чатов
+                </a>
+                <a href="/agents" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
                   Агенты
-                </div>
-                <div className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                </a>
+                <a href="/orders" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                  Заказы
+                </a>
+                <a href="/suppliers" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
+                  Поставщики
+                </a>
+                <a href="/settings" className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
                   Настройки
-                </div>
+                </a>
               </div>
             </div>
           </aside>

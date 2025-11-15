@@ -22,6 +22,29 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const googleOAuthTokens = pgTable(
+  'google_oauth_tokens',
+  {
+    id: varchar('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar('user_id').references(() => users.id).notNull(),
+    googleId: text('google_id').notNull(), // Google user ID
+    email: text('email').notNull(),
+    accessToken: text('access_token').notNull(),
+    refreshToken: text('refresh_token'), // Может быть null для некоторых пользователей
+    refreshTokenEncrypted: text('refresh_token_encrypted'), // Зашифрованный refresh_token для дополнительной безопасности
+    expiryDate: timestamp('expiry_date'),
+    scope: text('scope'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('google_oauth_tokens_user_id_idx').on(table.userId),
+    googleIdIdx: index('google_oauth_tokens_google_id_idx').on(table.googleId),
+  })
+);
+
 export const chatSessions = pgTable(
   'chat_sessions',
   {
@@ -275,8 +298,12 @@ export const suppliers = pgTable('suppliers', {
   id: varchar('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  name: text('name').notNull(),
-  contact_info: jsonb('contact_info'),
+  name: varchar('name', { length: 255 }).notNull(),
+  contact_person: varchar('contact_person', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  email: varchar('email', { length: 255 }),
+  address: text('address'),
+  updated_at: timestamp('updated_at').defaultNow(),
   created_at: timestamp('created_at').defaultNow(),
 });
 
@@ -358,14 +385,35 @@ export const calendar_links = pgTable('calendar_links', {
   id: varchar('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  entity_type: text('entity_type').notNull(),
-  entity_id: varchar('entity_id').notNull(),
+  order_id: varchar('order_id').references(() => orders.id),
   google_event_id: text('google_event_id'),
-  event_date: timestamp('event_date'),
-  reminder_24h: boolean('reminder_24h').default(false),
-  reminder_1h: boolean('reminder_1h').default(false),
+  user_id: text('user_id').notNull(),
   created_at: timestamp('created_at').defaultNow(),
 });
+
+export const mediaAssets = pgTable(
+  'media_assets',
+  {
+    id: varchar('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar('user_id').references(() => users.id).notNull(),
+    provider: varchar('provider', { length: 50 }).notNull(),
+    prompt: text('prompt').notNull(),
+    jobId: varchar('job_id', { length: 255 }).unique(),
+    status: varchar('status', { length: 20 }).notNull().default('pending'),
+    assetUrl: varchar('asset_url', { length: 512 }),
+    errorMessage: text('error_message'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('media_assets_user_id_idx').on(table.userId),
+    statusIdx: index('media_assets_status_idx').on(table.status),
+    providerIdx: index('media_assets_provider_idx').on(table.provider),
+    createdAtIdx: index('media_assets_created_at_idx').on(table.createdAt),
+  })
+);
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -493,6 +541,21 @@ export const insertCalendarLinkSchema = createInsertSchema(calendar_links).omit(
   }
 );
 
+export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMediaAssetSchema = createInsertSchema(mediaAssets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type MediaAsset = typeof mediaAssets.$inferSelect;
+export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
+
 export type Supplier = typeof suppliers.$inferSelect;
 export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
 export type Order = typeof orders.$inferSelect;
@@ -505,3 +568,5 @@ export type Note = typeof notes.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 export type CalendarLink = typeof calendar_links.$inferSelect;
 export type InsertCalendarLink = z.infer<typeof insertCalendarLinkSchema>;
+export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
+export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;

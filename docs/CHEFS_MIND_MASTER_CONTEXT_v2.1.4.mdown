@@ -1,0 +1,435 @@
+# Markdown# Chef’s Mind AI — MASTER CONTEXT v2.1.4
+
+**Версия:** v2.1.4 (local stable)  
+**Дата среза:** 2025-11-13  
+**Статус:** MVP готов, Multi-Agent Routing в работе, Block 4 (Media Studio / Prompt Enhancer / UI) — в доработке.
+
+---
+
+## 0. Идея и назначение
+
+Chef’s Mind AI — это платформа на базе ИИ, которая помогает шеф-повару и команде управлять рестораном:
+
+- меню и рецептами;
+- закупками и поставщиками;
+- финансовыми показателями (food cost, закупки, отчёты);
+- исследованием и подсказками по продуктам/технологиям;
+- медиа-контентом (фото/видео блюд, социальные сети).
+
+Центр системы — **AI-оркестратор**, который понимает запрос повара, выбирает правильного агента и отвечает в одном общем чате. Пользователь видит «одного умного ассистента», а внутри работают несколько спец-агентов и MCP-интеграции.
+
+---
+
+## 1. Архитектура (высокий уровень)
+
+### 1.1. Слои
+
+1. **Frontend (Next.js + React + TypeScript)**  
+   - UI в стиле «панель командного центра» (три колонки).  
+   - Tailwind + shadcn/ui, цветовая палитра:
+     - Na’Vi Blue `#3E6BA3` (акценты, активные элементы);
+     - Тёплый бежевый `#B79F8C` (фон карточек / secondary);
+     - Тёмный серо-чёрный фон (dashboard / sidebar).
+
+2. **Backend (Node.js + Express + TypeScript)**  
+   - REST-API `/api/enhanced-agent/chat`, `/api/media/*`, `/api/calendar/*`, `/api/health`, `/metrics`.
+   - Оркестрация агентов и интеграции с LLM/MCP.
+
+3. **Database (PostgreSQL + Drizzle ORM)**  
+   - Таблицы: заказы, purchase_orders, suppliers, attachments, notes, calendar_links и др.  
+   - В перспективе — `media_assets`, `chat_sessions`, и др. для Block 3/4.
+
+4. **AI-слой / Оркестратор**  
+   - AgentOrchestrator (`server/agents/orchestrator.ts`) — роутинг между агентами Chef, Accountant, Researcher, Media, QA.  
+   - Подключение OpenAI/Gemini/Perplexity через MCP и прямые SDK.  
+   - QA-Gate для снижения галлюцинаций и проверки ответов.
+
+5. **Инфраструктура**  
+   - Единый порт API: `PORT=5001` для backend и фронта (NEXT_PUBLIC_API_URL).  
+   - Docker-композ, health-чеки, метрики `/metrics`, SAFE_MODE и RBAC.
+
+---
+
+## 2. Блоки разработки и чекпоинты
+
+### 2.1. Block 0 — Infra Fix (готово)
+
+Цель: выровнять инфраструктуру.
+
+- Все сервисы слушают порт `5001`.  
+- `/api/media/video/generate` возвращает 200 с `reason: "video_disabled"` при `ENABLE_VIDEO=false`.  
+- Health-эндпоинт и метрики работают.  
+- Статус блока: **done** (отражено в `CHECKPOINT_v2.1.3.json`).
+
+### 2.2. Block 1 — Auth & MVP User Flow (готово)
+
+- Google OAuth + refresh tokens.  
+- Login → Dashboard → базовый Agent Chat.  
+- Статус: **done** (MVP готов к демонстрации).
+
+### 2.3. Block 2 — Multi-Agent Routing (готово)
+
+- **AgentOrchestrator**: классификация намерений (`cooking`, `finance`, `research`, `media`, `qa`).  
+- Эндпоинт `/api/enhanced-agent/chat` принимает `meta.agent` и возвращает ответ с указанием активного агента.  
+- LRU-кэш + Левенштейн для похожих запросов (ускорение повторов).  
+- UI показывает плашку активного агента (`AgentBadge.tsx`).  
+- Тесты (unit + e2e) зелёные.  
+- Статус: **done**, версия `v2.1.4 (local stable)`.
+
+### 2.4. Block 3 — Data Persistence & Calendar (план)
+
+Цель: хранение истории чатов, CRUD заказов и интеграция календаря.
+
+Планируется:  
+- `chat_sessions`, API `/api/chat/history`.  
+- CRUD `/api/orders`, `/api/suppliers`.  
+- `/api/calendar/create` с напоминаниями (1440/60 минут).  
+- UI-кнопки «Создать бэкап / Восстановить».
+
+### 2.5. Block 4 — Media Studio / Prompt Enhancer / UI (в процессе)
+
+Фронт и API частично реализованы:
+
+- Backend:
+  - `server/routes/media.ts` — API `/api/media/generate/*`, `/api/media/jobs/*`, `/api/media/assets`. Сейчас логика — симуляция (setTimeout, фейковые результаты).
+  - `server/services/enhanced-media.ts` — полноценный `EnhancedMediaTool` с Prompt Enhancer и интеграцией с реальными моделями (DALL-E/Imagen/Veo). Пока не подключён к маршрутам.
+
+- Frontend:
+  - `frontend-enhanced/src/app/media/page.tsx` — страница Media Studio (вкладки: генерация, задачи, галерея).
+  - `Generator.tsx` — форма промптов, выбора провайдера и типа контента.
+  - `JobList.tsx` — список задач с опросом статусов.
+  - `AssetGallery.tsx` — галерея сгенерированных ассетов.
+
+**Текущее «залипание»:**  
+Фронт стучится в рабочий, но пустой API: роутер использует заглушки, а реальный `EnhancedMediaTool` нигде не вызывается. Нужно связать их и убрать дубль-логики провайдеров.
+
+---
+
+## 3. Агенты и Оркестратор
+
+### 3.1. Список агентов
+
+1. **Chef Agent**  
+   - Рецепты, технологические карты, планирование меню, food-cost.  
+   - Подключения: LLM + база рецептов.
+
+2. **Accountant Agent**  
+   - Закупки, прайс-листы, счёт-фактуры, отчёты.  
+   - Связь с Postgres (orders, suppliers) и таблицами затрат.
+
+3. **Researcher Agent**  
+   - Исследование трендов, продуктов, поставщиков.  
+   - Основной источник: Perplexity API + web-поиск.
+
+4. **Media Studio Agent**  
+   - Генерация промптов и ассетов (фото/видео блюд, соцсети).  
+   - Работает через Media Studio UI + `EnhancedMediaTool`.
+
+5. **QA-Gate Agent**  
+   - Проверка ответов других агентов:
+     - логичность;
+     - отсутствие опасных рекомендаций;
+     - минимизация галлюцинаций.
+   - Может переспрашивать пользователя, если уверенность низкая.
+
+Все агенты вызываются через **AgentOrchestrator**, который:
+
+- Принимает пользовательский запрос;
+- Определяет intent;
+- Выбирает одно или несколько действий (агент(ы) + MCP + QA-Gate);
+- Формирует финальный ответ в общий чат.
+
+---
+
+## 4. Пользовательский интерфейс (UI Refresh v2.1.4)
+
+### 4.1. Общий layout
+
+Три колонки:
+
+1. **Левый сайдбар (Agent / Project Panel)**  
+   - Логотип Chef’s Mind AI.  
+   - Кнопки-агенты:
+     - Chef (Su-Chef)
+     - Accountant
+     - Researcher
+     - Media Studio
+     - QA-Gate / System  
+   - Кнопка **Settings** (внизу).  
+   - При клике по агенту — открыт общий чат, но в хедере и в badge подсвечивается активный агент (как «Projects» в ChatGPT, но без отдельного чата на агента).
+
+2. **Центральная колонка (Main Chat / Orchestrator)**  
+   - История сообщений (стриминг ответов).  
+   - Текстовое поле ввода:
+     - слева: **скрепка** (upload файлов/чеков/накладных для Accountanta и остальных агентов);
+     - справа: **кнопка отправки** и **микрофон** (STT).  
+   - Переключатель модели (Gemini / OpenAI / Perplexity) как всплывающая кнопка над полем ввода.
+
+3. **Правый сайдбар (Tools Panel)**  
+   - Поиск по чатам.  
+   - Библиотека / Knowledge Base (рецепты, документы, отчёты).  
+   - Календарь заказов/событий (100 % оставить).  
+   - (Под вопросом) прямой доступ к базе данных (админ-панель) — заблокировано RBAC.
+
+### 4.2. Цвета и стиль
+
+- Основной фон dashboard: тёмный (near-black), контрастные блоки.  
+- Акцентные элементы (кнопки, активный агент, tabs): Na’Vi Blue `#3E6BA3`.  
+- Вторичный фон карточек / сайдбаров: тёплый бежевый `#B79F8C`.  
+- Стиль: минималистичный fine-dining (много воздуха, чёткая типографика, аккуратные тени, без аляповатых градиентов).
+
+---
+
+## 5. MCP, внешние LLM и Media
+
+### 5.1. MCP-слой
+
+- **OpenAI MCP сервер** — доступ к GPT-моделям, DALL-E, инструментам (код, структура БД, SQL-assistant и т.п.).  
+- **Google MCP сервер** — доступ к Gemini (текст, код, возможно Imagen).  
+- **Perplexity** — прямой API без MCP (исследовательские запросы, веб-поиск).
+
+Оркестратор может комбинировать:
+
+- быстрые ответы (одна модель);
+- гибрид (например, Researcher через Perplexity + финальный ответ через OpenAI/Gemini);
+- QA-Gate поверх всего.
+
+### 5.2. Media Studio / Prompt Enhancer
+
+- Prompt Enhancer сидит внутри `EnhancedMediaTool` и:
+  - принимает «сырой» запрос (например, «сделай фото моего нового десерта Black Label»);
+  - добавляет технические детали (свет, композиция, стиль June Six, формат 4:5 и т.п.);
+  - отправляет окончательный промпт в выбранный провайдер.
+
+- Провайдеры (DALL-E / Imagen / Veo) выбираются:
+  - пользователем в UI;
+  - или автоматически на основе типа задачи (фото/видео/логотип).
+
+---
+
+## 6. Безопасность и защита от галлюцинаций
+
+- RBAC + SAFE_MODE:
+  - нет прямых destructive-операций в БД без подтверждения;
+  - административные действия требуют X-Confirm-Code.
+
+- QA-Gate Agent:
+  - проверяет ответы на:
+    - явные ошибки / противоречия;
+    - опасные рекомендации по еде/здоровью;
+    - попытки выйти за рамки бизнес-логики.
+  - при сомнении спрашивает пользователя ещё раз, либо запрашивает дополнительные данные.
+
+---
+
+## 7. Текущее состояние и следующее
+
+**Сейчас (v2.1.4):**
+
+- Блоки 0, 1, 2 — завершены.  
+- Оркестратор и Multi-Agent chat работают, UI показывает активного агента.  
+- Media Studio UI и API есть, но backend использует заглушки, а Vitest требует конфиг (`vitest.config.mjs` + `vite-tsconfig-paths`).  
+- `CHECKPOINT_v2.1.3.json` описывает MVP-состояние, `progress_report_v_2.1.md` фиксирует Block 2 и план Block 3.
+
+**Следующие шаги (по приоритету):**
+
+1. **Block 4 — довести Media Studio / Prompt Enhancer до рабочего состояния**  
+   - Подключить `EnhancedMediaTool` к `server/routes/media.ts`.  
+   - Удалить старые заглушечные провайдеры (`server/services/media/providers/*`).  
+   - Добавить интеграционные тесты для `/api/media/generate/*`.
+
+2. **Vitest / тестовый контур**  
+   - Создать `vitest.config.mjs` с `vite-tsconfig-paths`.  
+   - Запустить `npx vitest run` и починить ERR_MODULE_NOT_FOUND по алиасам.
+
+3. **Block 3 — Data Persistence & Calendar**  
+   - История чатов, CRUD заказов/поставщиков, календарь / напоминания.
+
+---
+
+## 8. Как пользоваться этим файлом
+
+- Этот MASTER CONTEXT — «якорь» проекта.  
+- Для любого нового чата / новой модели:
+  1. Сначала загружай **этот файл**.
+  2. Затем — актуальный `CHECKPOINT_v2.1.x.json` и `NEXT_TASKS_STATUS_v2.1.x.mdown`.
+  3. И только потом давай агенту конкретное задание (Block 3, Block 4 и т.п.).
+
+ Document
+
+## Introduction
+
+Markdown is a plain text formatting syntax.
+
+Paragraphs are separated by empty lines.
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+## Character Styles
+
+These spans result in 'em' tags:
+
+- *single asterisks*
+- _single underscores_
+
+These spans result in 'strong' tags:
+
+- **double asterisks**
+- __double underscores__
+
+These spans result in 'del' tags:
+
+- ~~double tildes~~
+
+## Links and Images
+
+This is an [example inline link](https://www.actiprosoftware.com "Actipro Software") with tooltip text specified.
+[This link](https://www.actiprosoftware.com) has no tooltip text specified.
+
+URLs and e-mail addresses can be turned into links by enclosing them in angle braces:
+
+- <https://www.actiprosoftware.com>  
+- <support@microsoft.com>
+
+[This link](#markdown-document) links to the first heading in this document via custom ID.
+
+## Images
+
+This is an example of an image:
+
+![Image](https://www.microsoft.com/favicon.ico)
+
+This is an example of an image with a link:
+
+[![Image](https://www.google.com/favicon.ico)](https://www.google.com)
+
+## Blockquotes
+
+Markdown said:
+
+> This is the first level of quoting.
+>
+> > This is a nested blockquote.
+>
+> Back to the first level.
+
+## Lists
+
+Unordered list using minus signs (-):
+
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
+
+Unordered list using plus signs (+):
+
++ Step 1
++ Step 2
++ Step 3
+  + Step 3a
+  + Step 3b
+  + Step 3c
+
+Unordered list using asterisks (*):
+
+* Step 1
+* Step 2
+* Step 3
+  * Step 3a
+  * Step 3b
+  * Step 3c
+
+Ordered list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    1. Step 3a
+    1. Step 3b
+    1. Step 3c
+
+Nested (unordered within ordered) list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    - Step 3a
+    - Step 3b
+    - Step 3c
+
+Definition list:
+
+Term #1
+: This is the definition of term #1.
+
+Term #2
+: This is the definition of term #2.
+
+## Code Blocks
+
+Inline `code` can be delimited with characters.
+
+This code block is fenced with three backticks and has its language specified:
+
+```javascript
+var oldUnload = window.onbeforeunload;
+window.onbeforeunload = function() {
+    saveCoverage();
+    if (oldUnload) {
+        return oldUnload.apply(this, arguments);
+    }
+};
+```
+
+This code block is fenced with three tildes and has its language specified:
+
+~~~ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+~~~
+
+This code block is created by indenting the code, but no language can be specified:
+
+    var foo = 1;
+
+## Tables
+
+| Fruit  | Color  |
+|--------|--------|
+| Apples | Red    |
+| Grapes | Purple |
+| Lemons | Yellow |
+
+## Horizontal Rules
+
+Horizontal rules are formed by placing three or more hyphens, asterisks, or underscores on a line by themselves.
+
+---
+
+***
+
+___
+
+## HTML Tags
+
+<strong>HTML tags</strong> can optionally be used in <em>Markdown</em>.
+
+## Special Characters
+
+Unescaped:
+\ ` * _ { } [ ] ( ) # + - . !
+
+Backslash-Escaped:
+\\ \` \* \_ \{ \} \[ \] \( \) \# \+ \- \. \!

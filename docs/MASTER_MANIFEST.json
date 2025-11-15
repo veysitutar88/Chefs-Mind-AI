@@ -1,0 +1,220 @@
+{
+  "project": {
+    "name": "Chef's Mind AI",
+    "version": "v2.1.4",
+    "checkpoint_date": "2025-11-13",
+    "description": "AI-ядро для ресторана: мультиагентная платформа, которая помогает шеф-повару, учетчику, ресёрчеру и медиа-студии через единый интерфейс.",
+    "repository": "veysitutar88/Chefs-Mind-AI",
+    "main_context_file": "docs/MASTER_CONTEXT_v2.1.4_UI-REFRESH.md"
+  },
+  "runtime": {
+    "port": 5001,
+    "enable_video": false,
+    "stack": {
+      "frontend": "Next.js 15 + React 18 + Tailwind + shadcn/ui",
+      "backend": "Node.js 20 + Express + TypeScript",
+      "database": "PostgreSQL 15 + Drizzle ORM",
+      "agents": "Custom multi-agent orchestrator with QA-Gate"
+    }
+  },
+  "blocks": {
+    "block0_infra_fix": {
+      "status": "done",
+      "summary": "Выравнивание INFRA: единый PORT=5001, /health, /metrics, отключение видео через ENABLE_VIDEO=false."
+    },
+    "block1_mvp_flow": {
+      "status": "done",
+      "summary": "MVP-поток: Google OAuth → Dashboard → Main Chat через /api/enhanced-agent/chat."
+    },
+    "block2_agent_routing": {
+      "status": "done",
+      "summary": "AgentOrchestrator с классификацией intent и маршрутизацией запросов к 5 агентам.",
+      "key_files": [
+        "server/agents/orchestrator.ts",
+        "docs/AGENT_ROUTING_DESIGN.md",
+        "tests/e2e/enhanced-agent-chat.spec.ts"
+      ]
+    },
+    "block3_data_persistence": {
+      "status": "done",
+      "summary": "История чатов + Orders/Suppliers + Calendar + Backup UI.",
+      "key_files": [
+        "shared/schema.ts",
+        "server/routes/dbadmin.ts",
+        "frontend-enhanced/src/app/chat-history/page.tsx",
+        "frontend-enhanced/src/components/chat/ChatHistory.tsx"
+      ]
+    },
+    "block4_media_studio": {
+      "status": "in_progress",
+      "summary": "Media Studio UI + Prompt Enhancer MCP. Имеются дизайн-доки, код в стадии переработки.",
+      "key_files": [
+        "docs/MEDIA_STUDIO_DESIGN.md"
+      ]
+    },
+    "block5_analytics_polish": {
+      "status": "planned",
+      "summary": "Analytics dashboard (p95 latency, error-rate), StatusIndicator/HealthBadge, полный e2e-полиш."
+    }
+  },
+  "agents": {
+    "list": [
+      "Chef",
+      "Accountant",
+      "Researcher",
+      "Media Studio",
+      "QA-Gate"
+    ],
+    "orchestrator": {
+      "file": "server/agents/orchestrator.ts",
+      "intents": [
+        "cooking",
+        "finance",
+        "research",
+        "media",
+        "qa"
+      ],
+      "cache": {
+        "enabled": true,
+        "last_n": 3,
+        "similarity_algorithm": "levenshtein"
+      }
+    },
+    "qa_gate": {
+      "file": "server/graph/nodes/quality_control.ts",
+      "description": "Финальный фильтр и корректировка ответов перед пользователем."
+    }
+  },
+  "mcp_and_models": {
+    "mcp_servers": {
+      "openai_mcp": {
+        "enabled": true,
+        "usage": ["Chef", "QA-Gate"]
+      },
+      "google_mcp": {
+        "enabled": true,
+        "usage": ["Accountant", "Media Studio"]
+      }
+    },
+    "direct_apis": {
+      "perplexity_sonar": {
+        "enabled": true,
+        "usage": ["Researcher"]
+      }
+    },
+    "ui_model_switcher": {
+      "models": [
+        "Gemini",
+        "GPT",
+        "Perplexity"
+      ],
+      "location": "main_input_bar_right"
+    }
+  },
+  "ui_layout": {
+    "main_chat": {
+      "type": "orchestrator_based",
+      "description": "Один главный чат, который маршрутизирует запросы к агентам и показывает активного агента бейджем."
+    },
+    "left_sidebar": {
+      "logo": true,
+      "agent_buttons": [
+        "Accountant",
+        "Su-Chef",
+        "Research",
+        "Media Studio"
+      ],
+      "settings_button": true
+    },
+    "right_sidebar": {
+      "tools": [
+        "chat_search",
+        "library",
+        "calendar",
+        "db_readonly_optional"
+      ]
+    },
+    "input_bar": {
+      "attachments_button": true,
+      "mic_button": true,
+      "send_button": true,
+      "model_switcher": true
+    }
+  },
+  "data_layer": {
+    "entities": {
+      "chat_sessions": {
+        "table": "chat_sessions",
+        "description": "Сессии чатов, история по агентам и Main Chat."
+      },
+      "chat_messages": {
+        "table": "chat_messages",
+        "description": "Сообщения внутри сессий, включая intent, agent, metadata."
+      },
+      "orders": {
+        "table": "orders",
+        "description": "Заказы, связанные с закупками и производством."
+      },
+      "suppliers": {
+        "table": "suppliers",
+        "description": "Поставщики, контактные данные, условия."
+      }
+    },
+    "calendar": {
+      "api": "/api/calendar",
+      "integration": "Google Calendar via Google MCP"
+    },
+    "backup": {
+      "api": "/api/db/backup",
+      "file": "server/routes/dbadmin.ts",
+      "notes": "RBAC + SAFE_MODE + SHA256; вызывать только через подтверждение."
+    }
+  },
+  "external_ui_references": {
+    "primary": [
+      "external/lobe-chat",
+      "external/open-webui"
+    ],
+    "secondary": [
+      "external/agent-squad",
+      "external/ComfyUI",
+      "external/stable-diffusion-prompt-*"
+    ],
+    "notes": "Primary используются как референсы для chat UI / multi-agent layout. Secondary только как источники идей."
+  },
+  "files": {
+    "docs": [
+      "docs/MASTER_CONTEXT_v2.1.4_UI-REFRESH.md",
+      "docs/AGENT_ROUTING_DESIGN.md",
+      "docs/MEDIA_STUDIO_DESIGN.md",
+      "docs/DEPLOYMENT_STRATEGY.md",
+      "docs/DEPLOYMENT_OPTIONS.md",
+      "docs/progress_report_v_2_1.md",
+      "docs/ROADMAP_v2.1.2.md"
+    ],
+    "checkpoints": [
+      "checkpoints/CHECKPOINT_v2.1.3.json"
+    ],
+    "kilo_code_rules": [
+      ".kilocode/rules/00_core_principles.md",
+      ".kilocode/rules/workflows/workflows-extensions.md",
+      ".kilocode/rules/memory-bank/*"
+    ]
+  },
+  "kilo_code": {
+    "preferred_context_files": [
+      "docs/MASTER_CONTEXT_v2.1.4_UI-REFRESH.md",
+      "docs/MASTER_MANIFEST.json",
+      "docs/ROADMAP_v2.1.2.md",
+      "docs/AGENT_ROUTING_DESIGN.md",
+      "docs/MEDIA_STUDIO_DESIGN.md"
+    ],
+    "ignore_paths": [
+      "external/*",
+      "dist/*",
+      "node_modules/*",
+      ".next/*"
+    ],
+    "usage_notes": "Перед любыми изменениями кода читать MASTER_CONTEXT и MASTER_MANIFEST, затем предлагать diff через apply_patch или PR-подход."
+  }
+}

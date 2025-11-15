@@ -1,0 +1,84 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "calendar_links": {
+      "name": "calendar_links",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "google_event_id": {
+          "name": "google_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_calendar_links_user_id": {
+          "name": "idx_calendar_links_user_id",
+          "columns": ["user_id"],
+          "isUnique": false
+        },
+        "idx_calendar_links_order_id": {
+          "name": "idx_calendar_links_order_id",
+          "columns": ["order_id"],
+          "isUnique": false
+        },
+        "idx_calendar_links_google_event_id": {
+          "name": "idx_calendar_links_google_event_id",
+          "columns": ["google_event_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "calendar_links_order_id_orders_id_fk": {
+          "name": "calendar_links_order_id_orders_id_fk",
+          "tableName": "orders",
+          "columns": ["order_id"],
+          "referencedColumns": ["id"]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {
+      "calendar_links": {
+        "columns": {},
+        "indexes": {
+          "calendar_links_pkey": {
+            "name": "calendar_links_pkey",
+            "columns": ["id"]
+          }
+        }
+      }
+    }
+  }
+}

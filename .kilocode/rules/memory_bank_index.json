@@ -1,0 +1,25 @@
+{
+  "created": [
+    "/mnt/data/.kilocode/rules/memory-bank/brief.md",
+    "/mnt/data/.kilocode/rules/memory-bank/product.md",
+    "/mnt/data/.kilocode/rules/memory-bank/context.md",
+    "/mnt/data/.kilocode/rules/memory-bank/architecture.md",
+    "/mnt/data/.kilocode/rules/memory-bank/tech.md",
+    "/mnt/data/.kilocode/rules/memory-bank/tasks.md",
+    "/mnt/data/.kilocode/rules/memory-bank-instructions.md"
+  ],
+  "next_steps": [
+    "In Kilo Code: 'initialize memory bank' with repo sources listed below.",
+    "Run Block 0 (Infra-fix) task with Acceptance; open PR; then 'update memory bank'."
+  ],
+  "repo_sources": [
+    "/MASTER_CONTEXT_GUIDE_FULL.md",
+    "/MASTER_CHECKPOINT_2025-11-06.md",
+    "/CTX_CHEFS_MIND_AI_ULTIMATE_v2.1.2.md",
+    "/FRONTEND_AUDIT_REPORT_2025-10-29.md",
+    "/FINAL_INFRA_CHECK_2025-10-29.md",
+    "/GOOGLE_OAUTH_IMPLEMENTATION_REPORT_2025-11-04.md",
+    "/ACTION_LOG.md",
+    "/RELEASE_NOTES_v2.1.1-smoke-pass.md"
+  ]
+}

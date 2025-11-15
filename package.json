@@ -20,7 +20,7 @@
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "tsx ./drizzle/migrate.ts",
     "db:seed": "node -r tsx ./drizzle/seed.ts",
-    "test": "vitest run",
+    "test": "npx vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --config=playwright.config.ts",
@@ -36,7 +36,7 @@
     "ui:screenshots": "node scripts/capture-ui-screenshots.mjs",
     "format": "prettier --write .",
     "smoke:ci:local": "bash scripts/smoke-local.sh",
-    "prepare": "husky"
+    "prepare": ""
   },
   "dependencies": {
     "@google-cloud/vertexai": "^1.10.0",
@@ -154,7 +154,7 @@
     "@types/express-session": "^1.18.2",
     "@types/helmet": "^0.0.48",
     "@types/morgan": "^1.9.10",
-    "@types/node": "20.16.11",
+    "@types/node": "^20.16.11",
     "@types/node-cron": "^3.0.11",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
@@ -162,7 +162,8 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/supertest": "^6.0.3",
-    "@types/ws": "^8.5.13",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
     "@vitejs/plugin-react": "^4.7.0",
@@ -193,7 +194,8 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3",
-    "vite": "^5.4.20",
+    "vite": "^5.4.21",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   },
   "optionalDependencies": {

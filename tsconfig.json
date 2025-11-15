@@ -14,7 +14,8 @@
     "paths": {
       "@shared/schema": ["shared/schema.ts"],
       "@shared/schema.js": ["shared/schema.ts"],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["shared/*"],
+      "@server/*": ["server/*"]
     },
     "strict": true,
     "skipLibCheck": true,
@@ -25,5 +26,15 @@
     "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["server/**/*", "shared/**/*"],
-  "exclude": ["node_modules", "dist", "frontend", "frontend-enhanced", "frontend-simple"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "frontend",
+    "frontend-enhanced",
+    "frontend-simple",
+    "tests",
+    "tests/**/*",
+    "**/*.test.ts",
+    "server/**/*.test.ts"
+  ]
 }

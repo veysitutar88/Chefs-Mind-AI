@@ -69,3 +69,14 @@ export async function jwtAuthMiddleware(
 
   next();
 }
+
+/**
+ * Функция для аутентификации пользователя.
+ * Возвращает ошибку 401, если пользователь не аутентифицирован.
+ */
+export function authenticate(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}

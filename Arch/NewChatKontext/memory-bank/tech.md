@@ -1,0 +1,15 @@
+# Tech Stack & Conventions
+- Node/TypeScript, dotenv, Playwright (E2E), prom‑client, Whisper via fs.createReadStream, concurrently.
+- **Ports**: dev PORT=5001 (single source of truth).
+  - .env.sample → PORT=5001
+  - docker-compose → 5001:5001 + env PORT=5001
+  - Frontend → NEXT_PUBLIC_API_URL=http://localhost:5001
+  - E2E → BASE_URL=http://localhost:5001
+- Feature Flags:
+  - ENABLE_VIDEO=false → `/api/media/video/generate` returns 200 `{ok:false, reason:"video_disabled"}` until provider enabled.
+- Scripts:
+  - dev:api reads PORT (default 5001), dev:front reads NEXT_PUBLIC_API_URL; test:e2e reads BASE_URL.
+- Acceptance Smokes:
+  - GET /health → `{ok:true, port:5001, video:{enabled:false}}`
+  - GET /metrics → prom header present
+  - POST /api/media/video/generate → `200 {ok:false, reason:"video_disabled"}`

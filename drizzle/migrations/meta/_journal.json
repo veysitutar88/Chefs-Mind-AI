@@ -8,6 +8,13 @@
       "when": 1761494410501,
       "tag": "0000_special_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1731411600000,
+      "tag": "0001_update_calendar_links",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,61 @@
+### 🔹 1. Архитектура и чекпоинты
+MASTER_CONTEXT_GUIDE_FULL.md
+MASTER_CHECKPOINT_2025-11-06.md
+architecture_review.md
+DEV_PORTS_FINAL_CHECKPOINT_2025-11-10.md
+### 🔹 2. Последние релизы и отчёты
+RELEASE_NOTES_v2.1.1-smoke-pass.md
+FINAL_INFRA_CHECK_2025-10-29.md
+FRONTEND_AUDIT_REPORT_2025-10-29.md
+G1_OAUTH_FIX_REPORT_2025-11-04.md
+GOOGLE_OAUTH_IMPLEMENTATION_REPORT_2025-11-04.md
+ACTION_LOG.md
+### 🔹 3. Технические логи и smoke-артефакты
+build.log
+dev_boot.log
+check.log
+check_20251110_231023.log
+e2e_headed_new.log
+eslint_install.log
+ts-errors.txt
+vite_fix_summary.json
+vite_boot_smoke.json
+### 🔹 4. Tasks / JSON-состояния
+task_B7_METRICS.json
+task_BOOT_SMOKE.json
+task_C1_RBAC.json
+task_G1.json
+task_Q1.json
+task_R1.json
+task_R1_FIX_BOOT.json
+task_R1_EXPORT_FIX.json
+task_R1_TSC_BOOT_SMOKE.json
+### 🔹 5. Probes и health-тесты
+probe_health_5000.txt
+probe_health_verbose.txt
+probe_metrics_5000.txt
+probe_oauth_status.txt
+probe_rbac_smoke.txt
+### 🔹 6. Контекст и метаданные моделей
+metrics_analysis.json
+metrics_smoke.json
+models_smoke.json
+models_update_diff.json
+calendar_smoke.json
+google_status.json
+reports_last.json
+summary.json
+### 🔹 7. Служебные правила и workflow (для KiloCode)
+.kilocode/rules/memory-bank/*
+.kilocode/rules/workflows/workflows-extensions.md
+.kilocode/rules/00_core_principles.md
+--- ## 💻 **Команда для подкачки репозитория в новом чате** (ты подключишь GitHub, и ChatGPT сможет это вызвать)
+bash
+git clone https://github.com/veysitutar88/Chefs-Mind-AI.git
+cd Chefs-Mind-AI
+git pull origin main
+Если в новом чате ты подключишь GitHub как источник данных, можно использовать:
+json
+{
+  "repository_name": "veysitutar88/Chefs-Mind-AI"
+}

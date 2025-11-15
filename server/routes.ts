@@ -13,7 +13,11 @@ import mediaRouter from './routes/media.js';
 import calendarRouter from './routes/calendar.js';
 import modelsRouter from './routes/models.js';
 import reportsRouter from './routes/reports.js';
-import { users } from '@shared/schema';
+import chatHistoryRouter from './routes/chat-history.js';
+import ordersRouter from './routes/orders.js';
+import suppliersRouter from './routes/suppliers.js';
+import { users } from '../shared/schema.js';
+// import { users } from '../../shared/schema.js';
 
 export async function registerRoutes(app: Express) {
   // Сделаем функцию асинхронной
@@ -53,13 +57,16 @@ export async function registerRoutes(app: Express) {
   app.use('/auth/google', authGoogleRouter);
   app.use('/api/import', importerRouter);
   app.use('/api/dbadmin', dbadminRouter);
-  app.use('/api/enhanced-agent-chat', enhancedAgentChatRouter);
+  app.use('/api/enhanced-agent', enhancedAgentChatRouter);
   // Backward compatibility alias
-  app.use('/api/enhanced-agent/chat', enhancedAgentChatRouter);
+  app.use('/api/enhanced-agent-chat', enhancedAgentChatRouter);
   app.use('/api/agent', agentChatRouter);
   app.use('/api/media', mediaRouter);
   app.use('/api/calendar', calendarRouter);
   app.use('/api/models', modelsRouter);
+  app.use('/api/chat', chatHistoryRouter);
+  app.use('/api/orders', ordersRouter);
+  app.use('/api/suppliers', suppliersRouter);
   app.use('/', smokeHelpersRouter);
   app.use('/reports', reportsRouter);
   app.use('/', universalRouter);

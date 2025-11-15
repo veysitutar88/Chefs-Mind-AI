@@ -1,0 +1,239 @@
+{
+  "frontend": {
+    "stack": "Next.js (React) frontend with TypeScript and TailwindCSS:contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}",
+    "structure": {
+      "src/app": "Next.js App Router (v14) for routing and pages:contentReference[oaicite:2]{index=2}",
+      "src/components": "Reusable UI components (using Shadcn/UI kit and Lucide icons):contentReference[oaicite:3]{index=3}",
+      "src/lib": "Utility libraries (API helpers, etc.):contentReference[oaicite:4]{index=4}",
+      "src/styles": "Global styles (Tailwind CSS config):contentReference[oaicite:5]{index=5}"
+    },
+    "dev_server": {
+      "port": 3000,
+      "api_base": "http://localhost:5001 (proxy to backend):contentReference[oaicite:6]{index=6}"
+    },
+    "key_components": [
+      "Header & Sidebar layout for navigation:contentReference[oaicite:7]{index=7}",
+      "RBACGuard (role-based access control wrapper for pages):contentReference[oaicite:8]{index=8}",
+      "GoogleConnect (OAuth login UI):contentReference[oaicite:9]{index=9}",
+      "StatusDashboard page (/status) showing integration status:contentReference[oaicite:10]{index=10}",
+      "BuildBadge (shows build timestamp/version):contentReference[oaicite:11]{index=11}"
+    ],
+    "features": {
+      "theme": "\"dark-navi\" design (blue accent):contentReference[oaicite:12]{index=12}",
+      "responsive": "Responsive design ~80% complete:contentReference[oaicite:13]{index=13}",
+      "prompts": "LLM chat interface integrated (Assistant-UI):contentReference[oaicite:14]{index=14}",
+      "status": "Frontend stable on port 3000, ready for UI expansion:contentReference[oaicite:15]{index=15}"
+    }
+  },
+
+  "backend": {
+    "stack": "Express.js API in TypeScript (ESM modules):contentReference[oaicite:16]{index=16}:contentReference[oaicite:17]{index=17}",
+    "structure": {
+      "routes/": "Express route definitions for API endpoints:contentReference[oaicite:18]{index=18}",
+      "middleware/": "Global middleware (RBAC, SafeMode, QA-Gate, etc.):contentReference[oaicite:19]{index=19}",
+      "services/": "Integration services (OpenAI, Google APIs, etc.):contentReference[oaicite:20]{index=20}",
+      "graph/": "Agent orchestration logic (nodes for Chef, Media, etc.):contentReference[oaicite:21]{index=21}",
+      "config/": "Configuration (env schema, model registry, rate limits):contentReference[oaicite:22]{index=22}",
+      "utils/": "Utility functions (JWT, timeout, etc.):contentReference[oaicite:23]{index=23}",
+      "shared/": "Shared types and database schema (Drizzle ORM):contentReference[oaicite:24]{index=24}",
+      "drizzle/": "Database migration files (Drizzle):contentReference[oaicite:25]{index=25}"
+    },
+    "entry_point": "server/index.ts (initializes Express app and applies routes):contentReference[oaicite:26]{index=26}:contentReference[oaicite:27]{index=27}",
+    "routes": {
+      "/health": "GET – health check (returns `{ ok: true, uptime, ts }`):contentReference[oaicite:28]{index=28}",
+      "/api/enhanced-agent/chat": "POST – main orchestrator endpoint; auto-selects an agent based on query and runs QA-Gate before responding:contentReference[oaicite:29]{index=29}:contentReference[oaicite:30]{index=30}",
+      "/api/agent": "POST – direct agent chat endpoint (for specific agent, with QA gating; in development):contentReference[oaicite:31]{index=31}",
+      "/api/media/image/generate": "POST – generate an image (requires role admin/chef); uses default or specified AI image provider with optional fallback:contentReference[oaicite:32]{index=32}:contentReference[oaicite:33]{index=33}",
+      "/api/media/video/generate": "POST – generate a video (requires role admin/chef); uses default or specified video provider (e.g. Veo-3) with fallback:contentReference[oaicite:34]{index=34}:contentReference[oaicite:35]{index=35}",
+      "/auth/google/*": "OAuth2 routes for Google login (start, callback, status, logout):contentReference[oaicite:36]{index=36}:contentReference[oaicite:37]{index=37}; integrates Google Calendar/Docs/Sheets after auth:contentReference[oaicite:38]{index=38}:contentReference[oaicite:39]{index=39}",
+      "/api/calendar/*": "Protected routes for calendar actions (e.g. create events); requires Google OAuth and admin role:contentReference[oaicite:40]{index=40}:contentReference[oaicite:41]{index=41}",
+      "/api/db/backup": "POST – create a manual DB backup (admin only, SafeMode confirm required); returns backup file info:contentReference[oaicite:42]{index=42}:contentReference[oaicite:43]{index=43}",
+      "/api/db/backups": "GET – list available backup files (admin only):contentReference[oaicite:44]{index=44}:contentReference[oaicite:45]{index=45}",
+      "/api/db/restore": "POST – restore database from a backup file (admin only, SafeMode); verifies SHA256 checksum before restoring:contentReference[oaicite:46]{index=46}:contentReference[oaicite:47]{index=47}",
+      "/api/models": "GET – list available LLM models (id, name, provider) for the UI model picker:contentReference[oaicite:48]{index=48}:contentReference[oaicite:49]{index=49}",
+      "/api/import": "POST – data importer (e.g. import CSV for ingredients/prices; protected by SafeMode):contentReference[oaicite:50]{index=50}",
+      "/metrics": "GET – Prometheus metrics endpoint (for monitoring, e.g. HTTP latencies):contentReference[oaicite:51]{index=51}"
+    }
+  },
+
+  "db_schema": {
+    "primary_tables": {
+      "units": "Measurement units (id, code, name):contentReference[oaicite:52]{index=52}",
+      "unit_conversions": "Conversion factors between units (from_unit→to_unit with factor):contentReference[oaicite:53]{index=53}",
+      "suppliers": "Suppliers info (id, name, code, contact details):contentReference[oaicite:54]{index=54}",
+      "categories": "Ingredient/Recipe categories (id, name, kind):contentReference[oaicite:55]{index=55}",
+      "ingredients": "Ingredients master (id, name, code, category_id→categories, base_unit→units, is_active):contentReference[oaicite:56]{index=56}",
+      "ingredient_prices": "Ingredient prices by supplier (id, ingredient_id→ingredients, supplier_id→suppliers, price, pack size/unit, valid_from date):contentReference[oaicite:57]{index=57}:contentReference[oaicite:58]{index=58}",
+      "recipes": "Recipes (id, name, category_id→categories, type dish/prep, yield quantity+unit→units, loss_pct, is_active):contentReference[oaicite:59]{index=59}",
+      "recipe_components": "Recipe composition (id, recipe_id→recipes, component_type 'ingredient' or 'subrecipe', ingredient_id→ingredients, subrecipe_id→recipes, qty, unit→units):contentReference[oaicite:60]{index=60}:contentReference[oaicite:61]{index=61}",
+      "recipe_cost_snapshots": "Cost snapshots for recipes (id, recipe_id→recipes, as_of_date, unit_cost, note):contentReference[oaicite:62]{index=62}"
+    },
+    "relationships": "Most tables link by foreign keys (e.g. ingredient_prices ties ingredients and suppliers; recipes link to categories; components link recipes to ingredients/subrecipes):contentReference[oaicite:63]{index=63}:contentReference[oaicite:64]{index=64}",
+    "migrations": "Defined via Drizzle ORM – schema in `shared/schema.ts` and SQL migration files in `drizzle/migrations/`:contentReference[oaicite:65]{index=65}. Latest schema includes all tables above and is applied on startup (`npm run migrate`):contentReference[oaicite:66]{index=66}"
+  },
+
+  "agents": {
+    "Chef": {
+      "role": "Culinary expert agent – handles recipes, kitchen workflows, and visual plating ideas:contentReference[oaicite:67]{index=67}",
+      "triggers": "Activated for food-related queries (keywords like 'recipe', 'salad', 'chef', etc.):contentReference[oaicite:68]{index=68}",
+      "providers": "LLM: primarily OpenAI GPT-4 models (e.g. GPT-4o) and Google Gemini for certain tasks:contentReference[oaicite:69]{index=69}",
+      "routes": "Indirect – orchestrator routes queries to Chef agent when appropriate:contentReference[oaicite:70]{index=70} (no separate public endpoint for Chef)",
+      "model_usage": "Likely uses high reasoning models (e.g. GPT-4 variants) for complex recipe planning:contentReference[oaicite:71]{index=71}"
+    },
+    "Accountant": {
+      "role": "Financial analyst agent – manages cost control, budgeting, procurement, and interacts with Sheets/Docs/Calendar:contentReference[oaicite:72]{index=72}",
+      "triggers": "Activated for finance-related queries (keywords like 'budget', 'invoice', 'cost'):contentReference[oaicite:73]{index=73}",
+      "providers": "Google Vertex AI (PaLM via Generative AI API) for analysis:contentReference[oaicite:74]{index=74}, plus Google APIs (Sheets/Docs/Calendar) via OAuth for data storage/retrieval:contentReference[oaicite:75]{index=75}:contentReference[oaicite:76]{index=76}",
+      "routes": "No direct endpoint; orchestrator routes queries to Accountant agent, and it uses Google services (see `/auth/google` and `/api/calendar/*`) for external actions:contentReference[oaicite:77]{index=77}:contentReference[oaicite:78]{index=78}",
+      "model_usage": "May use moderate-speed models (Gemini Pro) for balanced analysis of financial data:contentReference[oaicite:79]{index=79}"
+    },
+    "Researcher": {
+      "role": "Research assistant agent – handles web search, data gathering, trend analysis and summaries:contentReference[oaicite:80]{index=80}",
+      "triggers": "Activated for research queries (keywords 'find', 'research', 'trend'):contentReference[oaicite:81]{index=81}",
+      "providers": "Perplexity AI (\"Sonar\" web search model) for up-to-date information retrieval:contentReference[oaicite:82]{index=82}:contentReference[oaicite:83]{index=83}",
+      "routes": "No direct endpoint; orchestrator auto-selects Researcher for search-oriented questions. May call external search API via the Perplexity integration:contentReference[oaicite:84]{index=84}:contentReference[oaicite:85]{index=85}",
+      "model_usage": "Uses the `sonar` model for live web info and possibly switches to an OpenAI model for analysis after obtaining data:contentReference[oaicite:86]{index=86}:contentReference[oaicite:87]{index=87}"
+    },
+    "MediaStudio": {
+      "role": "Media content generator agent – produces images and videos for branding/marketing:contentReference[oaicite:88]{index=88}",
+      "triggers": "Activated for requests mentioning images or video content (keywords 'image', 'video', 'imagen', etc.):contentReference[oaicite:89]{index=89}:contentReference[oaicite:90]{index=90}",
+      "providers": "Multi-provider: OpenAI DALL·E 3, Google Imagen, possibly GPT-4 Image or Veo 3 for video; also supports \"Sora v2\" experimental video generator when enabled:contentReference[oaicite:91]{index=91}:contentReference[oaicite:92]{index=92}",
+      "routes": "Exposed via `/api/media/image/generate` and `/api/media/video/generate` endpoints (requires appropriate role):contentReference[oaicite:93]{index=93}. The agent enhances the prompt and delegates to the selected provider, with fallback if the primary fails:contentReference[oaicite:94]{index=94}:contentReference[oaicite:95]{index=95}",
+      "model_usage": "Defaults to DALL·E for images and Veo-3 for video by configuration:contentReference[oaicite:96]{index=96}:contentReference[oaicite:97]{index=97}; if `ENABLE_SORA=true`, can utilize Sora v2 for video generation:contentReference[oaicite:98]{index=98}:contentReference[oaicite:99]{index=99}"
+    },
+    "QA_Gate": {
+      "role": "Quality Assurance Gate – not a user-facing agent, but an automated middleware stage that fact-checks and refines agents’ outputs:contentReference[oaicite:100]{index=100}",
+      "function": "Performs final answer validation: checks factual accuracy, completeness, tone, and can correct the response before it’s sent to user:contentReference[oaicite:101]{index=101}:contentReference[oaicite:102]{index=102}",
+      "implementation": "Runs as Express middleware (`qaGateMiddleware`) on critical routes (e.g. media generation, orchestrated chat):contentReference[oaicite:103]{index=103}:contentReference[oaicite:104]{index=104}. Currently uses a GPT-4 based \"QA expert\" prompt to analyze and optionally correct responses:contentReference[oaicite:105]{index=105}:contentReference[oaicite:106]{index=106}",
+      "outputs": "Appends a QA score (0.0–1.0) and a pass/fail flag. If quality is below threshold (e.g. <0.8), it attempts to adjust the answer (wasCorrected=true):contentReference[oaicite:107]{index=107}:contentReference[oaicite:108]{index=108}. All QA results are logged for review:contentReference[oaicite:109]{index=109}:contentReference[oaicite:110]{index=110}",
+      "routes": "Integrated into `/api/enhanced-agent/chat` processing pipeline and media routes (via `qaGateMiddleware`):contentReference[oaicite:111]{index=111}:contentReference[oaicite:112]{index=112}. Can be toggled via config flags (e.g. QA_ENABLED):contentReference[oaicite:113]{index=113}"
+    }
+  },
+
+  "integrations": {
+    "OpenAI": {
+      "description": "OpenAI API for language and image generation",
+      "env_vars": ["OPENAI_API_KEY:contentReference[oaicite:114]{index=114}"],
+      "used_for": "Primary LLM (chat/completion) for Chef agent and general queries; DALL·E 3 image generation for Media Studio:contentReference[oaicite:115]{index=115}",
+      "endpoints": "OpenAI Chat Completions (GPT-4 models via openai.chat API):contentReference[oaicite:116]{index=116}; DALL·E image generation via OpenAI (through `enhanced-media` service) – presumably calls openAI image API.",
+      "library": "Using official OpenAI Node SDK (`openai` package) for chat streaming:contentReference[oaicite:117]{index=117}:contentReference[oaicite:118]{index=118}"
+    },
+    "Google Vertex AI": {
+      "description": "Google Cloud Vertex AI Generative models (e.g. PaLM/Gemini)",
+      "env_vars": ["GOOGLE_API_KEY (API key for Vertex AI):contentReference[oaicite:119]{index=119}", "VERTEX_PROJECT_ID (Google Cloud project ID):contentReference[oaicite:120]{index=120}"],
+      "used_for": "Gemini LLM models for certain agents (Chef and moderate queries):contentReference[oaicite:121]{index=121}:contentReference[oaicite:122]{index=122}; e.g. Gemini 1.5 Pro used for moderate-complexity tasks",
+      "endpoints": "Google Generative AI API via `@google/generative-ai` SDK (calls PaLM models under the hood):contentReference[oaicite:123]{index=123}:contentReference[oaicite:124]{index=124}",
+      "library": "Using `GoogleGenerativeAI` client for text generation (Gemini models):contentReference[oaicite:125]{index=125}:contentReference[oaicite:126]{index=126}"
+    },
+    "Perplexity": {
+      "description": "Perplexity.ai API for search and knowledge",
+      "env_vars": ["PERPLEXITY_API_KEY:contentReference[oaicite:127]{index=127}"],
+      "used_for": "Real-time web search and retrieval for the Researcher agent (uses Perplexity’s large language model with web access):contentReference[oaicite:128]{index=128}:contentReference[oaicite:129]{index=129}",
+      "endpoints": "POST https://api.perplexity.ai/chat/completions (streaming):contentReference[oaicite:130]{index=130}:contentReference[oaicite:131]{index=131} – sends user query and system prompt, receives chunked results",
+      "library": "Using fetch to Perplexity REST API (no official SDK) with server-sent events parsing:contentReference[oaicite:132]{index=132}:contentReference[oaicite:133]{index=133}"
+    },
+    "Google OAuth & APIs": {
+      "description": "Google OAuth2 for user authorization and Google APIs for Sheets/Docs/Calendar",
+      "env_vars": [
+        "GOOGLE_CLIENT_ID:contentReference[oaicite:134]{index=134}",
+        "GOOGLE_CLIENT_SECRET:contentReference[oaicite:135]{index=135}",
+        "GOOGLE_REDIRECT_URI:contentReference[oaicite:136]{index=136}",
+        "GOOGLE_SCOPES (space-separated API scopes):contentReference[oaicite:137]{index=137}"
+      ],
+      "used_for": "Accountant agent’s integration with Google services: reading/writing Google Sheets and Docs, managing Calendar events:contentReference[oaicite:138]{index=138}:contentReference[oaicite:139]{index=139}. Also used for user login via Google account",
+      "endpoints": "OAuth2 endpoints: `/auth/google` (start), `/auth/google/callback`:contentReference[oaicite:140]{index=140}. Google APIs: Calendar API v3 (list calendars, create events):contentReference[oaicite:141]{index=141}:contentReference[oaicite:142]{index=142}; Docs API v1 (create document):contentReference[oaicite:143]{index=143}; Sheets API v4 (create spreadsheet, list spreadsheets via Drive API):contentReference[oaicite:144]{index=144}:contentReference[oaicite:145]{index=145}",
+      "library": "Using Google’s official Node client (`googleapis` package) for Calendar/Docs/Sheets REST APIs:contentReference[oaicite:146]{index=146}:contentReference[oaicite:147]{index=147}. OAuth flow implemented with Google’s OAuth2 client (PKCE, state, etc.):contentReference[oaicite:148]{index=148}:contentReference[oaicite:149]{index=149}"
+    }
+  },
+
+  "backup": {
+    "state": "Enabled (automated backups are active on a schedule):contentReference[oaicite:150]{index=150}",
+    "schedule": "Daily at 03:00 UTC (cron job):contentReference[oaicite:151]{index=151}",
+    "retention_policy": "Keeps last 7 daily backups and 4 weekly backups, older ones pruned automatically:contentReference[oaicite:152]{index=152}:contentReference[oaicite:153]{index=153}",
+    "storage": "Backups stored as compressed SQL dumps under `out/backups/` with SHA-256 checksum file:contentReference[oaicite:154]{index=154}:contentReference[oaicite:155]{index=155}",
+    "implementation": "BackupScheduler in backend (`server/services/backupScheduler.ts`) sets up cron job to pg_dump DB and prune old files:contentReference[oaicite:156]{index=156}:contentReference[oaicite:157]{index=157}. Manual backup/restore endpoints available under /api/dbadmin/* for on-demand use:contentReference[oaicite:158]{index=158}:contentReference[oaicite:159]{index=159}",
+    "endpoints": {
+      "POST /api/db/backup": "Initiate manual backup (admin + SafeMode confirm required):contentReference[oaicite:160]{index=160}",
+      "GET /api/db/backups": "List available backup files (admin only):contentReference[oaicite:161]{index=161}",
+      "POST /api/db/restore": "Restore from a backup file by name (admin + SafeMode, requires matching SHA256):contentReference[oaicite:162]{index=162}:contentReference[oaicite:163]{index=163}"
+    },
+    "safe_mode_integration": "All backup routes enforce SafeMode (must provide CONFIRM_CODE) to avoid accidental destructive actions:contentReference[oaicite:164]{index=164}",
+    "recommendations": "Current system performs local backups; long-term recommendation is to offload backups to external storage (S3/Google Cloud) and implement point-in-time recovery and monitoring of backup freshness:contentReference[oaicite:165]{index=165}:contentReference[oaicite:166]{index=166}"
+  },
+
+  "env": {
+    "PORT": "Backend API port (default 5001 for dev):contentReference[oaicite:167]{index=167}",
+    "NODE_ENV": "Execution environment (development, production, or test):contentReference[oaicite:168]{index=168}",
+    "DATABASE_URL": "PostgreSQL connection URL for primary DB:contentReference[oaicite:169]{index=169}",
+    "DATABASE_READONLY_URL": "Optional read-replica DB URL (if provided, used for read queries):contentReference[oaicite:170]{index=170}",
+    "REDIS_URL": "Optional Redis instance URL for caching (not required; no Redis usage if unspecified):contentReference[oaicite:171]{index=171}",
+    "SESSION_SECRET": "Secret key for session signing & encryption (32+ chars):contentReference[oaicite:172]{index=172}:contentReference[oaicite:173]{index=173}",
+    "COOKIE_DOMAIN": "Domain for session cookies (e.g. localhost for dev):contentReference[oaicite:174]{index=174}:contentReference[oaicite:175]{index=175}",
+    "SAFE_MODE": "\"on\" or \"off\" – if on, dangerous operations (e.g. writes) require a confirm code header:contentReference[oaicite:176]{index=176}",
+    "CONFIRM_CODE": "The secret confirmation code required when SAFE_MODE is on (to authorize write operations):contentReference[oaicite:177]{index=177}",
+    "CORS_ORIGIN": "Allowed origins for Cross-Origin requests (comma-separated URLs):contentReference[oaicite:178]{index=178}",
+    "RATE_LIMIT": "Global API rate limit (requests per minute) for basic throttling:contentReference[oaicite:179]{index=179}",
+    "PROMETHEUS_PORT": "Port for Prometheus metrics server (default 9090):contentReference[oaicite:180]{index=180}",
+    "METRICS_ENABLED": "Enable/disable metrics collection (\"true\" by default):contentReference[oaicite:181]{index=181}",
+    "OPENAI_API_KEY": "API key for OpenAI (access to GPT models and DALL·E):contentReference[oaicite:182]{index=182}",
+    "GOOGLE_API_KEY": "API key for Google services (used for Vertex AI Gemini models):contentReference[oaicite:183]{index=183}",
+    "GOOGLE_CLIENT_ID": "Google OAuth Client ID for sign-in:contentReference[oaicite:184]{index=184}",
+    "GOOGLE_CLIENT_SECRET": "Google OAuth Client Secret:contentReference[oaicite:185]{index=185}",
+    "GOOGLE_REDIRECT_URI": "OAuth callback URL (e.g. http://localhost:5001/auth/google/callback for dev):contentReference[oaicite:186]{index=186}",
+    "GOOGLE_SCOPES": "OAuth scopes requested (e.g. \"userinfo.email profile calendar drive spreadsheets\"):contentReference[oaicite:187]{index=187}",
+    "MEDIA_PROVIDER_DEFAULT": "Default image generation provider (e.g. \"dall-e-3\" or \"openai-image\"):contentReference[oaicite:188]{index=188}:contentReference[oaicite:189]{index=189}",
+    "MEDIA_VIDEO_PROVIDER_DEFAULT": "Default video generation provider (e.g. \"veo-3\"):contentReference[oaicite:190]{index=190}:contentReference[oaicite:191]{index=191}",
+    "ALLOW_MEDIA_FALLBACK": "If \"true\", allow fallback to default provider if primary media generation fails:contentReference[oaicite:192]{index=192}:contentReference[oaicite:193]{index=193}",
+    "ENABLE_SORA": "Feature flag to enable the Sora v2 video generator integration (false by default):contentReference[oaicite:194]{index=194}:contentReference[oaicite:195]{index=195}",
+    "QA_ENABLED": "Feature flag to enable QA-Gate checks globally (true to use QA middleware; false would bypass QA):contentReference[oaicite:196]{index=196}:contentReference[oaicite:197]{index=197}",
+    "QA_CONFIDENCE_THRESHOLD": "Threshold for QA-Gate to accept responses (e.g. 0.75 – responses scoring below are corrected):contentReference[oaicite:198]{index=198}:contentReference[oaicite:199]{index=199}",
+    "RBAC_SMOKE_ADMIN": "Dev flag: if \"1\", automatically treat user as admin for testing RBAC (defaults to \"0\"):contentReference[oaicite:200]{index=200}",
+    "GOOGLE_AUTH_SMOKE_BYPASS": "Dev flag: if \"1\", bypass Google OAuth flow for testing (defaults to \"0\"):contentReference[oaicite:201]{index=201}"
+  },
+
+  "models": {
+    "registry": [
+      { "id": "gpt-4o-mini", "provider": "openai", "name": "GPT-4o Mini (fast, 16k context):contentReference[oaicite:202]{index=202}" },
+      { "id": "gpt-4o", "provider": "openai", "name": "GPT-4o (medium speed, high reasoning):contentReference[oaicite:203]{index=203}" },
+      { "id": "gemini-1.5-pro", "provider": "google", "name": "Gemini 1.5 Pro (Vertex AI, moderate speed):contentReference[oaicite:204]{index=204}" },
+      { "id": "gemini-1.5-flash", "provider": "google", "name": "Gemini 1.5 Flash (Vertex AI, fast):contentReference[oaicite:205]{index=205}" },
+      { "id": "sonar", "provider": "perplexity", "name": "Perplexity Sonar (web search AI):contentReference[oaicite:206]{index=206}" }
+    ],
+    "default_model": "gpt-4o-mini (used if no preference provided):contentReference[oaicite:207]{index=207}:contentReference[oaicite:208]{index=208}",
+    "auto_routing": {
+      "simple_queries": "→ gpt-4o-mini (OpenAI) for quick responses:contentReference[oaicite:209]{index=209}:contentReference[oaicite:210]{index=210}",
+      "moderate_queries": "→ gemini-1.5-pro (Google Vertex AI) for balanced output:contentReference[oaicite:211]{index=211}:contentReference[oaicite:212]{index=212}",
+      "complex_queries": "→ gpt-4o (OpenAI) for deep reasoning tasks:contentReference[oaicite:213]{index=213}:contentReference[oaicite:214]{index=214}",
+      "research_queries": "→ sonar (Perplexity) for latest web information:contentReference[oaicite:215]{index=215}:contentReference[oaicite:216]{index=216}"
+    },
+    "selection_logic": "If client requests `model=auto` (or none specified), the system analyzes the query complexity and selects the appropriate model from above mapping:contentReference[oaicite:217]{index=217}:contentReference[oaicite:218]{index=218}. Users can also pick a specific model (exposed via /api/models list) which overrides auto-selection:contentReference[oaicite:219]{index=219}"
+  },
+
+  "checkpoints": [
+    {
+      "file": "master_checkpoint_2025_06_17.json",
+      "version": "2025-06-17",
+      "details": "Initial project checkpoint (baseline architecture and plan) – earliest JSON snapshot of system state."
+    },
+    {
+      "file": "chefs_mind_ai_master_checkpoint_v_2025_10_12.md",
+      "version": "2025-10-12",
+      "details": "Master design document after 5-agent architecture & QA-Gate added; outlines mission, agents, orchestration flow:contentReference[oaicite:220]{index=220}:contentReference[oaicite:221]{index=221}"
+    },
+    {
+      "file": "master_checkpoint_2025_10_21_1954.json",
+      "version": "2025-10-21",
+      "details": "JSON snapshot of configuration (ports, Docker setup, service status) around v2.1.1 release:contentReference[oaicite:222]{index=222}:contentReference[oaicite:223]{index=223}"
+    },
+    {
+      "file": "MASTER_CHECKPOINT_2025-10-29.md",
+      "version": "2025-10-29",
+      "details": "Master checkpoint document (late-October) – likely contains consolidated architecture updates and any changes prior to final integrations:contentReference[oaicite:224]{index=224}"
+    },
+    {
+      "file": "MASTER_CHECKPOINT_2025-11-06.md",
+      "version": "2025-11-06",
+      "details": "Final master checkpoint after G1 (Google OAuth) integration – project fully functional. Summarizes RBAC enforcement, observability, media provider config, OAuth setup, UI foundation completion:contentReference[oaicite:225]{index=225}:contentReference[oaicite:226]{index=226}"
+    }
+  ]
+}
