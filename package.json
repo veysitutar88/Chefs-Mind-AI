@@ -5,9 +5,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently \"npm:dev:back\" \"npm:dev:front\"",
+    "dev:win": "npx kill-port 3000 3001 && cross-env PORT=5001 concurrently \"npm:dev:back\" \"npm:dev:front\"",
     "dev:server": "node -e \"require('dotenv').config(); const { spawn } = require('child_process'); const port = process.env.PORT || 5001; console.log('Starting server on', port); const exe = process.platform==='win32'?'npx.cmd':'npx'; const p = spawn(exe, ['tsx','watch','server/index.ts'], { stdio:'inherit', env:{...process.env, PORT:String(port)} }); p.on('exit', code=>process.exit(code));\"",
-    "dev:back": "PORT=5001 npx tsx server/enhanced-server.ts",
-    "dev:front": "next dev -p 3000",
+    "dev:back": "cross-env PORT=5001 npx tsx server/enhanced-server.ts",
+    "dev:front": "cd frontend-enhanced && next dev -p 3001",
     "build": "npm run build:server",
     "build:server": "npx tsc -p tsconfig.json",
     "postbuild": "node scripts/fix-esm-extensions.mjs dist",
@@ -203,5 +204,5 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
   },
-  "packageManager": "npm@10"
+  "packageManager": "npm@10.8.2"
 }

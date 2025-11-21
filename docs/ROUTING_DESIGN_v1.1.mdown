@@ -1,0 +1,422 @@
+<!-- docs/ROUTING_DESIGN_v1.1.md -->
+
+# Chef’s Mind AI — Routing Design v1.1
+_Final multi-agent routing model_
+
+---
+
+## 1. Overview
+
+Chef’s Mind AI использует мультиагентный подход:
+
+- **Universal Chat** — точка входа (*не агент*).
+- **Orchestrator** анализирует запрос и решает, какого агента вызвать.
+- Агенты:
+  - **AI Sous-Chef** — кухня и меню;
+  - **AI Brain-Chef** — финансы и учёт;
+  - **AI Research** — аналитика и поиск;
+  - **AI Media-Studio** — изображения и видео;
+  - **QA-Gate** — внутренний контроль качества (невидимый слой).
+
+Каждый пользовательский запрос:
+
+1. Приходит в Universal Chat.
+2. Маршрутизируется оркестратором.
+3. При необходимости разбивается на под-задачи.
+4. Финальный ответ проходит через QA-Gate.
+
+---
+
+## 2. Agent Roles
+
+### 2.1 AI Sous-Chef
+
+**Зона ответственности**
+
+- Меню и рецепты.
+- Работа с остатками и складом.
+- Планирование производства и mise-en-place.
+- Предложения по меню “из того, что есть”.
+- Запрос изображений блюд через Media-Studio.
+
+**Работа с БД**
+
+- Read:
+  - `inventory`, `recipes`, `food_cost` (только чтение себестоимости).
+- Write:
+  - `recipes`, `production_plans`.
+- Не изменяет:
+  - `menu_items`, `pricing`, `suppliers`.
+
+---
+
+### 2.2 AI Brain-Chef
+
+**Зона ответственности**
+
+- Себестоимость блюд и меню.
+- Наценка, маржа, прибыльность.
+- Финансовые отчёты и аналитика.
+- Поставщики и закупки.
+
+**Работа с БД**
+
+- Read/Write:
+  - `food_cost`, `pricing`, `suppliers`.
+- Read:
+  - `inventory`, `recipes`, `menu_items`.
+
+Brain-Chef содержит **официальные правила расчётов** (формулы, коэффициенты, доп. таблицы).
+
+---
+
+### 2.3 AI Research
+
+**Зона ответственности**
+
+- Законы и регуляции.
+- Технологические стандарты.
+- Рынок, конкуренты, тренды.
+- Сбор и структурирование внешней информации.
+
+**Работа с БД**
+
+- Только чтение (минимальный доступ, без изменений данных).
+
+---
+
+### 2.4 AI Media-Studio
+
+**Зона ответственности**
+
+- Генерация изображений блюд.
+- Постеры, обложки меню, промо-материалы.
+- Видеоролики и клипы.
+
+**Работа с БД и API**
+
+- Использует `/api/media/*` для работы с задачами и ассетами.
+- Читает метаданные ассетов (prompt, модель, агент-источник).
+
+---
+
+### 2.5 QA-Gate (internal)
+
+- Не вызывается пользователем напрямую.
+- Проверяет финальный комбинированный ответ:
+  - целостность,
+  - отсутствие противоречий,
+  - формат,
+  - уровень уверенности.
+- Может вернуть запрос на доработку агенту, если ответ слабый.
+
+---
+
+## 3. Intent → Agent Mapping
+
+### 3.1 Основные intent’ы
+
+| Intent Group                          | Primary Agent   | Secondary Agent    |
+|--------------------------------------|-----------------|--------------------|
+| `cooking`, `menu`, `inventory`       | AI Sous-Chef    | AI Brain-Chef      |
+| `finance`, `cost`, `pricing`, `p&l`  | AI Brain-Chef   | AI Sous-Chef       |
+| `research`, `law`, `market`, `docs`  | AI Research     | —                  |
+| `media`, `image`, `video`, `visual`  | AI Media-Studio | —                  |
+
+### 3.2 Смешанные intent’ы
+
+| Mixed Intent                                   | Primary        | Secondary                 |
+|-----------------------------------------------|----------------|---------------------------|
+| Меню + расчёт прибыли                         | Sous-Chef      | Brain-Chef                |
+| Меню + визуалы блюд                           | Sous-Chef      | Media-Studio              |
+| Визуалы + цена продажи / маржа                | Media-Studio   | Brain-Chef                |
+| Аналитика + визуальная презентация            | Research       | Media-Studio (опционально)|
+
+---
+
+## 4. Orchestrator Logic
+
+### 4.1 Определение intent
+
+- Keyword-based классификация:
+  - “меню”, “рецепт”, “остатки” → cooking/menu.
+  - “себестоимость”, “цена”, “маржа”, “отчёт” → finance.
+  - “закон”, “постановление”, “правило” → research.
+  - “картинка”, “фото”, “постер”, “ролик” → media.
+- Веса intent’ов:
+  - При наличии нескольких групп (mixed запрос) результат содержит несколько активных intent’ов.
+
+### 4.2 Выбор Primary Agent
+
+- Для каждого intent’а определяется рейтинг агентов.
+- Высший рейтинг → Primary.
+- При наличии второго сильного intent’а → Secondary agent.
+
+### 4.3 Sub-Tasks и объединение результатов
+
+1. Primary агент решает свою часть задачи.
+2. Оркестратор формирует под-задание для Secondary:
+   - с ключевыми данными (меню, список блюд, список изображений).
+3. Secondary агент возвращает результат (например, расчёт себестоимости).
+4. Оркестратор объединяет ответы.
+
+### 4.4 QA-Gate
+
+- Проверяет:
+  - согласованность чисел;
+  - логические связи (меню vs cost);
+  - полноту шагов;
+  - соответствие запросу.
+- При необходимости:
+  - запрашивает уточнение или дополнительный шаг у агента.
+
+---
+
+## 5. Routing Examples
+
+### 5.1 “Сделай меню на неделю из остатков и посчитай прибыль”
+
+1. Пользователь пишет в Universal Chat.
+2. Оркестратор видит intent: `cooking + finance`.
+3. Primary: **AI Sous-Chef**:
+   - читает `inventory`;
+   - предлагает меню.
+4. Secondary: **AI Brain-Chef**:
+   - получает меню (список блюд);
+   - считает food cost, маржу, прибыль.
+5. QA-Gate:
+   - проверяет, что все блюда учтены;
+   - что цифры выглядят корректно.
+6. Ответ пользователю: меню + таблица прибыли.
+
+---
+
+### 5.2 “Посчитай food cost для этих блюд”
+
+1. Intent: `finance`.
+2. Primary: **AI Brain-Chef**:
+   - читает рецепты и цены;
+   - считает себестоимость по каждому блюду.
+3. Secondary: (опционально) Sous-Chef, если нужны корректировки рецептур.
+4. QA-Gate:
+   - проверяет формулы и итоговые значения.
+5. Финальный ответ: таблица food cost.
+
+---
+
+### 5.3 “Сделай картинку стейка и предложи цену продажи”
+
+1. Intent: `media + finance`.
+2. Primary: **AI Media-Studio**:
+   - генерирует изображение стейка.
+3. Secondary: **AI Brain-Chef**:
+   - использует рецептуру / веса стейка;
+   - считает себестоимость и цену продажи (с маржей).
+4. QA-Gate:
+   - проверяет соответствие цены себестоимости и доп. политикам.
+5. Итог: изображение + рекомендованная цена.
+
+---
+
+## 6. Sous-Chef → Media Capability
+
+AI Sous-Chef имеет дополнительный capability:
+
+- Может запрашивать изображения для блюд:
+  - “Сгенерируй визуал этого блюда для меню.”
+- Технически:
+  - формирует описание блюда;
+  - создаёт sub-task к **AI Media-Studio**;
+  - получает URL изображения и возвращает его пользователю.
+
+---
+
+## 7. Safety & RBAC
+
+- RBAC ограничивает, какой агент может менять какие сущности в БД.
+- SAFE_MODE:
+  - может требовать подтверждения для опасных операций (массовые пересчёты, изменения цен).
+- Rate limiting:
+  - защищает агентов от злоупотреблений (особенно Media-Studio и Brain-Chef).
+
+---
+
+_Этот документ фиксирует финальную модель роутинга Chef’s Mind AI v1.1 и служит референсом для оркестратора и UI._
+# Markdown Document
+
+## Introduction
+
+Markdown is a plain text formatting syntax.
+
+Paragraphs are separated by empty lines.
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+## Character Styles
+
+These spans result in 'em' tags:
+
+- *single asterisks*
+- _single underscores_
+
+These spans result in 'strong' tags:
+
+- **double asterisks**
+- __double underscores__
+
+These spans result in 'del' tags:
+
+- ~~double tildes~~
+
+## Links and Images
+
+This is an [example inline link](https://www.actiprosoftware.com "Actipro Software") with tooltip text specified.
+[This link](https://www.actiprosoftware.com) has no tooltip text specified.
+
+URLs and e-mail addresses can be turned into links by enclosing them in angle braces:
+
+- <https://www.actiprosoftware.com>  
+- <support@microsoft.com>
+
+[This link](#markdown-document) links to the first heading in this document via custom ID.
+
+## Images
+
+This is an example of an image:
+
+![Image](https://www.microsoft.com/favicon.ico)
+
+This is an example of an image with a link:
+
+[![Image](https://www.google.com/favicon.ico)](https://www.google.com)
+
+## Blockquotes
+
+Markdown said:
+
+> This is the first level of quoting.
+>
+> > This is a nested blockquote.
+>
+> Back to the first level.
+
+## Lists
+
+Unordered list using minus signs (-):
+
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
+
+Unordered list using plus signs (+):
+
++ Step 1
++ Step 2
++ Step 3
+  + Step 3a
+  + Step 3b
+  + Step 3c
+
+Unordered list using asterisks (*):
+
+* Step 1
+* Step 2
+* Step 3
+  * Step 3a
+  * Step 3b
+  * Step 3c
+
+Ordered list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    1. Step 3a
+    1. Step 3b
+    1. Step 3c
+
+Nested (unordered within ordered) list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    - Step 3a
+    - Step 3b
+    - Step 3c
+
+Definition list:
+
+Term #1
+: This is the definition of term #1.
+
+Term #2
+: This is the definition of term #2.
+
+## Code Blocks
+
+Inline `code` can be delimited with characters.
+
+This code block is fenced with three backticks and has its language specified:
+
+```javascript
+var oldUnload = window.onbeforeunload;
+window.onbeforeunload = function() {
+    saveCoverage();
+    if (oldUnload) {
+        return oldUnload.apply(this, arguments);
+    }
+};
+```
+
+This code block is fenced with three tildes and has its language specified:
+
+~~~ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+~~~
+
+This code block is created by indenting the code, but no language can be specified:
+
+    var foo = 1;
+
+## Tables
+
+| Fruit  | Color  |
+|--------|--------|
+| Apples | Red    |
+| Grapes | Purple |
+| Lemons | Yellow |
+
+## Horizontal Rules
+
+Horizontal rules are formed by placing three or more hyphens, asterisks, or underscores on a line by themselves.
+
+---
+
+***
+
+___
+
+## HTML Tags
+
+<strong>HTML tags</strong> can optionally be used in <em>Markdown</em>.
+
+## Special Characters
+
+Unescaped:
+\ ` * _ { } [ ] ( ) # + - . !
+
+Backslash-Escaped:
+\\ \` \* \_ \{ \} \[ \] \( \) \# \+ \- \. \!
