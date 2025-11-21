@@ -1,3 +1,5 @@
+Status: supporting / historical document. Canonical routing is defined in AGENT_ROUTING_DESIGN.md and MASTER_CONTEXT_v2.1.6.
+
 # Chef's Mind AI — Routing Design v1.1
 
 **Version:** 1.1  

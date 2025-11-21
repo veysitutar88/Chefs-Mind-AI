@@ -1,15 +1,16 @@
-# Product
-## Problem & Value
-- Restaurant needs unified workflows: recipes → purchasing → finance → media → reporting, powered by reliable AI agents.
-- Value: end‑to‑end tasks, backups, and QA‑gated outputs; rapid demo via vertical slices; Media Studio as USP.
+# Product Context
 
-## MVP
-- Login (Google OAuth) → Dashboard → Agent Chat (Chef) with QA‑Gate overlay; minimal schema persistence.
+## Vision
+**Chef’s Mind AI** is a comprehensive restaurant AI platform integrating culinary management, finance, research, and media generation into a single conversational interface.
 
-## Roadmap (vertical blocks)
-1) Infra‑fix (now): unify port 5001 + compose + demote video endpoint to 200 when disabled; smoke/E2E green; PR merged.
-2) Block 1: MVP User Flow — login→chat e2e; single agent visible in UI.
-3) Block 2: Multi‑Agent routing — orchestrator + 5 agents in UI.
-4) Block 3: Data persistence — chat history, orders CRUD, calendar integration, backup UI.
-5) Block 4: Media Studio — Imagen/Veo/DALL·E flows & asset mgmt.
-6) Block 5: Analytics & Polish — dashboards, reports, perf.
+## Core Value Proposition
+- **Unified Interface:** Access recipes, costs, and marketing assets via chat.
+- **Multi-Agent System:** Specialized agents (Chef, Accountant, Researcher, Media) for distinct domains.
+- **Automation:** Streamlines ordering, cost calculation, and content creation.
+
+## Key Features
+- **Chat:** Multi-agent orchestration with intent recognition.
+- **Orders:** Supplier and order management.
+- **Media:** AI-generated food photography and marketing videos.
+- **Calendar:** Integration for event planning and scheduling.
+- **QA:** Built-in quality assurance to prevent hallucinations.

@@ -1,4 +1,6 @@
-# Chef’s Mind AI — MASTER CONTEXT v2.1.6
+# Chef's Mind AI — MASTER CONTEXT v2.1.6
+> [!IMPORTANT]
+> This is the canonical master context for Chef’s Mind AI as of v2.1.6. All agents MUST prefer this over older versions.
 
 ## 1. Назначение проекта
 

@@ -1,20 +1,26 @@
-# Architecture
-## Backend
-- Endpoints: /api/enhanced-agent/chat, /api/import, /api/dbadmin, /api/calendar, /metrics, /health, /auth/google/status.
-- QA‑Gate middleware for agent responses (auto‑correction + scoring).
-- Backups: nightly + manual POST /api/db/backup; retention; SHA256 triple verification.
-- Google MCP: Calendar/Sheets/Docs helpers; OAuth unified routing.
+# Architecture Context
 
-## Data
-- Postgres schemas (6 tables): orders, purchase_orders, suppliers, attachments, notes, calendar_links. UUIDs, indexes, Zod validation.
+## High-Level Design
+Chef's Mind AI follows a modular, multi-agent architecture.
 
-## Observability
-- Lightweight Prometheus collector; /health aliases across variants; nightly GitHub Actions workflow at 02:00 UTC with artifacts saved to /out/reports.
-- TODO(P2): histogram/summary for AI latency (p95); acceptance metrics per route.
+### Components
+1.  **Orchestrator (`server/agents/orchestrator.ts`):**
+    - Receives user input.
+    - Classifies intent.
+    - Routes to the appropriate Agent.
+2.  **Agents:**
+    - **Chef:** Culinary logic.
+    - **Accountant:** Financial logic.
+    - **Researcher:** External data search.
+    - **Media Studio:** Content generation.
+    - **QA-Gate:** Output validation.
+3.  **Services:**
+    - Shared services for DB access, Media APIs, Google Integration.
+4.  **Data Layer:**
+    - PostgreSQL managed via Drizzle ORM.
 
-## Security
-- JWT + RBAC; SAFE_MODE with X‑Confirm‑Code for sensitive ops.
+## Data Flow
+User Input -> API -> Orchestrator -> Agent -> Service -> DB/External API -> QA-Gate -> Response
 
-## Context Transport (v1.1)
-- Files: CONTEXT.md, SESSION.md, CHECKPOINT.json, last_session.json.
-- Functions: serialize_context(), load_context(), merge_context().
+## Routing
+Routing is based on intent classification. See `docs/AGENT_ROUTING_DESIGN.md` for details.
