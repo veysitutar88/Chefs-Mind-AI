@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RBACGuard } from '../../../components/RBACGuard';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -11,10 +11,10 @@ import { DeleteEventButton } from '../../../components/calendar/DeleteEventButto
 
 interface CalendarEvent {
   id: string;
-  summary: string;
+  title: string;
   description?: string;
-  startTime: string;
-  endTime: string;
+  start: Date;
+  end: Date;
   location?: string;
   attendees?: string[];
 }
@@ -34,10 +34,10 @@ function CalendarPageContent() {
       if (data.success) {
         setEvents(data.events.map((event: any) => ({
           id: event.id,
-          summary: event.summary || '',
+          title: event.summary || '',
           description: event.description || '',
-          startTime: event.start?.dateTime || event.start?.date || '',
-          endTime: event.end?.dateTime || event.end?.date || '',
+          start: new Date(event.start?.dateTime || event.start?.date || new Date()),
+          end: new Date(event.end?.dateTime || event.end?.date || new Date()),
           location: event.location || '',
           attendees: event.attendees?.map((a: any) => a.email) || []
         })));
@@ -53,7 +53,7 @@ function CalendarPageContent() {
   }, []);
 
   // Обработка создания/обновления события
-  const handleEventSave = async (eventData: Partial<CalendarEvent>) => {
+  const handleEventSave = async (eventData: any) => {
     try {
       const url = editingEvent 
         ? `/api/calendar/events/${editingEvent.id}`
@@ -61,12 +61,28 @@ function CalendarPageContent() {
       
       const method = editingEvent ? 'PUT' : 'POST';
       
+      // Преобразуем данные формы в формат для API
+      const apiData = {
+        summary: eventData.title,
+        description: eventData.description,
+        start: {
+          dateTime: eventData.start.toISOString(),
+          timeZone: 'UTC'
+        },
+        end: {
+          dateTime: eventData.end.toISOString(),
+          timeZone: 'UTC'
+        },
+        location: eventData.location,
+        attendees: eventData.attendees?.map((email: string) => ({ email })) || []
+      };
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(eventData),
+        body: JSON.stringify(apiData),
       });
 
       if (response.ok) {
@@ -111,7 +127,13 @@ function CalendarPageContent() {
 
   // Обработка редактирования события
   const handleEditEvent = (event: CalendarEvent) => {
-    setEditingEvent(event);
+    // Преобразуем CalendarEvent в формат для формы (строки в Date)
+    const eventForForm = {
+      ...event,
+      start: new Date(event.start),
+      end: new Date(event.end)
+    };
+    setEditingEvent(eventForForm);
     setShowEventForm(true);
   };
 
@@ -140,7 +162,7 @@ function CalendarPageContent() {
             <div className="text-2xl font-bold text-blue-600">
               {events.filter(event => {
                 const today = new Date().toDateString();
-                const eventDate = new Date(event.startTime).toDateString();
+                const eventDate = event.start.toDateString();
                 return today === eventDate;
               }).length}
             </div>
@@ -203,10 +225,13 @@ function CalendarPageContent() {
         {/* Календарь */}
         <Card className="p-6">
           <CalendarView
-            events={events}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleEventDelete}
-            refreshKey={refreshKey}
+            onCreateEvent={() => {
+              setEditingEvent(null);
+              setShowEventForm(true);
+            }}
+            refreshTrigger={refreshKey}
           />
         </Card>
 
@@ -221,6 +246,7 @@ function CalendarPageContent() {
                   setShowEventForm(false);
                   setEditingEvent(null);
                 }}
+                isOpen={showEventForm}
               />
             </div>
           </div>

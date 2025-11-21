@@ -1,0 +1,117 @@
+{
+  "project": "Chef's Mind AI",
+  "version": "v2.1.6",
+  "purpose": "AI core for restaurant operations: multi-agent chat, finance and purchasing, calendar integration, media studio, QA-Gate.",
+  "architecture": {
+    "backend": "Node.js + Express + TypeScript",
+    "frontend": {
+      "primary": "Next.js app in frontend-enhanced/ with Tailwind and shadcn/ui",
+      "legacy": "React app in frontend/"
+    },
+    "database": "PostgreSQL + Drizzle ORM"
+  },
+  "agents": [
+    {
+      "id": "chef",
+      "name": "Chef",
+      "role": "kitchen operations, recipes, menu engineering, production planning"
+    },
+    {
+      "id": "accountant",
+      "name": "Accountant",
+      "role": "orders, suppliers, cost control, basic finance workflows"
+    },
+    {
+      "id": "researcher",
+      "name": "Researcher",
+      "role": "external research, web search, Perplexity-style information gathering"
+    },
+    {
+      "id": "media",
+      "name": "Media Studio",
+      "role": "image and video generation, prompt enhancing, asset management"
+    },
+    {
+      "id": "qa",
+      "name": "QA-Gate",
+      "role": "hallucination checks, safety rules, consistency validation"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 0,
+      "name": "Infra-Fix",
+      "status": "done"
+    },
+    {
+      "id": 1,
+      "name": "MVP User Flow (Auth, Dashboard, Chat)",
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "Multi-Agent Routing",
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "name": "Data Persistence (chat history, orders, calendar, backups)",
+      "status": "done"
+    },
+    {
+      "id": 4,
+      "name": "Media Studio / Prompt Enhancer / UI",
+      "status": "in_progress"
+    },
+    {
+      "id": 5,
+      "name": "Analytics & Polish (dashboards, performance)",
+      "status": "planned"
+    }
+  ],
+  "paths": {
+    "backend": "server/",
+    "frontend_primary": "frontend-enhanced/",
+    "frontend_legacy": "frontend/",
+    "docs": "docs/",
+    "tests": "tests/",
+    "reports": "reports/",
+    "shared_types": "shared/",
+    "db_migrations": "drizzle/",
+    "checkpoints": "checkpoints/",
+    "kilocode_rules": ".kilocode/rules/"
+  },
+  "checkpoints_active": [
+    ".kilocode/rules/CHECKPOINT_v2.1.4.json",
+    ".kilocode/rules/CHECKPOINT_v2.1.5.json",
+    ".kilocode/rules/CHECKPOINT_v2.1.6.json"
+  ],
+  "api_examples": [
+    "/api/enhanced-agent/chat",
+    "/api/orders",
+    "/api/calendar",
+    "/api/chat-history",
+    "/api/db/backup",
+    "/api/media/generate/image",
+    "/api/media/generate/video",
+    "/api/media/jobs/:jobId",
+    "/api/media/assets"
+  ],
+  "security_observability": [
+    "JWT",
+    "RBAC",
+    "SAFE_MODE",
+    "Prometheus /metrics",
+    "health endpoints (/health)"
+  ],
+  "env": {
+    "dev_port": 5001,
+    "NEXT_PUBLIC_API_URL": "http://localhost:5001"
+  },
+  "ui_spec": {
+    "status": "in_progress",
+    "master_file": "docs/Chef’s Mind AI — MASTER CONTEXT v2.1.4 (UI Refresh).mdown",
+    "layout": "3-column app layout: left agent sidebar, central chat, right tools/sidebar",
+    "palette_hint": "Na'Vi-style blue + dark/neutral background, accent highlights"
+  }
+}

@@ -58,7 +58,12 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
     setRefreshing(prev => new Set(prev).add(jobId));
 
     try {
-      const response = await fetch(`/api/media/jobs/${jobId}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch(`/api/media/jobs/${jobId}`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       
       if (!response.ok) {
         throw new Error('Ошибка при получении статуса задачи');
@@ -66,7 +71,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
 
       const jobData = await response.json();
       
-      setLocalJobs(prev => 
+      setLocalJobs(prev =>
         prev.map(job => 
           job.id === jobId 
             ? { ...job, ...jobData, status: jobData.status }

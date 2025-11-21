@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm:dev:back\" \"npm:dev:front\"",
     "dev:server": "node -e \"require('dotenv').config(); const { spawn } = require('child_process'); const port = process.env.PORT || 5001; console.log('Starting server on', port); const exe = process.platform==='win32'?'npx.cmd':'npx'; const p = spawn(exe, ['tsx','watch','server/index.ts'], { stdio:'inherit', env:{...process.env, PORT:String(port)} }); p.on('exit', code=>process.exit(code));\"",
-    "dev:back": "npm run dev:server",
+    "dev:back": "PORT=5001 npx tsx server/enhanced-server.ts",
     "dev:front": "next dev -p 3000",
     "build": "npm run build:server",
     "build:server": "npx tsc -p tsconfig.json",
@@ -191,6 +191,8 @@
     "prettier": "^3.6.2",
     "supertest": "^7.1.4",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3",

@@ -40,6 +40,12 @@ interface AlertDialogActionProps {
   disabled?: boolean;
 }
 
+interface AlertDialogTriggerProps {
+  children: React.ReactNode;
+  asChild?: boolean;
+  className?: string;
+}
+
 interface AlertDialogCancelProps {
   children: React.ReactNode;
   onClick?: () => void;
@@ -129,6 +135,26 @@ const AlertDialogAction: React.FC<AlertDialogActionProps> = ({
   );
 };
 
+const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({ 
+  children, 
+  asChild = false,
+  className = "" 
+}) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      className: `${children.props.className || ''} ${className}`.trim()
+    });
+  }
+  
+  return (
+    <Button
+      className={className}
+    >
+      {children}
+    </Button>
+  );
+};
+
 const AlertDialogCancel: React.FC<AlertDialogCancelProps> = ({ 
   children, 
   onClick, 
@@ -156,4 +182,5 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogTrigger,
 };

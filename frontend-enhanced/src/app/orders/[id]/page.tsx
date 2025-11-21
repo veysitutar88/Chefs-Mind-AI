@@ -33,9 +33,12 @@ export default function OrderDetailPage() {
           <div className="space-y-2 text-sm">
             <p><strong>ID заказа:</strong> {orderId}</p>
             <p><strong>Дата создания:</strong> {new Date().toLocaleDateString()}</p>
-            <p><strong>Статус:</strong> {mockOrder.status === 'pending' && 'Ожидает'}
-              {mockOrder.status === 'completed' && 'Выполнен'}
-              {mockOrder.status === 'cancelled' && 'Отменён'}</p>
+            <p><strong>Статус:</strong> {
+              mockOrder.status === 'pending' ? 'Ожидает' :
+              mockOrder.status === 'completed' ? 'Выполнен' :
+              mockOrder.status === 'cancelled' ? 'Отменён' :
+              'Неизвестно'
+            }</p>
           </div>
         </div>
       </div>

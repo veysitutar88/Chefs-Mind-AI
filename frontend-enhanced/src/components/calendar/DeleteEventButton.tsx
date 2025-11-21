@@ -8,7 +8,7 @@ interface DeleteEventButtonProps {
   eventId: string;
   eventTitle: string;
   onDelete: (eventId: string) => Promise<void>;
-  variant?: 'destructive' | 'outline';
+  variant?: 'outline' | 'default';
   size?: 'sm' | 'default' | 'lg';
   className?: string;
 }
@@ -17,7 +17,7 @@ export function DeleteEventButton({
   eventId, 
   eventTitle, 
   onDelete, 
-  variant = 'destructive',
+  variant = 'outline',
   size = 'sm',
   className = ''
 }: DeleteEventButtonProps) {

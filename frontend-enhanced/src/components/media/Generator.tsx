@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+ // removed unused Input import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Image, Video, Loader2 } from 'lucide-react';
 
 interface MediaGeneratorProps {
-  onJobCreated?: (jobId: string) => void;
+  onJobCreated?: (payload: { jobId: string; type: 'image' | 'video'; provider: string; prompt: string }) => void;
 }
 
 export function Generator({ onJobCreated }: MediaGeneratorProps) {
@@ -30,14 +30,25 @@ export function Generator({ onJobCreated }: MediaGeneratorProps) {
     try {
       const endpoint = type === 'image' ? '/api/media/generate/image' : '/api/media/generate/video';
       
+      // Получаем JWT токен из localStorage
+      const token = localStorage.getItem('auth_token');
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify({
           prompt: prompt.trim(),
           provider: provider,
+          options: type === 'image' ? {
+            resolution: '1024x1024',
+            quality: 'standard'
+          } : {
+            duration: 10,
+            style: 'cinematic'
+          }
         }),
       });
 
@@ -49,7 +60,12 @@ export function Generator({ onJobCreated }: MediaGeneratorProps) {
       const data = await response.json();
       
       if (data.jobId && onJobCreated) {
-        onJobCreated(data.jobId);
+        onJobCreated({
+          jobId: data.jobId,
+          type,
+          provider,
+          prompt: prompt.trim(),
+        });
       }
 
       // Очищаем форму после успешной генерации
@@ -117,14 +133,14 @@ export function Generator({ onJobCreated }: MediaGeneratorProps) {
           <label htmlFor="prompt" className="text-sm font-medium">
             Описание
           </label>
-          <Input
+          <textarea
             id="prompt"
             placeholder="Опишите, что вы хотите создать..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             disabled={isGenerating}
-            className="min-h-[100px] resize-none"
-            as="textarea"
+            className="min-h-[120px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label="Описание для генерации"
           />
         </div>
 

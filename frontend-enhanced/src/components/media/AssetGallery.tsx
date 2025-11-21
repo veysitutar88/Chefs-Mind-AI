@@ -40,14 +40,19 @@ export function AssetGallery({ className }: AssetGalleryProps) {
 
   useEffect(() => {
     loadAssets();
-  }, [filter]);
+  }, [filter, searchQuery]);
 
   const loadAssets = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/media/assets');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch('/api/media/assets', {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       
       if (!response.ok) {
         throw new Error('Ошибка при загрузке медиафайлов');
@@ -122,8 +127,12 @@ export function AssetGallery({ className }: AssetGalleryProps) {
 
   const deleteAsset = async (assetId: string) => {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch(`/api/media/assets/${assetId}`, {
         method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
       if (!response.ok) {

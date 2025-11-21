@@ -192,30 +192,29 @@ async function getTokensFromDB() {
   }
 }
 
-export function authStatus() {
+export async function authStatus() {
   const memoryTokens = memory.tokens;
-  
+
   const hasTokens = !!memoryTokens?.access_token;
   const hasRefresh = !!memoryTokens?.refresh_token;
-  
-  // Флаг для проверки статуса БД
+
+  // Синхронная проверка БД
   let storedInDb = false;
   let dbHasTokens = false;
-  
-  // Неблокирующая проверка БД
-  getTokensFromDB()
-    .then(dbTokens => {
-      storedInDb = !!dbTokens;
-      dbHasTokens = !!dbTokens?.access_token;
-      // Логирование для отладки
-      if (storedInDb) {
-        console.log('Найдены токены в базе данных');
-      }
-    })
-    .catch(error => {
-      console.error('Ошибка при проверке статуса в БД:', error);
-    });
-  
+  let dbTokens = null;
+
+  try {
+    dbTokens = await getTokensFromDB();
+    storedInDb = !!dbTokens;
+    dbHasTokens = !!dbTokens?.access_token;
+    // Логирование для отладки
+    if (storedInDb) {
+      console.log('Найдены токены в базе данных');
+    }
+  } catch (error) {
+    console.error('Ошибка при проверке статуса в БД:', error);
+  }
+
   return {
     ok: hasTokens,
     has_refresh: hasRefresh,

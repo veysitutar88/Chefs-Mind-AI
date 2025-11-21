@@ -25,21 +25,33 @@ function MediaStudioContent() {
   const [activeJobs, setActiveJobs] = useState<MediaJob[]>([]);
   const [completedJobs, setCompletedJobs] = useState<MediaJob[]>([]);
 
-  const handleJobCreated = (jobId: string) => {
-    // Создаем новую задачу с начальным статусом
+  type JobCreatedPayload = { jobId: string; type: 'image' | 'video'; provider: string; prompt: string };
+
+  const handleJobCreated = ({ jobId, type, provider, prompt }: JobCreatedPayload) => {
     const newJob: MediaJob = {
       id: jobId,
-      type: 'image', // Это будет определено на основе ответа API
-      provider: 'dalle',
-      prompt: '', // Это будет заполнено на основе ответа API
+      type,
+      provider,
+      prompt,
       status: 'pending',
       progress: 0,
       createdAt: new Date().toISOString(),
     };
-    
+
     setActiveJobs(prev => [...prev, newJob]);
   };
-
+  
+  // Совместимый обработчик для старых и новых сигнатур onJobCreated
+  const handleJobCreatedCompat = (arg: unknown) => {
+    if (typeof arg === 'string') {
+      // Legacy подпись: только jobId — дополняем минимальными значениями
+      handleJobCreated({ jobId: arg, type: 'image', provider: 'unknown', prompt: '' });
+    } else if (arg && typeof arg === 'object') {
+      const payload = arg as JobCreatedPayload;
+      handleJobCreated(payload);
+    }
+  };
+  
   const handleJobUpdate = (jobId: string, status: MediaJob['status']) => {
     setActiveJobs(prev => {
       const updatedJobs = prev.map(job => {
@@ -101,7 +113,7 @@ function MediaStudioContent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Генератор */}
             <div>
-              <Generator onJobCreated={handleJobCreated} />
+              <Generator onJobCreated={handleJobCreatedCompat} />
             </div>
             
             {/* Текущие задачи */}
