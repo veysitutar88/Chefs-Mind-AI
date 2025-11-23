@@ -1,13 +1,21 @@
-# Current Task: Context Normalization
+# Current Task: Context Expansion & Block 4
 
-**Status:** Completed
-**Started:** 2025-11-21
-**Completed:** 2025-11-23
-**Objective:** Normalize all project documentation and context files to use `MASTER_CONTEXT_v2.1.6.mdown` as the single source of truth.
+**Status:** In Progress
+**Started:** 2025-11-23
+**Objective:** Expand project context from canonical source and proceed with Block 4 (Media Studio / UI).
+
+## Active Block: Block 4 — Media Studio / Prompt Enhancer / UI
+- **Goal:** Integrate Media Studio and new UI architecture.
+- **Status:** 🟡 In Progress
 
 ## Subtasks
-- [x] Archive legacy files
-- [x] Update CHECKPOINT.json
-- [x] Create/Update context directory files
-- [x] Recreate pointer documentation files
-- [x] Finalize Memory Bank updates
+- [x] Context Audit & Cleanup
+- [x] Context Expansion (Current)
+- [ ] Connect `EnhancedMediaTool` to `/api/media/*`
+- [ ] Integrate new UI (v2.1.4+ Refresh)
+- [ ] Verify Media Studio flows (Image/Video)
+
+## Next Steps
+1.  Finalize Context Expansion.
+2.  Begin UI Integration Step.
+3.  Connect Media Services.

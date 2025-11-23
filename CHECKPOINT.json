@@ -1,7 +1,8 @@
 {
     "version": "2.1.6",
     "date": "2025-11-23",
-    "status": "Context Audit & Cleanup Complete",
+    "status": "Context Expanded & Stabilized",
+    "FULL_CONTEXT_EXPANDED": true,
     "master_context": ".kilocode/rules/memory-bank/MASTER_CONTEXT_v2.1.6.mdown",
     "active_blocks": [
         "Block 0 — Infra-Fix (Done)",
@@ -15,7 +16,7 @@
         "Expand testing coverage"
     ],
     "cleanup_log": {
-        "timestamp": "2025-11-23T02:11:02+01:00",
+        "timestamp": "2025-11-23T02:23:22+01:00",
         "archived_files": [
             "CONTEXT.md",
             "CTX_CHEFS_MIND_AI_ULTIMATE_v2.1.2.md",
@@ -28,6 +29,14 @@
         ],
         "deleted_files": [
             "docs/MASTER_CONTEXT_v2.1.6.mdown"
+        ],
+        "regenerated_files": [
+            "context/current-task.md",
+            "context/decisions.md",
+            "context/patterns.md",
+            "docs/project.md",
+            "docs/documentation.md",
+            "docs/instructions.md"
         ]
     }
 }
