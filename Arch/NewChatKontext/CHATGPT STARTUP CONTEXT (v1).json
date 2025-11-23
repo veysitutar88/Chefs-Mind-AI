@@ -1,0 +1,40 @@
+{
+  "project": "Chef's Mind AI",
+  "version": "v2.1.6",
+  "context_files": {
+    "master_context": "docs/MASTER_CONTEXT_v2.1.6.mdown",
+    "checkpoint": "CHECKPOINT.json",
+    "session": "SESSION.md",
+    "manifest": ".kilocode/rules/MASTER_MANIFEST.json",
+    "memory_bank": ".kilocode/rules/memory-bank/",
+    "docs": "docs/",
+    "context": "context/"
+  },
+  "workflow_files": {
+    "start_of_day": "Arch/Workflows/SoD.mdown",
+    "end_of_day": "Arch/Workflows/EoD.mdown"
+  },
+  "rules": {
+    "load_master_context": true,
+    "load_checkpoint": true,
+    "load_session": true,
+    "respect_project_rules": true,
+    "reject_hallucinations": true,
+    "do_not_invent_files": true,
+    "do_not_invent_data": true,
+    "always_ask_when_missing": true,
+    "use_strict_sources_only": true
+  },
+  "on_start": [
+    "Load master context",
+    "Load checkpoint",
+    "Load session",
+    "Infer active branch of work",
+    "Ask user to confirm today's focus"
+  ],
+  "on_error": {
+    "missing_file": "ask_user",
+    "ambiguous_context": "ask_user",
+    "contradiction_detected": "pause_and_verify"
+  }
+}
