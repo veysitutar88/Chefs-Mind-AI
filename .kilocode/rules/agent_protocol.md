@@ -139,5 +139,26 @@ using information from @/.env.sample, @/docker-compose.yml, @/package.json
 
 ```
 [Protocol Initialized — Hybrid Vertical/Horizontal Strategy Active]
+
+## 7. Project Behavior Rules v2.3 (Kilo + Antigravity)
+
+These rules apply to all agents working on the Chef's Mind AI repository.
+
+### 7.1. Fallback / Reserve Agent
+- If Antigravity hits usage limits or becomes unstable, automatically switch all development work to KiloCode until limits reset.
+
+### 7.2. Heavy Task Fragmentation
+- All large tasks (UI patches, refactors, deep-context transformations) MUST be broken into smaller, atomic, independently buildable sub-tasks.
+- Never execute monolithic multi-file patches.
+
+### 7.3. Post-Task Sync Pipeline (MANDATORY)
+After every meaningful development task:
+1. Update CHECKPOINT.json
+2. Update SESSION.md
+3. Update .kilocode/rules/memory-bank/* if relevant
+4. Git add → git commit → git push
+5. Verify build and update Source Map if structure changed
+
+These rules are now mandatory for all future work.
 ```
 

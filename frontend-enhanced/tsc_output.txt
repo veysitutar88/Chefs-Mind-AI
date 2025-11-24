@@ -1,0 +1,8 @@
+src/components/media/JobList.tsx(251,55): error TS2322: Type '{ children: Element; variant: "outline"; size: "sm"; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & RefAttributes<HTMLButtonElement>'.
+src/components/orders/OrdersList.tsx(80,23): error TS2322: Type '"destructive"' is not assignable to type '"default" | "link" | "secondary" | "outline" | "ghost"'.
+src/components/suppliers/SuppliersList.tsx(92,23): error TS2322: Type '"destructive"' is not assignable to type '"default" | "link" | "secondary" | "outline" | "ghost"'.
+src/components/ui/alert-dialog.tsx(145,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+src/components/ui/alert-dialog.tsx(145,36): error TS2339: Property 'className' does not exist on type 'unknown'.

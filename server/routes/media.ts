@@ -7,6 +7,8 @@ import { dbWrite as db } from '../db.js';
 import { mediaAssets } from '../../shared/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { getEnhancedMediaTool } from '../services/enhanced-media.js';
+import { agentRouting } from '../config/agent-routing.js';
+import { llmConfig } from '../config/llm-config.js';
 
 // Импорт провайдеров (удалены старые)
 
@@ -68,6 +70,47 @@ const router = Router();
 const jobStore = new Map<string, JobData>();
 
 /**
+ * GET /api/media/models
+ * Возвращает список доступных моделей и флагов
+ */
+router.get('/models', (req, res) => {
+  const flags = agentRouting.getMediaFlags();
+  const imageModel = agentRouting.getImageModel();
+  const videoModel = agentRouting.getVideoModel();
+  const upscaleProvider = agentRouting.getUpscaleProvider();
+
+  res.json({
+    flags,
+    defaults: {
+      image: imageModel,
+      video: videoModel,
+      upscale: upscaleProvider
+    },
+    providers: {
+      image: ['dall-e-3', 'imagen-3'],
+      video: ['veo-3'],
+      upscale: ['nanobanana', 'openai', 'google']
+    }
+  });
+});
+
+/**
+ * POST /api/media/upscale
+ * Инициирует задачу апскейла
+ */
+router.post(
+  '/upscale',
+  jwtAuthMiddleware,
+  requireAuth,
+  requireRole(['admin', 'chef', 'media_creator']),
+  async (req: Request, res: Response) => {
+    // TODO: Implement upscale logic using agentRouting.getUpscaleProvider()
+    // For now, return a mock response or 501 Not Implemented
+    res.status(501).json({ message: 'Upscale not yet implemented' });
+  }
+);
+
+/**
  * POST /api/media/generate/image
  * Инициирует задачу генерации изображения
  */
@@ -80,12 +123,12 @@ router.post(
     try {
       const userId = (req as any).user.id;
       const validatedData = generateImageSchema.parse(req.body);
-      
+
       const { provider, prompt, options } = validatedData;
-      
+
       // Создание jobId
       const jobId = `img-${uuidv4()}`;
-      
+
       // Создание записи в БД
       await db.insert(mediaAssets).values({
         userId,
@@ -94,7 +137,7 @@ router.post(
         jobId,
         status: 'pending',
       });
-      
+
       // Создание записи в памяти для асинхронной обработки
       const jobData: JobData = {
         id: jobId,
@@ -105,30 +148,33 @@ router.post(
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       jobStore.set(jobId, jobData);
-      
+
       // Запуск асинхронной обработки
-      processImageGeneration(jobId, provider, prompt, options || {});
-      
+      // Use agent routing to determine provider/model if not explicitly set (or override based on logic)
+      // For now, we respect the requested provider but could fallback to defaults
+      const effectiveProvider = provider || agentRouting.getImageModel().provider;
+      processImageGeneration(jobId, effectiveProvider, prompt, options || {});
+
       console.log(`🖼️ Image generation job started: ${jobId} for user ${userId}`);
-      
+
       res.status(202).json({
         jobId,
         status: 'pending',
         provider,
       });
-      
+
     } catch (error) {
       console.error('Image generation error:', error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Invalid request',
           message: error.errors.map(e => e.message).join(', '),
         });
       }
-      
+
       res.status(500).json({
         error: 'Failed to start image generation',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -150,7 +196,7 @@ router.post(
     try {
       // Проверка feature-флага
       const enableVideo = process.env.ENABLE_VIDEO === 'true';
-      
+
       if (!enableVideo) {
         console.log('🎬 Video generation disabled by feature flag');
         return res.status(200).json({
@@ -158,15 +204,15 @@ router.post(
           reason: 'video_disabled',
         });
       }
-      
+
       const userId = (req as any).user.id;
       const validatedData = generateVideoSchema.parse(req.body);
-      
+
       const { provider, prompt, options } = validatedData;
-      
+
       // Создание jobId
       const jobId = `vid-${uuidv4()}`;
-      
+
       // Создание записи в БД
       await db.insert(mediaAssets).values({
         userId,
@@ -175,7 +221,7 @@ router.post(
         jobId,
         status: 'pending',
       });
-      
+
       // Создание записи в памяти для асинхронной обработки
       const jobData: JobData = {
         id: jobId,
@@ -186,30 +232,31 @@ router.post(
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       jobStore.set(jobId, jobData);
-      
+
       // Запуск асинхронной обработки
-      processVideoGeneration(jobId, provider, prompt, options || {});
-      
+      const effectiveProvider = provider || agentRouting.getVideoModel().provider;
+      processVideoGeneration(jobId, effectiveProvider, prompt, options || {});
+
       console.log(`🎬 Video generation job started: ${jobId} for user ${userId}`);
-      
+
       res.status(202).json({
         jobId,
         status: 'pending',
         provider,
       });
-      
+
     } catch (error) {
       console.error('Video generation error:', error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Invalid request',
           message: error.errors.map(e => e.message).join(', '),
         });
       }
-      
+
       res.status(500).json({
         error: 'Failed to start video generation',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -230,16 +277,16 @@ router.get(
     try {
       const { jobId } = req.params;
       const userId = (req as any).user.id;
-      
+
       // Получение из локального хранилища
       const job = jobStore.get(jobId);
-      
+
       if (!job || job.userId !== userId) {
         return res.status(404).json({
           error: 'Job not found',
         });
       }
-      
+
       res.json({
         jobId: job.id,
         status: job.status,
@@ -247,7 +294,7 @@ router.get(
         assetUrl: job.assetUrl,
         error: job.error,
       });
-      
+
     } catch (error) {
       console.error('Get job status error:', error);
       res.status(500).json({
@@ -270,16 +317,16 @@ router.get(
     try {
       const userId = (req as any).user.id;
       const validatedQuery = getAssetsSchema.parse(req.query);
-      
+
       const { limit, offset, provider } = validatedQuery;
-      
+
       // Построение условий для запроса
       const conditions = [eq(mediaAssets.userId, userId)];
-      
+
       if (provider) {
         conditions.push(eq(mediaAssets.provider, provider));
       }
-      
+
       // Запрос к БД
       const assets = await db
         .select({
@@ -297,15 +344,15 @@ router.get(
         .limit(limit)
         .offset(offset)
         .orderBy(mediaAssets.createdAt);
-      
+
       // Получение общего количества
       const countResult = await db
         .select({ count: db.$count(mediaAssets) })
         .from(mediaAssets)
         .where(and(...conditions));
-      
+
       const total = countResult[0]?.count || 0;
-      
+
       res.json({
         total,
         assets: assets.map(asset => ({
@@ -319,17 +366,17 @@ router.get(
           updatedAt: asset.updatedAt,
         })),
       });
-      
+
     } catch (error) {
       console.error('Get assets error:', error);
-      
+
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Invalid query parameters',
           message: error.errors.map(e => e.message).join(', '),
         });
       }
-      
+
       res.status(500).json({
         error: 'Failed to get assets',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -350,22 +397,22 @@ async function processImageGeneration(
   let errorMessage: string | undefined;
   try {
     updateJobStatus(jobId, 'in_progress', 25);
-    
+
     const tool = getEnhancedMediaTool();
     const userId = jobStore.get(jobId)?.userId || '';
     const generator = mapProviderToGenerator(provider);
-    
+
     updateJobStatus(jobId, 'in_progress', 50);
-    
+
     const result = await tool.generateMedia({
       prompt,
       generator,
     }, 'image');
-    
+
     updateJobStatus(jobId, 'in_progress', 75);
-    
+
     const assetUrl = result?.url || `/assets/generated/${jobId}.png`;
-    
+
     await db
       .update(mediaAssets)
       .set({
@@ -374,16 +421,16 @@ async function processImageGeneration(
         updatedAt: new Date(),
       })
       .where(eq(mediaAssets.jobId, jobId));
-    
+
     updateJobStatus(jobId, 'completed', 100, assetUrl);
-    
+
     console.log(`✅ Image generation completed: ${jobId}`);
-    
+
   } catch (error) {
     console.error(`❌ Image generation failed: ${jobId}`, error);
-    
+
     errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     await db
       .update(mediaAssets)
       .set({
@@ -392,7 +439,7 @@ async function processImageGeneration(
         updatedAt: new Date(),
       })
       .where(eq(mediaAssets.jobId, jobId));
-    
+
     updateJobStatus(jobId, 'failed', 0, undefined, errorMessage);
   }
 }
@@ -409,23 +456,23 @@ async function processVideoGeneration(
   let errorMessage: string | undefined;
   try {
     updateJobStatus(jobId, 'in_progress', 20);
-    
+
     const tool = getEnhancedMediaTool();
     const userId = jobStore.get(jobId)?.userId || '';
     const generator = mapProviderToGenerator(provider);
-    
+
     updateJobStatus(jobId, 'in_progress', 40);
-    
+
     const result = await tool.generateMedia({
       prompt,
       generator,
       durationSec: typeof options?.duration === 'number' ? options.duration : undefined,
     }, 'video');
-    
+
     updateJobStatus(jobId, 'in_progress', 70);
-    
+
     const assetUrl = result?.url || `/assets/generated/${jobId}.mp4`;
-    
+
     await db
       .update(mediaAssets)
       .set({
@@ -434,16 +481,16 @@ async function processVideoGeneration(
         updatedAt: new Date(),
       })
       .where(eq(mediaAssets.jobId, jobId));
-    
+
     updateJobStatus(jobId, 'completed', 100, assetUrl);
-    
+
     console.log(`✅ Video generation completed: ${jobId}`);
-    
+
   } catch (error) {
     console.error(`❌ Video generation failed: ${jobId}`, error);
-    
+
     errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     await db
       .update(mediaAssets)
       .set({
@@ -452,7 +499,7 @@ async function processVideoGeneration(
         updatedAt: new Date(),
       })
       .where(eq(mediaAssets.jobId, jobId));
-    
+
     updateJobStatus(jobId, 'failed', 0, undefined, errorMessage);
   }
 }

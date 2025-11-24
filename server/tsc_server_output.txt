@@ -1,0 +1,53 @@
+auth.ts(64,30): error TS7006: Parameter 'username' implicitly has an 'any' type.
+auth.ts(64,40): error TS7006: Parameter 'password' implicitly has an 'any' type.
+auth.ts(64,50): error TS7006: Parameter 'done' implicitly has an 'any' type.
+auth.ts(80,27): error TS7006: Parameter 'user' implicitly has an 'any' type.
+auth.ts(80,33): error TS7006: Parameter 'done' implicitly has an 'any' type.
+auth.ts(81,47): error TS7006: Parameter 'done' implicitly has an 'any' type.
+config/agent-routing.ts(1,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './llm-config.js'?
+config/llm-config.ts(1,27): error TS2307: Cannot find module './env.schema' or its corresponding type declarations.
+routes/calendar.ts(107,19): error TS2339: Property 'calendarLinks' does not exist on type 'typeof import("C:/Projects/Chefs-Mind-AI/shared/schema", { with: { "resolution-mode": "import" } })'.
+routes/calendar.ts(256,17): error TS2339: Property 'calendarLinks' does not exist on type 'typeof import("C:/Projects/Chefs-Mind-AI/shared/schema", { with: { "resolution-mode": "import" } })'.
+routes/calendar.ts(260,12): error TS2339: Property 'and' does not exist on type 'Omit<PgDeleteBase<any, PostgresJsQueryResultHKT, undefined, undefined, false, "where">, "where">'.
+routes/chat-history.ts(57,21): error TS18048: 'page' is possibly 'undefined'.
+routes/chat-history.ts(57,33): error TS18048: 'limit' is possibly 'undefined'.
+routes/chat-history.ts(65,14): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number | Placeholder<string, any>'.
+  Type 'undefined' is not assignable to type 'number | Placeholder<string, any>'.
+routes/chat-history.ts(167,21): error TS18048: 'page' is possibly 'undefined'.
+routes/chat-history.ts(167,33): error TS18048: 'limit' is possibly 'undefined'.
+routes/chat-history.ts(175,14): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number | Placeholder<string, any>'.
+  Type 'undefined' is not assignable to type 'number | Placeholder<string, any>'.
+routes/orders.ts(29,21): error TS18048: 'page' is possibly 'undefined'.
+routes/orders.ts(29,33): error TS18048: 'limit' is possibly 'undefined'.
+routes/orders.ts(50,14): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number | Placeholder<string, any>'.
+  Type 'undefined' is not assignable to type 'number | Placeholder<string, any>'.
+routes/orders.ts(60,47): error TS18048: 'limit' is possibly 'undefined'.
+routes/orders.ts(125,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; total?: string | ... 3 more ... | undefined; customer_id?: string | ... 3 more ... | undefined; order_date?: SQL<...> | ... 3 more ... | undefined; items?: unknown; }): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, but 'customerId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; total?: string | ... 3 more ... | undefined; customer_id?: string | ... 3 more ... | undefined; order_date?: SQL<...> ...'. Did you mean to write 'customer_id'?
+  Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; total?: string | ... 3 more ... | undefined; customer_id?: string | ... 3 more ... | undefined; order_date?: SQL<...> | ... 3 more ... | undefined; items?: unknown; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'customerId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; total?: string | ... 3 more ... | undefined; customer_id?: string | ... 3 more ... | undefined; order_date?: SQL<...> ...'.
+routes/orders.ts(182,9): error TS2561: Object literal may only specify known properties, but 'customerId' does not exist in type '{ status?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; id?: string | SQL<unknown> | PgColumn<...> | undefined; ... 4 more ...; items?: unknown; }'. Did you mean to write 'customer_id'?
+routes/smoke-helpers.ts(17,29): error TS2339: Property 'ok' does not exist on type 'Promise<{ ok: boolean; has_refresh: boolean; expiry_date: number | null; stored_in_db: boolean; memory_has_tokens: boolean; db_has_tokens: boolean; }>'.
+routes/suppliers.ts(28,21): error TS18048: 'page' is possibly 'undefined'.
+routes/suppliers.ts(28,33): error TS18048: 'limit' is possibly 'undefined'.
+routes/suppliers.ts(49,14): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number | Placeholder<string, any>'.
+  Type 'undefined' is not assignable to type 'number | Placeholder<string, any>'.
+routes/suppliers.ts(59,47): error TS18048: 'limit' is possibly 'undefined'.
+routes/suppliers.ts(119,19): error TS2339: Property 'contactPerson' does not exist on type '{ name: string; email?: string | null | undefined; contact_person?: string | null | undefined; phone?: string | null | undefined; address?: string | null | undefined; }'.
+routes/suppliers.ts(138,8): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; ... 4 more ...; address?: string | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, but 'contactPerson' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; ... 4 more ...; address?: string | ... 3 more ... | undefined; }'. Did you mean to write 'contact_person'?
+  Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; ... 4 more ...; address?: string | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; created_at?: SQL<unknown> | Date | Placeholder<...> | null | undefined; ... 4 more ...; address?: string | ... 3 more ... | undefined; }[]'.
+routes/suppliers.ts(178,19): error TS2339: Property 'contactPerson' does not exist on type '{ name?: string | undefined; email?: string | null | undefined; contact_person?: string | null | undefined; phone?: string | null | undefined; address?: string | null | undefined; }'.
+routes/suppliers.ts(212,9): error TS2561: Object literal may only specify known properties, but 'contactPerson' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; id?: string | SQL<unknown> | PgColumn<...> | undefined; ... 5 more ...; address?: string | ... 3 more ... | undefined; }'. Did you mean to write 'contact_person'?
+services/stt.ts(2,15): error TS2614: Module '"ws"' has no exported member 'WebSocket'. Did you mean to use 'import WebSocket from "ws"' instead?
+session.ts(12,45): error TS2694: Namespace 'expressSession' has no exported member 'CookieOptions'.
+session.ts(60,58): error TS2694: Namespace 'expressSession' has no exported member 'CookieOptions'.
+session.ts(144,56): error TS2694: Namespace 'expressSession' has no exported member 'CookieOptions'.
+session.ts(187,56): error TS2694: Namespace 'expressSession' has no exported member 'CookieOptions'.
+storage.ts(71,25): error TS2694: Namespace 'expressSession' has no exported member 'Store'.
+storage.ts(75,25): error TS2694: Namespace 'expressSession' has no exported member 'Store'.
+vite.ts(26,15): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+vite.ts(26,20): error TS7006: Parameter 'options' implicitly has an 'any' type.

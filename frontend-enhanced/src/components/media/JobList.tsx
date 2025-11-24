@@ -37,7 +37,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
 
   // Периодически обновляем статус задач
   useEffect(() => {
-    const activeJobs = localJobs.filter(job => 
+    const activeJobs = localJobs.filter(job =>
       job.status === 'pending' || job.status === 'processing'
     );
 
@@ -54,7 +54,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
 
   const refreshJobStatus = async (jobId: string) => {
     if (refreshing.has(jobId)) return;
-    
+
     setRefreshing(prev => new Set(prev).add(jobId));
 
     try {
@@ -64,16 +64,16 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Ошибка при получении статуса задачи');
       }
 
       const jobData = await response.json();
-      
+
       setLocalJobs(prev =>
-        prev.map(job => 
-          job.id === jobId 
+        prev.map(job =>
+          job.id === jobId
             ? { ...job, ...jobData, status: jobData.status }
             : job
         )
@@ -97,7 +97,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
   const deleteJob = async (jobId: string) => {
     try {
       setLocalJobs(prev => prev.filter(job => job.id !== jobId));
-      
+
       if (onJobDelete) {
         onJobDelete(jobId);
       }
@@ -203,7 +203,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
                   {job.type === 'image' ? 'Изображение' : 'Видео'} • {job.provider}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -212,8 +212,8 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
                   disabled={refreshing.has(job.id)}
                   className="h-8 w-8 p-0"
                 >
-                  <RefreshCw 
-                    className={`h-3 w-3 ${refreshing.has(job.id) ? 'animate-spin' : ''}`} 
+                  <RefreshCw
+                    className={`h-3 w-3 ${refreshing.has(job.id) ? 'animate-spin' : ''}`}
                   />
                 </Button>
                 <Button
@@ -229,7 +229,7 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
 
             <div className="space-y-2">
               <p className="text-sm font-medium">{job.prompt}</p>
-              
+
               {job.status === 'processing' && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
@@ -248,10 +248,12 @@ export function JobList({ jobs = [], onJobUpdate, onJobDelete }: JobListProps) {
 
               {job.status === 'completed' && job.resultUrl && (
                 <div className="mt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={job.resultUrl} target="_blank" rel="noopener noreferrer">
-                      Посмотреть результат
-                    </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(job.resultUrl, '_blank')}
+                  >
+                    Посмотреть результат
                   </Button>
                 </div>
               )}

@@ -58,8 +58,8 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, onOpenChange, children 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div 
-        className="fixed inset-0" 
+      <div
+        className="fixed inset-0"
         onClick={() => onOpenChange?.(false)}
       />
       <div className="relative z-10">
@@ -69,9 +69,9 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, onOpenChange, children 
   );
 };
 
-const AlertDialogContent: React.FC<AlertDialogContentProps> = ({ 
-  children, 
-  className = "" 
+const AlertDialogContent: React.FC<AlertDialogContentProps> = ({
+  children,
+  className = ""
 }) => {
   return (
     <Card className={`w-full max-w-lg mx-4 ${className}`}>
@@ -96,9 +96,9 @@ const AlertDialogFooter: React.FC<AlertDialogFooterProps> = ({ children }) => {
   );
 };
 
-const AlertDialogTitle: React.FC<AlertDialogTitleProps> = ({ 
-  children, 
-  className = "" 
+const AlertDialogTitle: React.FC<AlertDialogTitleProps> = ({
+  children,
+  className = ""
 }) => {
   return (
     <h3 className={`text-lg font-semibold ${className}`}>
@@ -107,9 +107,9 @@ const AlertDialogTitle: React.FC<AlertDialogTitleProps> = ({
   );
 };
 
-const AlertDialogDescription: React.FC<AlertDialogDescriptionProps> = ({ 
-  children, 
-  className = "" 
+const AlertDialogDescription: React.FC<AlertDialogDescriptionProps> = ({
+  children,
+  className = ""
 }) => {
   return (
     <p className={`text-sm text-gray-600 ${className}`}>
@@ -118,11 +118,11 @@ const AlertDialogDescription: React.FC<AlertDialogDescriptionProps> = ({
   );
 };
 
-const AlertDialogAction: React.FC<AlertDialogActionProps> = ({ 
-  children, 
-  onClick, 
-  className = "", 
-  disabled = false 
+const AlertDialogAction: React.FC<AlertDialogActionProps> = ({
+  children,
+  onClick,
+  className = "",
+  disabled = false
 }) => {
   return (
     <Button
@@ -135,17 +135,17 @@ const AlertDialogAction: React.FC<AlertDialogActionProps> = ({
   );
 };
 
-const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({ 
-  children, 
+const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({
+  children,
   asChild = false,
-  className = "" 
+  className = ""
 }) => {
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, {
-      className: `${children.props.className || ''} ${className}`.trim()
+    return React.cloneElement(children as React.ReactElement<{ className?: string }>, {
+      className: `${(children.props as { className?: string }).className || ''} ${className}`.trim()
     });
   }
-  
+
   return (
     <Button
       className={className}
@@ -155,11 +155,11 @@ const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({
   );
 };
 
-const AlertDialogCancel: React.FC<AlertDialogCancelProps> = ({ 
-  children, 
-  onClick, 
-  className = "", 
-  disabled = false 
+const AlertDialogCancel: React.FC<AlertDialogCancelProps> = ({
+  children,
+  onClick,
+  className = "",
+  disabled = false
 }) => {
   return (
     <Button

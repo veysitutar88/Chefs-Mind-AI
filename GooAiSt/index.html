@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chef's Mind AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: "#0A0F1A",
+              surface: "#111827",
+              accent: "#3EAFFF",
+              accentSoft: "#5CCBFF",
+              textPrimary: "#F9FAFB",
+              textSecondary: "#9CA3AF",
+              borderSoft: "rgba(148, 163, 184, 0.3)"
+            },
+            boxShadow: {
+              'glow': '0 0 15px rgba(62, 175, 255, 0.2)',
+              'glow-active': '0 0 20px rgba(62, 175, 255, 0.4)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar for dark theme */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0A0F1A; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1F2937; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #374151; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-background text-textPrimary h-screen overflow-hidden antialiased selection:bg-accent selection:text-white">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
