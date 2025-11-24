@@ -1,0 +1,38 @@
+PROJECT_SOURCE_MAP_v1.0
+
+/docs
+    CHEF’S MIND AI — PROJECT_SOURCE_MAP_v1.0.txt
+    Chef’s Mind AI — Unified Master Context (D-FILE).txt
+    Unified Master Context (JSON Edition)FullD-File.json
+    MASTER_MANIFEST.json
+    ROUTING_DESIGN_FULL.md
+    SYSTEM_PROMPT_CHEFS_MIND_v1.md
+    UI_SPEC_v1.1.md
+    MEDIA_STUDIO_DESIGN.md
+    DEPLOYMENT_STRATEGY.md
+    documentation.md
+    instructions.md
+    project.md
+    archive/
+
+.kilocode/rules/memory-bank
+    MASTER_CONTEXT_v2.1.6.mdown
+    architecture.md
+    context.md
+    product.md
+    tech.md
+    archive/
+
+checkpoint/
+    CHECKPOINT.json
+
+context/
+    current-task.md
+    decisions.md
+    patterns.md
+
+antigravity/
+    (auto‑generated integration artifacts)
+
+client/
+    (Next.js client code)
