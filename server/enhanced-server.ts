@@ -7,6 +7,7 @@ import modelsRouter from './routes/models.js';
 import mediaRouter from './routes/media.js';
 import searchRouter from './routes/search.js';
 import toolsRouter from './routes/tools.js';
+import sidebarAdvancedRouter from './routes/sidebar-advanced.js';
 
 const app = express();
 const server = http.createServer(app); // Создаем HTTP сервер
@@ -29,6 +30,7 @@ app.use('/api/models', modelsRouter);
 app.use('/api/media', mediaRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/tools', toolsRouter);
+app.use('/api/sidebar', sidebarAdvancedRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

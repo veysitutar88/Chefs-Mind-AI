@@ -161,4 +161,43 @@ After every meaningful development task:
 
 These rules are now mandatory for all future work.
 ```
+## PROTOCOL: UI_SANDBOX_v2.4 (KiloCode + Antigravity)
 
+### 1. Canonical UI Scope
+1.1. Only the following paths are considered active UI:
+      - frontend-enhanced/src/app/page.tsx
+      - frontend-enhanced/src/components/ui/*
+1.2. All other UI folders (GooAiSt, legacy, old-ui, archive, tmp-ui) are considered ARCHIVE and must not be modified.
+
+### 2. Forbidden Zones
+2.1. Agents (KiloCode, Antigravity, or any others) MUST NOT:
+      - create files inside GooAiSt/*
+      - modify files inside GooAiSt/*
+      - delete or “refactor” archive UI code
+2.2. Any task that includes phrases such as:
+      - “cleanup old UI”
+      - “normalize all UI”
+      - “refactor project-wide layout”
+      MUST be rejected as invalid unless exact file paths are provided.
+
+### 3. File-Targeted Editing Only
+3.1. Every code modification MUST reference specific files with full paths.
+     Example:
+       frontend-enhanced/src/components/ui/RightSidebar.tsx
+3.2. Global edits such as “update all UI components” are forbidden.
+3.3. Agents must NOT invent new folders or paths not present in PROJECT_SOURCE_MAP.
+
+### 4. Context Priority
+4.1. If there is any conflict between:
+      - legacy UI (GooAiSt, old-ui)
+      - and active UI (frontend-enhanced)
+      → Agents must always trust and modify frontend-enhanced.
+4.2. All UI modifications must respect:
+      - docs/UI_SPEC_v2.2.md
+      - Unified Master Context (D-FILE + JSON D-FILE)
+
+### 5. Safety Fallback
+5.1. If a task requires multiple changes across many files without an explicit file list,
+      → the agent MUST stop execution and request clarification.
+5.2. If the agent detects ambiguity between canonical and legacy code,
+      → the agent MUST choose canonical UI (frontend-enhanced) and ignore legacy code.
