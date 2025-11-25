@@ -57,17 +57,26 @@
 
 - **Goal:** Media UI Block Completion (FoodFrame).
 - **Actions:**
-    - Created `MediaModelSelector` for dynamic model selection (Imagen/Veo/GPT-Vision).
-    - Created `MediaFormatSelector` for aspect ratio control.
-    - Created `UpscaleButton` (NanoBanana-first).
-    - Integrated controls into `ChatArea` (FoodFrame-only visibility).
-    - Updated `page.tsx` to manage media state and wire API calls.
-    - Verified full routing and API integration with build check.
+  - Created `MediaModelSelector` for dynamic model selection (Imagen/Veo/GPT-Vision).
+  - Created `MediaFormatSelector` for aspect ratio control.
+  - Created `UpscaleButton` (NanoBanana-first).
+  - Integrated controls into `ChatArea` (FoodFrame-only visibility).
+  - Updated `page.tsx` to manage media state and wire API calls.
+  - Verified full routing and API integration with build check.
 - **Status:** MEDIA BLOCK END — OK. FoodFrame Media Studio v2.2 is ready.
 - **Next Step:** UI Polish v2.3 and Agent Routing Sync.
 
 ### Session Update — UI_POLISH_v2.3 Completed
+
 - Premium Dark Claude-style UI successfully applied
 - Button overhaul, card polish, message animation, layout gradients
 - Build clean, no errors
 - Behavior Layer v2.3 installed
+
+### Session Update — RightSidebar Intelligence Layer Complete
+
+- Implemented /api/tools/* for summarize, export, ingredients, costs, reasoning
+- Implemented /api/search/* with fuzzy matching and synonym expansion
+- Agent-aware mapping for SousChef, GastroCount, GastroMind, FoodFrame
+- Sidebar logging enabled (logs/sidebar/*.json)
+- New modules compile cleanly; remaining TypeScript errors are only in legacy auth/calendar/session modules

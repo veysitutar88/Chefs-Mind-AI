@@ -102,14 +102,28 @@ export class EnhancedMediaTool {
   // DALL-E 3 генератор
   async generateWithDALLE3(
     prompt: string,
-    negativePrompt?: string
+    negativePrompt?: string,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    steps?: number,
+    aspectRatio?: string
   ): Promise<MediaGenerationResult> {
     try {
+      // Map aspect ratio to DALL-E supported formats
+      let size = '1024x1024'; // default
+      if (aspectRatio === '16:9') size = '1792x1024';
+      else if (aspectRatio === '9:16') size = '1024x1792';
+      else if (aspectRatio === '1:1') size = '1024x1024'; // square
+      else if (aspectRatio === '4:5') size = '1024x1280';
+      else if (aspectRatio === '3:2') size = '1536x1024';
+
       const response = await this.openai.images.generate({
         model: 'dall-e-3',
         prompt: `${prompt}${negativePrompt ? `\nNegative prompt: ${negativePrompt}` : ''}`,
         n: 1,
-        size: '1024x1024',
+        size: size as any,
+        quality: quality === 'hd' || quality === 'premium' ? 'hd' : 'standard',
+        style: 'natural' // or 'vivid'
       });
 
       if (response.data && response.data[0]) {
@@ -131,14 +145,28 @@ export class EnhancedMediaTool {
   // GPT Image генератор
   async generateWithGPTImage(
     prompt: string,
-    negativePrompt?: string
+    negativePrompt?: string,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    steps?: number,
+    aspectRatio?: string
   ): Promise<MediaGenerationResult> {
     try {
+      // Map aspect ratio to DALL-E supported formats
+      let size = '1024x1024'; // default
+      if (aspectRatio === '16:9') size = '1792x1024';
+      else if (aspectRatio === '9:16') size = '1024x1792';
+      else if (aspectRatio === '1:1') size = '1024x1024'; // square
+      else if (aspectRatio === '4:5') size = '1024x1280';
+      else if (aspectRatio === '3:2') size = '1536x1024';
+
       const response = await this.openai.images.generate({
         model: 'dall-e-3', // GPT Image пока использует DALL-E
         prompt: `${prompt}${negativePrompt ? `\nNegative prompt: ${negativePrompt}` : ''}`,
         n: 1,
-        size: '1024x1024',
+        size: size as any,
+        quality: quality === 'hd' || quality === 'premium' ? 'hd' : 'standard',
+        style: 'natural' // or 'vivid'
       });
 
       if (response.data && response.data[0]) {
@@ -160,21 +188,46 @@ export class EnhancedMediaTool {
   // Imagen 3 генератор
   async generateWithImagen3(
     prompt: string,
-    negativePrompt?: string
+    negativePrompt?: string,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    steps?: number,
+    aspectRatio?: string
   ): Promise<MediaGenerationResult> {
     try {
       const imageModel = this.vertexAI.getGenerativeModel({
         model: 'imagen-3.0-generate-001',
       });
 
-      // Исправленный вызов API
+      // Construct the request with advanced parameters
+      // Note: The Vertex AI Node.js SDK structure for Imagen might vary, 
+      // but we will map parameters to the standard generation config.
+      const generationConfig: any = {
+        sampleCount: 1,
+      };
+
+      if (aspectRatio) {
+        generationConfig.aspectRatio = aspectRatio;
+      }
+
+      if (seed !== undefined) {
+        generationConfig.seed = seed;
+      }
+
+      // Add negative prompt to the request if supported or append to prompt
+      // For Imagen, it's often part of the content or a separate field depending on version
+      const fullPrompt = negativePrompt
+        ? `${prompt}\n\nNegative prompt: ${negativePrompt}`
+        : prompt;
+
       const request = {
         contents: [
           {
             role: 'user',
-            parts: [{ text: prompt }],
+            parts: [{ text: fullPrompt }],
           },
         ],
+        generationConfig,
       };
 
       const response = await imageModel.generateContent(request);
@@ -186,11 +239,9 @@ export class EnhancedMediaTool {
       ) {
         const candidate = response.response.candidates[0];
 
-        // Check if there are any parts with inline data (base64 image)
         if (candidate.content && candidate.content.parts) {
           for (const part of candidate.content.parts) {
             if (part.inlineData && part.inlineData.data) {
-              // Return the base64 image data
               const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
 
               return {
@@ -202,6 +253,8 @@ export class EnhancedMediaTool {
                   generated: true,
                   timestamp: new Date().toISOString(),
                   mimeType: part.inlineData.mimeType || 'image/png',
+                  seed,
+                  quality
                 },
               };
             }
@@ -220,21 +273,32 @@ export class EnhancedMediaTool {
   // Veo 3 генератор видео
   async generateWithVeo3(
     prompt: string,
-    duration: number = 10
+    duration: number = 10,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    aspectRatio?: string,
+    negativePrompt?: string
   ): Promise<MediaGenerationResult> {
     try {
       const videoModel = this.vertexAI.getGenerativeModel({
         model: 'veo-3.0-generate-001',
       });
 
-      // Исправленный вызов API
+      const fullPrompt = negativePrompt
+        ? `${prompt}\n\nNegative prompt: ${negativePrompt}`
+        : prompt;
+
       const request = {
         contents: [
           {
             role: 'user',
-            parts: [{ text: prompt }],
+            parts: [{ text: fullPrompt }],
           },
         ],
+        generationConfig: {
+          seed: seed,
+          // Aspect ratio mapping for video if supported
+        } as any
       };
 
       const response = await videoModel.generateContent(request);
@@ -246,11 +310,9 @@ export class EnhancedMediaTool {
       ) {
         const candidate = response.response.candidates[0];
 
-        // Check if there are any parts with inline data (base64 video)
         if (candidate.content && candidate.content.parts) {
           for (const part of candidate.content.parts) {
             if (part.inlineData && part.inlineData.data) {
-              // Return the base64 video data
               const videoUrl = `data:${part.inlineData.mimeType || 'video/mp4'};base64,${part.inlineData.data}`;
 
               return {
@@ -262,6 +324,8 @@ export class EnhancedMediaTool {
                   generated: true,
                   timestamp: new Date().toISOString(),
                   mimeType: part.inlineData.mimeType || 'video/mp4',
+                  duration,
+                  seed
                 },
               };
             }
@@ -293,11 +357,11 @@ export class EnhancedMediaTool {
     const generators =
       mediaType === 'image'
         ? [
-            params.generator || enhancement.optimalGenerator,
-            'dall-e-3',
-            'imagen-3',
-            'gpt-image',
-          ].filter((gen, index, arr) => arr.indexOf(gen) === index)
+          params.generator || enhancement.optimalGenerator,
+          'dall-e-3',
+          'imagen-3',
+          'gpt-image',
+        ].filter((gen, index, arr) => arr.indexOf(gen) === index)
         : [params.generator || enhancement.optimalGenerator, 'veo-3'];
 
     let lastError: Error | null = null;
@@ -310,25 +374,41 @@ export class EnhancedMediaTool {
           case 'dall-e-3':
             return await this.generateWithDALLE3(
               enhancement.enhancedPrompt,
-              enhancement.negativePrompt
+              enhancement.negativePrompt,
+              params.quality,
+              params.seed,
+              params.steps,
+              params.aspectRatio
             );
 
           case 'gpt-image':
             return await this.generateWithGPTImage(
               enhancement.enhancedPrompt,
-              enhancement.negativePrompt
+              enhancement.negativePrompt,
+              params.quality,
+              params.seed,
+              params.steps,
+              params.aspectRatio
             );
 
           case 'imagen-3':
             return await this.generateWithImagen3(
               enhancement.enhancedPrompt,
-              enhancement.negativePrompt
+              enhancement.negativePrompt,
+              params.quality,
+              params.seed,
+              params.steps,
+              params.aspectRatio
             );
 
           case 'veo-3':
             return await this.generateWithVeo3(
               enhancement.enhancedPrompt,
-              params.durationSec || 10
+              params.durationSec || 10,
+              params.quality,
+              params.seed,
+              params.aspectRatio,
+              enhancement.negativePrompt
             );
 
           default:

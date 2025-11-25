@@ -1,28 +1,32 @@
-import { Router } from 'express';
-import { MODEL_REGISTRY } from '../config/models.js';
+import express from 'express';
+import { AGENT_MODEL_OPTIONS, AgentKey } from '../config/llm-config.js';
 
-const router = Router();
+const router = express.Router();
 
-/**
- * GET /api/models
- * Возвращает список доступных моделей для UI ModelPicker.
- * Только безопасные поля: id, name, provider.
- */
-router.get('/', (_req, res) => {
+// GET /api/models?agentKey=<agent>
+router.get('/', (req, res) => {
   try {
-    const list = Object.values(MODEL_REGISTRY).map(m => ({
-      id: m.id,
-      name: m.name,
-      provider: m.provider,
-    }));
-    res.status(200).json(list);
-  } catch (err: any) {
-    res
-      .status(500)
-      .json({
-        error: 'Failed to load models',
-        message: String(err?.message || err),
-      });
+    const { agentKey } = req.query;
+
+    if (!agentKey || typeof agentKey !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid agentKey parameter' });
+    }
+
+    // Validate agentKey
+    if (!Object.keys(AGENT_MODEL_OPTIONS).includes(agentKey)) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const models = AGENT_MODEL_OPTIONS[agentKey as AgentKey];
+
+    res.json({
+      agentKey,
+      models
+    });
+
+  } catch (error) {
+    console.error('Error fetching models:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

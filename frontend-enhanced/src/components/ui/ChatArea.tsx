@@ -5,6 +5,10 @@ import { Logo } from './Logo';
 import { MediaModelSelector } from './MediaModelSelector';
 import { MediaFormatSelector } from './MediaFormatSelector';
 import { UpscaleButton } from './UpscaleButton';
+import { ModelSwitcher } from './ModelSwitcher';
+import { QualitySelector } from './QualitySelector';
+import { SeedInput } from './SeedInput';
+import { StepsInput } from './StepsInput';
 
 interface ChatAreaProps {
     activeAgent: AgentConfig;
@@ -16,10 +20,16 @@ interface ChatAreaProps {
     mediaOptions?: {
         model: string;
         format: string;
+        quality: 'standard' | 'hd' | 'premium';
+        seed: number | null;
+        steps: number;
         lastImage?: string | null;
     };
-    onMediaOptionChange?: (key: 'model' | 'format', value: string) => void;
+    onMediaOptionChange?: (key: 'model' | 'format' | 'quality' | 'seed' | 'steps', value: string | number | null) => void;
     onUpscaleComplete?: (url: string) => void;
+    // Model Switcher Props
+    selectedModelId?: string | null;
+    onModelChange?: (modelId: string) => void;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -30,7 +40,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     onMediaAction,
     mediaOptions,
     onMediaOptionChange,
-    onUpscaleComplete
+    onUpscaleComplete,
+    selectedModelId,
+    onModelChange
 }) => {
     const [inputText, setInputText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,6 +80,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                         <p className="text-xs text-textSecondary">{activeAgent.subtitle}</p>
                     </div>
                 </div>
+
+                {/* Model Switcher */}
+                {onModelChange && (
+                    <ModelSwitcher
+                        agentKey={activeAgent.id as any}
+                        selectedModelId={selectedModelId || null}
+                        onChange={onModelChange}
+                    />
+                )}
             </div>
 
             {/* Messages */}
@@ -121,7 +142,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 {isMediaAgent && (
                     <div className="flex flex-col gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                         {/* Advanced Controls Row */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <MediaModelSelector
                                 value={mediaOptions?.model || ''}
                                 onChange={(val) => onMediaOptionChange?.('model', val)}
@@ -131,9 +152,25 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                                 value={mediaOptions?.format || ''}
                                 onChange={(val) => onMediaOptionChange?.('format', val)}
                             />
+                            <QualitySelector
+                                value={mediaOptions?.quality || 'standard'}
+                                onChange={(val) => onMediaOptionChange?.('quality', val)}
+                            />
                             <UpscaleButton
                                 lastImage={mediaOptions?.lastImage}
                                 onUpscaleComplete={onUpscaleComplete}
+                            />
+                        </div>
+                        
+                        {/* Additional Controls Row */}
+                        <div className="flex items-center gap-4">
+                            <SeedInput
+                                value={mediaOptions?.seed || null}
+                                onChange={(val) => onMediaOptionChange?.('seed', val)}
+                            />
+                            <StepsInput
+                                value={mediaOptions?.steps || 30}
+                                onChange={(val) => onMediaOptionChange?.('steps', val)}
                             />
                         </div>
 

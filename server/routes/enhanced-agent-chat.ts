@@ -8,6 +8,7 @@ const router = express.Router();
 const ChatRequestSchema = z.object({
   message: z.string().min(1, 'Сообщение не может быть пустым'),
   userId: z.string().optional(),
+  modelId: z.string().optional(), // Added for Block 2 (Model Switcher)
 });
 
 // Схема валидации для ответа
@@ -23,11 +24,16 @@ const ChatResponseSchema = z.object({
 router.post('/chat', async (req, res) => {
   try {
     // Валидация входных данных
-    const { message, userId } = ChatRequestSchema.parse(req.body);
-    
+    const { message, userId, modelId } = ChatRequestSchema.parse(req.body);
+
+    // TODO: Pass modelId to agentOrchestrator.routeRequest when it supports it.
+    // Currently, the orchestrator decides the model based on intent/agent config,
+    // but we should allow overriding it with modelId if provided.
+    // console.log(`[EnhancedAgent] Requesting model override: ${modelId}`);
+
     // Проксирование запроса через оркестратор
     const result = await agentOrchestrator.routeRequest(message);
-    
+
     // Подготовка ответа с метаданными о маршрутизации
     const response = {
       response: `${result.agent}: "${message}". Классифицировано как: ${result.intent}.`,
@@ -36,39 +42,39 @@ router.post('/chat', async (req, res) => {
       reasoning: result.reasoning,
       latency: Date.now() - Date.now(), // Будет исправлено ниже
     };
-    
+
     const startTime = Date.now();
-    
+
     // Временная заглушка - задержка для имитации обработки
     // В реальном сценарии здесь был бы вызов соответствующего агента
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Вычисление фактической латентности
     const latency = Date.now() - startTime;
     response.latency = latency;
-    
+
     // Валидация ответа перед отправкой
     const validatedResponse = ChatResponseSchema.parse(response);
-    
+
     // Возвращаем ответ с дополнительными заголовками для мониторинга
     res.set({
       'X-Agent-Used': validatedResponse.agent,
       'X-Intent-Detected': validatedResponse.intent,
       'X-Processing-Latency': `${validatedResponse.latency}ms`,
     });
-    
+
     // Имитируем QA-Gate проверку (в реальном сценарии здесь был бы вызов QA-Gate middleware)
     const qaResult = {
       score: Math.floor(Math.random() * 20) + 80, // Случайная оценка от 80 до 100
       corrected: false
     };
-    
+
     // Если оценка ниже 85, считаем ответ требующим коррекции
     if (qaResult.score < 85) {
       qaResult.corrected = true;
       res.set('X-QA-Correction', 'true');
     }
-    
+
     // Возвращаем ответ в структуре, ожидаемой тестами
     res.json({
       ok: true,
@@ -82,7 +88,7 @@ router.post('/chat', async (req, res) => {
   } catch (error) {
     // Обработка ошибок валидации или обработки
     console.error('Ошибка при обработке запроса:', error);
-    
+
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         ok: false,
@@ -90,7 +96,7 @@ router.post('/chat', async (req, res) => {
         details: error.errors,
       });
     }
-    
+
     // Общая ошибка сервера
     res.status(500).json({
       ok: false,
@@ -104,7 +110,7 @@ router.post('/chat', async (req, res) => {
 router.get('/cache-stats', (req, res) => {
   try {
     const stats = agentOrchestrator.getCacheStats();
-    
+
     res.json({
       ok: true,
       data: {
@@ -115,7 +121,7 @@ router.get('/cache-stats', (req, res) => {
     });
   } catch (error) {
     console.error('Ошибка при получении статистики кэша:', error);
-    
+
     res.status(500).json({
       ok: false,
       error: 'Не удалось получить статистику кэша',
@@ -127,7 +133,7 @@ router.get('/cache-stats', (req, res) => {
 router.get('/health', async (req, res) => {
   try {
     const agentsHealth = await agentOrchestrator.checkAgentHealth();
-    
+
     res.json({
       ok: true,
       data: {
@@ -138,7 +144,7 @@ router.get('/health', async (req, res) => {
     });
   } catch (error) {
     console.error('Ошибка при проверке состояния агентов:', error);
-    
+
     res.status(500).json({
       ok: false,
       error: 'Не удалось проверить состояние агентов',

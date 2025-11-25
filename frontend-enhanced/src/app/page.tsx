@@ -14,6 +14,7 @@ const simpleId = () => Math.random().toString(36).substring(2, 9);
 export default function Home() {
   const [activeAgentId, setActiveAgentId] = useState<AgentId>('sous_chef');
   const [chatState, setChatState] = useState<Record<AgentId, ChatSession>>({} as Record<AgentId, ChatSession>);
+  const [agentModels, setAgentModels] = useState<Record<AgentId, string>>({} as Record<AgentId, string>); // Track model per agent
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<FileItem[]>([...INITIAL_FILES]);
   const [todos, setTodos] = useState<TodoItem[]>([
@@ -25,6 +26,9 @@ export default function Home() {
   const [mediaOptions, setMediaOptions] = useState({
     model: 'imagen-3', // Default, will be updated by selector if needed
     format: '1:1',
+    quality: 'standard' as 'standard' | 'hd' | 'premium',
+    seed: null as number | null,
+    steps: 30,
     lastImage: null as string | null
   });
 
@@ -42,6 +46,13 @@ export default function Home() {
 
   const activeAgent = AGENTS.find(a => a.id === activeAgentId) || AGENTS[0];
   const currentSession = chatState[activeAgentId] || { messages: [], sessionId: 'init' };
+
+  const handleModelChange = (modelId: string) => {
+    setAgentModels(prev => ({
+      ...prev,
+      [activeAgentId]: modelId
+    }));
+  };
 
   const handleSendMessage = async (text: string) => {
     const userMsg: Message = {
@@ -62,8 +73,6 @@ export default function Home() {
 
     setIsLoading(true);
 
-    setIsLoading(true);
-
     try {
       const response = await fetch('/api/enhanced-agent/chat', {
         method: 'POST',
@@ -74,6 +83,7 @@ export default function Home() {
           message: text,
           agentId: activeAgentId,
           sessionId: currentSession.sessionId,
+          modelId: agentModels[activeAgentId] || undefined, // Pass selected model
         }),
       });
 
@@ -151,8 +161,12 @@ export default function Home() {
         body: JSON.stringify({
           prompt: "A delicious gourmet dish, photorealistic, 4k", // Placeholder prompt, ideally from chat context or input
           agent: 'foodframe',
-          model: mediaOptions.model,
-          aspectRatio: mediaOptions.format
+          modelId: mediaOptions.model,
+          aspectRatio: mediaOptions.format,
+          quality: mediaOptions.quality,
+          seed: mediaOptions.seed,
+          steps: mediaOptions.steps,
+          negativePrompt: "" // Add negative prompt if needed
         })
       });
 
@@ -196,7 +210,7 @@ export default function Home() {
     }
   };
 
-  const handleMediaOptionChange = (key: 'model' | 'format', value: string) => {
+  const handleMediaOptionChange = (key: 'model' | 'format' | 'quality' | 'seed' | 'steps', value: string | number | null) => {
     setMediaOptions(prev => ({ ...prev, [key]: value }));
   };
 
@@ -266,6 +280,8 @@ export default function Home() {
           mediaOptions={mediaOptions}
           onMediaOptionChange={handleMediaOptionChange}
           onUpscaleComplete={handleUpscaleComplete}
+          selectedModelId={agentModels[activeAgentId] || null}
+          onModelChange={handleModelChange}
         />
       </main>
 
