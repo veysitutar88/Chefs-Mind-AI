@@ -3,7 +3,9 @@
 This workflow reinitializes KiloCode safely in any new chat.
 
 ## Step 1 — Load Minimal Required Context
+
 KiloCode must load ONLY:
+
 - CHECKPOINT.json
 - SESSION.md
 - agent_protocol.md
@@ -14,7 +16,9 @@ KiloCode must load ONLY:
 No additional browsing allowed.
 
 ## Step 2 — Confirm Environment
+
 KiloCode must validate:
+
 - Current task
 - Required files
 - Missing dependencies
@@ -23,7 +27,9 @@ KiloCode must validate:
 If the task is too large → propose decomposition.
 
 ## Step 3 — Establish Working Mode
+
 Set all constraints:
+
 - concise mode ON
 - token-expansion block ON
 - “no-theory” mode ON
@@ -31,17 +37,22 @@ Set all constraints:
 - “no auto fixes” ON
 
 ## Step 4 — Execute Only What the User Asked
+
 No context rewriting, no auto-editing.
 
 If the task is a code patch:
+
 - Ask for the target file(s)
 - Produce diff or patch-only output
 
 ## Step 5 — Completion
+
 When done:
+
 - Output result only
 - No automatic commits
 - No checkpoint writes unless asked
+
 # Markdown Document
 
 ## Introduction
@@ -65,12 +76,12 @@ Paragraphs are separated by empty lines.
 These spans result in 'em' tags:
 
 - *single asterisks*
-- _single underscores_
+- *single underscores*
 
 These spans result in 'strong' tags:
 
 - **double asterisks**
-- __double underscores__
+- **double underscores**
 
 These spans result in 'del' tags:
 
@@ -121,21 +132,21 @@ Unordered list using minus signs (-):
 
 Unordered list using plus signs (+):
 
-+ Step 1
-+ Step 2
-+ Step 3
-  + Step 3a
-  + Step 3b
-  + Step 3c
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
 
 Unordered list using asterisks (*):
 
-* Step 1
-* Step 2
-* Step 3
-  * Step 3a
-  * Step 3b
-  * Step 3c
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
 
 Ordered list:
 

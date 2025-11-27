@@ -1,0 +1,21 @@
+{
+    "version": "1.0",
+    "nodes": {
+        "ModuleName": {
+            "files": [
+                "path/to/file"
+            ],
+            "tags": [
+                "tag1",
+                "tag2"
+            ]
+        }
+    },
+    "edges": [
+        {
+            "from": "ModuleA",
+            "to": "ModuleB",
+            "type": "dependency"
+        }
+    ]
+}
