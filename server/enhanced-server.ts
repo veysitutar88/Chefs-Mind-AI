@@ -8,6 +8,7 @@ import mediaRouter from './routes/media.js';
 import searchRouter from './routes/search.js';
 import toolsRouter from './routes/tools.js';
 import sidebarAdvancedRouter from './routes/sidebar-advanced.js';
+import followupsDebugRouter from './routes/followups-debug.js';
 
 const app = express();
 const server = http.createServer(app); // Создаем HTTP сервер
@@ -31,6 +32,7 @@ app.use('/api/media', mediaRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/tools', toolsRouter);
 app.use('/api/sidebar', sidebarAdvancedRouter);
+app.use('/api/followups/debug', followupsDebugRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

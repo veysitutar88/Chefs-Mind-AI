@@ -15,6 +15,34 @@
       "when": 1731411600000,
       "tag": "0001_update_calendar_links",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1731500000000,
+      "tag": "0002_create_suppliers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1731600000000,
+      "tag": "0003_create_orders",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1731700000000,
+      "tag": "0004_create_media_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1733011200000,
+      "tag": "0005_create_followup_tasks",
+      "breakpoints": true
     }
   ]
 }

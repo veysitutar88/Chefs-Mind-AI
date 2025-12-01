@@ -14,72 +14,60 @@ export interface MediaModelConfig {
 }
 
 export const MEDIA_MODELS: Record<string, MediaModelConfig> = {
-  // Imagen models
-  'imagen3': {
+  // Primary Image Engine
+  'gemini-3-image-pro': {
     provider: 'google',
-    modelId: 'imagen3',
-    type: 'image',
-    quality: 'hd',
-    description: 'Imagen 3 - High quality text-to-image generation',
-    maxResolution: '1024x1024',
-    supportsNegativePrompt: true,
-    supportsSeed: true,
-    supportsSteps: true,
-  },
-  'imagen4': {
-    provider: 'google',
-    modelId: 'imagen4',
+    modelId: 'gemini-3-image-pro',
     type: 'image',
     quality: 'premium',
-    description: 'Imagen 4 - Premium quality text-to-image generation',
+    description: 'Gemini 3 Image Pro - Primary generator & editor (June Six aesthetic)',
+    maxResolution: '1024x1024', // 4:5 default
+    supportsNegativePrompt: true,
+    supportsSeed: true,
+    supportsSteps: true,
+  },
+  // Secondary Image Engines
+  'imagen-4': {
+    provider: 'google',
+    modelId: 'imagen-4',
+    type: 'image',
+    quality: 'premium',
+    description: 'Imagen 4 - Photorealism & complex scenes',
     maxResolution: '1024x1024',
     supportsNegativePrompt: true,
     supportsSeed: true,
     supportsSteps: true,
   },
-  // Gemini image model
-  'gemini_image': {
-    provider: 'google',
-    modelId: 'gemini_image',
-    type: 'image',
-    quality: 'standard',
-    description: 'Gemini Image - Standard quality image generation',
-    maxResolution: '1024x1024',
-    supportsNegativePrompt: false,
-    supportsSeed: false,
-    supportsSteps: false,
-  },
-  // GPT image models
-  'gpt_image_1': {
+  'gpt-image-1': {
     provider: 'openai',
-    modelId: 'gpt_image_1',
+    modelId: 'gpt-image-1',
     type: 'image',
     quality: 'standard',
-    description: 'GPT Image Generation - DALL-E based',
+    description: 'GPT Image 1 - Fast mockups & variations',
     maxResolution: '1024x1024',
     supportsNegativePrompt: true,
     supportsSeed: false,
     supportsSteps: false,
   },
-  // NanoBanana models
-  'nanobanana_pro': {
-    provider: 'nanobanana',
-    modelId: 'nanobanana_pro',
-    type: 'upscale',
-    quality: 'premium',
-    description: 'NanoBanana Pro - Premium upscaling and enhancement',
-    supportsNegativePrompt: false,
-    supportsSeed: false,
-    supportsSteps: false,
-  },
-  // Veo3 video model
- 'veo3_video': {
+  // Video Engines
+  'veo-3': {
     provider: 'google',
-    modelId: 'veo3_video',
+    modelId: 'veo-3',
     type: 'video',
     quality: 'hd',
-    description: 'Veo 3 - High quality text-to-video generation',
-    maxDurationSec: 120,
+    description: 'Veo 3 - Standard video generation',
+    maxDurationSec: 60,
+    supportsNegativePrompt: true,
+    supportsSeed: true,
+    supportsSteps: false,
+  },
+  'veo-3.1': {
+    provider: 'google',
+    modelId: 'veo-3.1',
+    type: 'video',
+    quality: 'premium',
+    description: 'Veo 3.1 - Food-promo, slow-motion, plating',
+    maxDurationSec: 12, // 3-12s per spec
     supportsNegativePrompt: true,
     supportsSeed: true,
     supportsSteps: false,
@@ -127,8 +115,8 @@ export function validateMediaParams(
     errors.push('Aspect ratio must be in format "width:height" (e.g., "16:9", "1:1")');
   }
 
- // Check if model supports requested features
- if (params.seed !== undefined && !model.supportsSeed) {
+  // Check if model supports requested features
+  if (params.seed !== undefined && !model.supportsSeed) {
     errors.push(`Model ${modelId} does not support seed parameter`);
   }
 

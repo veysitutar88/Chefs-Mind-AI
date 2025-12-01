@@ -109,9 +109,9 @@ router.get('/models', (req, res) => {
       upscale: upscaleProvider
     },
     providers: {
-      image: ['dall-e-3', 'imagen-3'],
-      video: ['veo-3'],
-      upscale: ['nanobanana', 'openai', 'google']
+      image: ['gemini-3-image-pro', 'imagen-4', 'gpt-image-1'],
+      video: ['veo-3', 'veo-3.1'],
+      upscale: []
     }
   });
 });

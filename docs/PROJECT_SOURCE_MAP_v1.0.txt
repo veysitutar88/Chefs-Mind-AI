@@ -9,6 +9,7 @@ PROJECT_SOURCE_MAP_v1.0
     SYSTEM_PROMPT_CHEFS_MIND_v1.md
     UI_SPEC_v1.1.md
     MEDIA_STUDIO_DESIGN.md
+    FOODFRAME_DESIGN_v3.0.md
     DEPLOYMENT_STRATEGY.md
     documentation.md
     instructions.md

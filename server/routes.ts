@@ -11,6 +11,7 @@ import smokeHelpersRouter from './routes/smoke-helpers.js';
 import universalRouter from './routes/universal.js';
 import mediaRouter from './routes/media.js';
 import calendarRouter from './routes/calendar.js';
+import followupRouter from './routes/followup.js';
 import modelsRouter from './routes/models.js';
 import reportsRouter from './routes/reports.js';
 import chatHistoryRouter from './routes/chat-history.js';
@@ -53,23 +54,27 @@ export async function registerRoutes(app: Express) {
   app.use('/api/', apiLimiter);
   app.use('/auth/', authLimiter);
 
-  // Additional routes
+  // Additional  // API routes
   app.use('/auth/google', authGoogleRouter);
   app.use('/api/import', importerRouter);
   app.use('/api/dbadmin', dbadminRouter);
+  app.use('/api/chat', agentChatRouter);
   app.use('/api/enhanced-agent', enhancedAgentChatRouter);
-  // Backward compatibility alias
-  app.use('/api/enhanced-agent-chat', enhancedAgentChatRouter);
-  app.use('/api/agent', agentChatRouter);
+  app.use('/api/smoke-helpers', smokeHelpersRouter);
+  app.use('/api', universalRouter);
   app.use('/api/media', mediaRouter);
   app.use('/api/calendar', calendarRouter);
+  app.use('/api/followup', followupRouter);
   app.use('/api/models', modelsRouter);
+  app.use('/api/reports', reportsRouter);
   app.use('/api/chat', chatHistoryRouter);
   app.use('/api/orders', ordersRouter);
   app.use('/api/suppliers', suppliersRouter);
-  app.use('/', smokeHelpersRouter);
-  app.use('/reports', reportsRouter);
-  app.use('/', universalRouter);
+
+  // Default 404 handler
+  app.use('*', (req, res) => {
+    res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+  });
 
   // Basic API routes for testing
   app.get('/api/test', (req: Request, res: Response) => {

@@ -391,6 +391,36 @@ export const calendar_links = pgTable('calendar_links', {
   created_at: timestamp('created_at').defaultNow(),
 });
 
+export const followupTasks = pgTable(
+  'followup_tasks',
+  {
+    id: varchar('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar('user_id').references(() => users.id).notNull(),
+    type: text('type').notNull(), // 'payment' | 'delivery' | 'followup' | 'custom'
+    relatedEntity: text('related_entity'), // 'order' | 'supplier' | 'invoice' | 'generic'
+    entityId: varchar('entity_id'), // ID of related order/supplier/etc
+    dueDate: timestamp('due_date').notNull(),
+    title: text('title').notNull(),
+    notes: text('notes'),
+    status: text('status').notNull().default('pending'), // 'pending' | 'completed' | 'cancelled'
+    googleEventId: text('google_event_id'), // Link to Google Calendar event
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('followup_tasks_user_id_idx').on(table.userId),
+    statusIdx: index('followup_tasks_status_idx').on(table.status),
+    dueDateIdx: index('followup_tasks_due_date_idx').on(table.dueDate),
+    typeIdx: index('followup_tasks_type_idx').on(table.type),
+    userStatusIdx: index('followup_tasks_user_status_idx').on(
+      table.userId,
+      table.status
+    ),
+  })
+);
+
 export const mediaAssets = pgTable(
   'media_assets',
   {
@@ -541,6 +571,19 @@ export const insertCalendarLinkSchema = createInsertSchema(calendar_links).omit(
   }
 );
 
+export const insertFollowupTaskSchema = createInsertSchema(followupTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateFollowupTaskSchema = createInsertSchema(followupTasks).pick({
+  status: true,
+  notes: true,
+  dueDate: true,
+  title: true,
+});
+
 export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens).omit({
   id: true,
   createdAt: true,
@@ -568,5 +611,8 @@ export type Note = typeof notes.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 export type CalendarLink = typeof calendar_links.$inferSelect;
 export type InsertCalendarLink = z.infer<typeof insertCalendarLinkSchema>;
+export type FollowupTask = typeof followupTasks.$inferSelect;
+export type InsertFollowupTask = z.infer<typeof insertFollowupTaskSchema>;
+export type UpdateFollowupTask = z.infer<typeof updateFollowupTaskSchema>;
 export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
 export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;

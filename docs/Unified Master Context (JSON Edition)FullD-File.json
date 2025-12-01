@@ -12,6 +12,9 @@
     "6": "Выполнять правила v2.1.6.",
     "7": "Большие задачи разбивать на микропромпты."
   },
+  "docs": {
+    "foodframe_design": "docs/FOODFRAME_DESIGN_v3.0.md"
+  },
   "ui": {
     "theme": {
       "primary_bg": "#0B0F2A",
@@ -111,7 +114,18 @@
           "prompt enhancement",
           "branding",
           "food photography style"
-        ]
+        ],
+        "models": {
+          "primary_image": "gemini-3-image-pro",
+          "secondary_image": [
+            "imagen-4",
+            "gpt-image-1"
+          ],
+          "video": [
+            "veo-3",
+            "veo-3.1"
+          ]
+        }
       }
     }
   },
@@ -156,7 +170,12 @@
   "persistence": {
     "checkpoint": {
       "file": "CHECKPOINT.json",
-      "fields": ["active_tasks", "completed", "ui_version", "agent_state"]
+      "fields": [
+        "active_tasks",
+        "completed",
+        "ui_version",
+        "agent_state"
+      ]
     },
     "session": {
       "file": "SESSION.md",

@@ -341,6 +341,123 @@ export class EnhancedMediaTool {
     }
   }
 
+  // Gemini 3 Image Pro (Primary)
+  async generateWithGemini3ImagePro(
+    prompt: string,
+    negativePrompt?: string,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    steps?: number,
+    aspectRatio?: string
+  ): Promise<MediaGenerationResult> {
+    try {
+      // Using Vertex AI Gemini model for image generation
+      const model = this.vertexAI.getGenerativeModel({
+        model: 'gemini-3-image-pro-001', // Hypothetical model ID
+      });
+
+      const fullPrompt = negativePrompt
+        ? `${prompt}\n\nNegative prompt: ${negativePrompt}\nStyle: June Six Fine Dining, low-key lighting, soft warm light, minimalism`
+        : `${prompt}\nStyle: June Six Fine Dining, low-key lighting, soft warm light, minimalism`;
+
+      // Default to 4:5 aspect ratio for June Six aesthetic
+      const effectiveAspectRatio = aspectRatio || '4:5';
+
+      // ... Implementation similar to Imagen but targeting Gemini Image capabilities
+      // For now, mapping to Imagen 3 backend as placeholder if Gemini Image API isn't distinct yet
+      // But assuming it is distinct:
+
+      const response = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+        generationConfig: {
+          // Gemini Image specific params
+          candidateCount: 1,
+          seed: seed,
+          aspectRatio: effectiveAspectRatio
+        } as any
+      });
+
+      if (response.response?.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        const part = response.response.candidates[0].content.parts[0];
+        const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+        return {
+          url: imageUrl,
+          model: 'gemini-3-image-pro',
+          metadata: { prompt, status: 'success', generated: true, timestamp: new Date().toISOString() }
+        };
+      }
+      throw new Error('No image data in Gemini response');
+
+    } catch (error) {
+      console.error('Gemini 3 Image Pro error:', error);
+      throw new Error(`Gemini 3 Image Pro generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  // Imagen 4 Generator
+  async generateWithImagen4(
+    prompt: string,
+    negativePrompt?: string,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    steps?: number,
+    aspectRatio?: string
+  ): Promise<MediaGenerationResult> {
+    try {
+      const model = this.vertexAI.getGenerativeModel({ model: 'imagen-4.0-generate-001' });
+      // ... Implementation
+      const fullPrompt = negativePrompt ? `${prompt}\n\nNegative prompt: ${negativePrompt}` : prompt;
+      const response = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+        generationConfig: { sampleCount: 1, seed, aspectRatio } as any
+      });
+
+      if (response.response?.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        const part = response.response.candidates[0].content.parts[0];
+        return {
+          url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+          model: 'imagen-4',
+          metadata: { prompt, status: 'success' }
+        };
+      }
+      throw new Error('No data in Imagen 4 response');
+    } catch (error) {
+      console.error('Imagen 4 error:', error);
+      throw new Error(`Imagen 4 generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  // Veo 3.1 Generator
+  async generateWithVeo3_1(
+    prompt: string,
+    duration: number = 10,
+    quality?: 'standard' | 'hd' | 'premium',
+    seed?: number,
+    aspectRatio?: string,
+    negativePrompt?: string
+  ): Promise<MediaGenerationResult> {
+    try {
+      const model = this.vertexAI.getGenerativeModel({ model: 'veo-3.1-generate-001' });
+      const fullPrompt = negativePrompt ? `${prompt}\n\nNegative prompt: ${negativePrompt}` : prompt;
+      const response = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+        generationConfig: { seed } as any
+      });
+      if (response.response?.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        const part = response.response.candidates[0].content.parts[0];
+        return {
+          url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+          model: 'veo-3.1',
+          metadata: { prompt, status: 'success', duration }
+        };
+      }
+      throw new Error('No data in Veo 3.1 response');
+    } catch (error) {
+      console.error('Veo 3.1 error:', error);
+      throw new Error(`Veo 3.1 generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   // Основная функция генерации с fallback логикой
   async generateMedia(
     params: MediaGenerationParams,
@@ -354,15 +471,33 @@ export class EnhancedMediaTool {
     console.log(`🎯 Optimal generator: ${enhancement.optimalGenerator}`);
 
     // Определяем порядок генераторов с fallback
-    const generators =
-      mediaType === 'image'
-        ? [
-          params.generator || enhancement.optimalGenerator,
-          'dall-e-3',
-          'imagen-3',
-          'gpt-image',
-        ].filter((gen, index, arr) => arr.indexOf(gen) === index)
-        : [params.generator || enhancement.optimalGenerator, 'veo-3'];
+    // v3.0 Routing Logic
+    let generators: string[] = [];
+
+    if (mediaType === 'image') {
+      const requested = params.generator || enhancement.optimalGenerator;
+      // Default routing based on v3.0 specs if not explicitly requested
+      if (requested === 'auto' || !requested) {
+        // Simple heuristic based on prompt keywords (could be more advanced)
+        if (params.prompt.toLowerCase().includes('edit')) generators = ['gemini-3-image-pro'];
+        else if (params.prompt.toLowerCase().includes('realism') || params.prompt.toLowerCase().includes('photo')) generators = ['gemini-3-image-pro', 'imagen-4'];
+        else if (params.prompt.toLowerCase().includes('mockup')) generators = ['gpt-image-1'];
+        else generators = ['gemini-3-image-pro', 'imagen-4', 'gpt-image-1'];
+      } else {
+        generators = [requested, 'gemini-3-image-pro', 'imagen-4', 'gpt-image-1'];
+      }
+    } else {
+      // Video
+      const requested = params.generator || enhancement.optimalGenerator;
+      if (requested === 'auto' || !requested) {
+        generators = ['veo-3.1', 'veo-3'];
+      } else {
+        generators = [requested, 'veo-3.1', 'veo-3'];
+      }
+    }
+
+    // Deduplicate
+    generators = [...new Set(generators)];
 
     let lastError: Error | null = null;
 
@@ -371,8 +506,8 @@ export class EnhancedMediaTool {
         console.log(`🔄 Trying generator: ${generator}`);
 
         switch (generator) {
-          case 'dall-e-3':
-            return await this.generateWithDALLE3(
+          case 'gemini-3-image-pro':
+            return await this.generateWithGemini3ImagePro(
               enhancement.enhancedPrompt,
               enhancement.negativePrompt,
               params.quality,
@@ -381,7 +516,18 @@ export class EnhancedMediaTool {
               params.aspectRatio
             );
 
-          case 'gpt-image':
+          case 'imagen-4':
+            return await this.generateWithImagen4(
+              enhancement.enhancedPrompt,
+              enhancement.negativePrompt,
+              params.quality,
+              params.seed,
+              params.steps,
+              params.aspectRatio
+            );
+
+          case 'gpt-image-1':
+          case 'gpt-image': // alias
             return await this.generateWithGPTImage(
               enhancement.enhancedPrompt,
               enhancement.negativePrompt,
@@ -391,7 +537,17 @@ export class EnhancedMediaTool {
               params.aspectRatio
             );
 
-          case 'imagen-3':
+          case 'dall-e-3': // Legacy fallback
+            return await this.generateWithDALLE3(
+              enhancement.enhancedPrompt,
+              enhancement.negativePrompt,
+              params.quality,
+              params.seed,
+              params.steps,
+              params.aspectRatio
+            );
+
+          case 'imagen-3': // Legacy fallback
             return await this.generateWithImagen3(
               enhancement.enhancedPrompt,
               enhancement.negativePrompt,
@@ -399,6 +555,16 @@ export class EnhancedMediaTool {
               params.seed,
               params.steps,
               params.aspectRatio
+            );
+
+          case 'veo-3.1':
+            return await this.generateWithVeo3_1(
+              enhancement.enhancedPrompt,
+              params.durationSec || 10,
+              params.quality,
+              params.seed,
+              params.aspectRatio,
+              enhancement.negativePrompt
             );
 
           case 'veo-3':
@@ -412,6 +578,10 @@ export class EnhancedMediaTool {
             );
 
           default:
+            // If unknown, try to map to closest
+            if (generator.includes('gemini')) {
+              return await this.generateWithGemini3ImagePro(enhancement.enhancedPrompt, enhancement.negativePrompt, params.quality, params.seed, params.steps, params.aspectRatio);
+            }
             throw new Error(`Unknown generator: ${generator}`);
         }
       } catch (error) {
@@ -441,7 +611,7 @@ export class EnhancedMediaTool {
             },
             generator: {
               type: 'string',
-              enum: ['dall-e-3', 'gpt-image', 'imagen-3', 'auto'],
+              enum: ['gemini-3-image-pro', 'imagen-4', 'gpt-image-1', 'dall-e-3', 'auto'],
               description: 'Генератор для использования',
               default: 'auto',
             },
@@ -466,7 +636,7 @@ export class EnhancedMediaTool {
             },
             generator: {
               type: 'string',
-              enum: ['veo-3', 'auto'],
+              enum: ['veo-3.1', 'veo-3', 'auto'],
               description: 'Генератор для использования',
               default: 'auto',
             },

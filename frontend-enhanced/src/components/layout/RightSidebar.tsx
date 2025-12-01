@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSidebarData } from '@/lib/useSidebarData';
+import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
 
 interface RightSidebarProps {
   onClose: () => void;
@@ -8,6 +10,7 @@ interface RightSidebarProps {
 
 export function RightSidebar({ onClose }: RightSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { media, chats, calendar, refresh } = useSidebarData();
 
   return (
     <aside className="w-[320px] bg-slate-900 border-l border-slate-800 flex flex-col">
@@ -49,26 +52,44 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
         </div>
       </div>
 
-      {/* Files Browser */}
+      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
+        {/* Recent Media Section */}
         <div className="p-4">
           <h3 className="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2">
-            <span>📁</span>
-            Files
+            <span>🎨</span>
+            Recent Media
           </h3>
           <div className="space-y-1 text-sm">
-            <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded cursor-pointer text-slate-300">
-              <span>📂</span>
-              <span>project_docs/</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded cursor-pointer text-slate-300">
-              <span>📂</span>
-              <span>recipes/</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded cursor-pointer text-slate-300">
-              <span>📂</span>
-              <span>media/</span>
-            </div>
+            {media.loading ? (
+              // Loading skeleton
+              <>
+                <div className="animate-pulse bg-slate-800 rounded h-16" />
+                <div className="animate-pulse bg-slate-800 rounded h-16" />
+                <div className="animate-pulse bg-slate-800 rounded h-16" />
+              </>
+            ) : media.error ? (
+              // Error state
+              <div className="text-xs text-red-400 px-3 py-2">
+                Unable to load media
+              </div>
+            ) : media.items.length === 0 ? (
+              // Empty state
+              <div className="text-xs text-slate-500 px-3 py-2">
+                No media generated yet
+              </div>
+            ) : (
+              // Render media items
+              media.items.slice(0, 5).map((item) => (
+                <MediaThumbnail
+                  key={item.id}
+                  url={item.assetUrl}
+                  type={item.provider.includes('video') || item.provider.includes('veo') ? 'video' : 'image'}
+                  prompt={item.prompt}
+                  createdAt={item.createdAt}
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -79,39 +100,95 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
             Calendar
           </h3>
           <div className="text-sm text-slate-300">
-            <div className="mb-2">Today: 3 events</div>
-            <div className="space-y-2">
-              <div className="px-3 py-2 bg-slate-800 rounded text-xs">
-                <div className="font-medium">Team Meeting</div>
-                <div className="text-slate-500">10:00 AM</div>
+            {calendar.loading ? (
+              // Loading skeleton
+              <>
+                <div className="animate-pulse bg-slate-800 rounded h-12 mb-2" />
+                <div className="animate-pulse bg-slate-800 rounded h-12" />
+              </>
+            ) : calendar.error ? (
+              // Error state
+              <div className="text-xs text-red-400">
+                Unable to load calendar
               </div>
-              <div className="px-3 py-2 bg-slate-800 rounded text-xs">
-                <div className="font-medium">Supplier Call</div>
-                <div className="text-slate-500">2:00 PM</div>
+            ) : calendar.events.length === 0 ? (
+              // Empty state
+              <div className="text-xs text-slate-500">
+                No upcoming events
               </div>
-            </div>
+            ) : (
+              // Render events
+              <>
+                <div className="mb-2">Upcoming: {calendar.events.length} events</div>
+                <div className="space-y-2">
+                  {calendar.events.slice(0, 3).map((event) => {
+                    const startTime = 'dateTime' in event.start
+                      ? new Date(event.start.dateTime)
+                      : new Date(event.start.date);
+
+                    return (
+                      <div key={event.id} className="px-3 py-2 bg-slate-800 rounded text-xs">
+                        <div className="font-medium truncate">{event.summary}</div>
+                        <div className="text-slate-500">
+                          {startTime.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats - Recent Chats */}
         <div className="p-4 border-t border-slate-800">
           <h3 className="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2">
-            <span>📊</span>
-            Quick Stats
+            <span>💬</span>
+            Recent Chats
           </h3>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center px-3 py-2 bg-slate-800 rounded">
-              <span className="text-slate-300">Orders</span>
-              <span className="font-semibold text-cyan-500">12</span>
-            </div>
-            <div className="flex justify-between items-center px-3 py-2 bg-slate-800 rounded">
-              <span className="text-slate-300">Revenue</span>
-              <span className="font-semibold text-green-500">$2,450</span>
-            </div>
-            <div className="flex justify-between items-center px-3 py-2 bg-slate-800 rounded">
-              <span className="text-slate-300">Inventory</span>
-              <span className="font-semibold text-amber-500">⚠️ Low</span>
-            </div>
+            {chats.loading ? (
+              // Loading skeleton
+              <>
+                <div className="animate-pulse bg-slate-800 rounded h-10" />
+                <div className="animate-pulse bg-slate-800 rounded h-10" />
+              </>
+            ) : chats.error ? (
+              // Error state
+              <div className="text-xs text-red-400">
+                Unable to load chats
+              </div>
+            ) : chats.sessions.length === 0 ? (
+              // Empty state
+              <div className="text-xs text-slate-500">
+                No chat sessions yet
+              </div>
+            ) : (
+              // Render chat sessions
+              chats.sessions.map((session) => (
+                <div key={session.id} className="flex justify-between items-center px-3 py-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-slate-300 truncate">
+                      {session.title || 'Untitled Chat'}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {session.agentType}
+                    </div>
+                  </div>
+                  {session.messageCount && (
+                    <span className="text-xs font-semibold text-cyan-500">
+                      {session.messageCount}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
