@@ -4,8 +4,18 @@
             "last_scan_hash": "36707bc15e2a4bd8e373da3e32f97038f2ec3812",
             "last_full_scan": "2025-11-27T03:09:23+01:00",
             "modules_discovered": 18,
-            "files_tracked": 274
+            "files_tracked": 276
+        },
+        "block-9-media-studio": {
+            "step_completed": "step-1-model-preset-selection",
+            "timestamp": "2025-12-02T12:44:05+01:00",
+            "files_modified": [
+                "frontend-enhanced/src/components/ui/MediaModelSelector.tsx",
+                "frontend-enhanced/src/components/ui/MediaPresetSelector.tsx"
+            ],
+            "presets_count": 10,
+            "models_count": 5
         }
     },
-    "last_update": "2025-11-27T03:09:23+01:00"
+    "last_update": "2025-12-02T12:44:05+01:00"
 }

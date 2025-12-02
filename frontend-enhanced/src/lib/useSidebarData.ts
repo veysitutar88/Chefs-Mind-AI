@@ -51,11 +51,33 @@ interface CalendarData {
     error: string | null;
 }
 
+export interface Task {
+    id: string;
+    title: string;
+    status: 'pending' | 'in_progress' | 'completed';
+    priority: 'low' | 'medium' | 'high';
+    dueDate?: string; // ISO string
+    assignee?: string;
+}
+
+interface FollowupData {
+    tasks: Task[];
+    loading: boolean;
+    error: string | null;
+}
+
 export interface SidebarData {
     media: MediaData;
     chats: ChatData;
     calendar: CalendarData;
+    followups: FollowupData;
     refresh: () => void;
+
+    // Flat Follow-up tasks API (Block 8)
+    tasks: Task[];
+    loading: boolean;
+    error: string | null;
+    refetchTasks: () => Promise<void>;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5003';
@@ -75,6 +97,11 @@ export function useSidebarData(): SidebarData {
     const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
     const [calendarLoading, setCalendarLoading] = useState(true);
     const [calendarError, setCalendarError] = useState<string | null>(null);
+
+    // Follow-up Tasks state (Block 8)
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasksLoading, setTasksLoading] = useState(true);
+    const [tasksError, setTasksError] = useState<string | null>(null);
 
     // Fetch media assets
     const fetchMedia = async () => {
@@ -167,11 +194,42 @@ export function useSidebarData(): SidebarData {
         }
     };
 
+    // Fetch follow-up tasks (Block 8)
+    const fetchTasks = async () => {
+        setTasksLoading(true);
+        setTasksError(null);
+
+        try {
+            const response = await fetch(`${API_BASE}/api/followups/debug`, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tasks: ${response.status}`);
+            }
+
+            const data = await response.json();
+            // Handle potentially different response structures
+            const items = data.items || data.tasks || [];
+            setTasks(items);
+        } catch (error) {
+            console.error('Tasks fetch error:', error);
+            setTasksError(error instanceof Error ? error.message : 'Unknown error');
+            setTasks([]);
+        } finally {
+            setTasksLoading(false);
+        }
+    };
+
     // Refresh all data
     const refresh = () => {
         fetchMedia();
         fetchChats();
         fetchCalendar();
+        fetchTasks();
     };
 
     // Initial fetch on mount
@@ -195,6 +253,17 @@ export function useSidebarData(): SidebarData {
             loading: calendarLoading,
             error: calendarError,
         },
+        followups: {
+            tasks,
+            loading: tasksLoading,
+            error: tasksError,
+        },
         refresh,
+
+        // Flat API for FollowupWidget
+        tasks,
+        loading: tasksLoading,
+        error: tasksError,
+        refetchTasks: fetchTasks,
     };
 }
