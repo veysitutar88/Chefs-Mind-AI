@@ -94,7 +94,7 @@
 
 ### Commit Details
 
-```
+```text
 Commit: 82d68b7
 Message: "Block 9 – Step 1 Completed | Advanced Model & Preset Selection | Cognition Layer Synced"
 Branch: feature/block0-infra-fix
@@ -171,7 +171,7 @@ Remote: Pushed to origin
 
 ## Session Status
 
-**✅ SESSION FULLY SYNCED, COMMITTED, AND SAFELY CLOSED**
+### ✅ SESSION FULLY SYNCED, COMMITTED, AND SAFELY CLOSED
 
 All work has been preserved in:
 

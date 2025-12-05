@@ -1,0 +1,98 @@
+[]import { FabricPreset, ScenePreset, ClothingType, AgeGroup, PromptPreset } from './types';
+
+export const GLOBAL_SETTINGS = {
+  resolution: "2k",
+  quality: "ultra_detailed",
+  style_base: "hyper-realistic children's fashion photography, studio quality lighting, sharp focus, 8k resolution",
+  fabric_detail: "visible weave pattern, crisp stitching and seams, realistic material relief, micro-texture details",
+  logo_detail: "crisp embroidered logo with clean edges, no distortion, high contrast",
+};
+
+// --- NEW SYSTEM COMMAND CONSTANTS ---
+
+export const GLOBAL_NEGATIVE_PROMPT = "text, watermark, signature, logo, typography, headline, writing, letters, username, cartoon, illustration, painting, drawing, 3d render, doll, plastic skin, disfigured, deformed hands, bad anatomy, blurred, low quality, ugly, grain";
+
+export const PERSONALIZATION_INJECTORS = [
+  "with a dusting of freckles across the nose",
+  "with a cute button nose",
+  "with unruly curly hair",
+  "wearing stylish round glasses",
+  "with a charming gap between front teeth",
+  "with sun-kissed cheeks",
+  "with a few stray hairs catching the light",
+  "with a gentle, thoughtful expression",
+  "with a bright, infectious smile"
+];
+
+export const AVATAR_PROMPT_TEMPLATES = [
+  {
+    category: "Toddlers (3-4y)",
+    items: [
+      { 
+        id: 'toddler_eu', 
+        label: 'Studio EU (Curious)', 
+        prompt: "A charming studio portrait of a 3-year-old European girl with messy blonde curls and a cute button nose. She is peeking curiously at the camera, holding a wooden toy. She wears a beige linen romper. Softbox lighting, neutral light-grey background. 50mm lens, soft focus, 4k, clean image." 
+      },
+      { 
+        id: 'toddler_asian', 
+        label: 'Street Asian (Playful)', 
+        prompt: "A playful street photo of a 3-year-old Asian boy with rosy cheeks running on a park path. He is laughing, wearing a bright yellow raincoat and rain boots. Overcast natural light, wet pavement background. 50mm lens, high energy, candid moment, clean image." 
+      }
+    ]
+  },
+  {
+    category: "Preschool (5-6y)",
+    items: [
+      { 
+        id: 'preschool_slav', 
+        label: 'Studio Slav (Freckles)', 
+        prompt: "A lively studio portrait of a 5-year-old Slavic girl with light brown pigtails and a dusting of freckles across her nose. She is smiling widely, showing a missing front tooth. She wears a colorful knit sweater. High-key studio lighting, neutral light-grey background. 85mm lens, sharp texture, joyous, clean image." 
+      },
+      { 
+        id: 'preschool_black', 
+        label: 'Street Black (Cool)', 
+        prompt: "A cool street fashion shot of a 5-year-old Black boy with a fresh fade haircut and a bright smile. He is sitting on city steps, wearing a denim jacket and colorful sneakers. Sunny day, urban background with motion blur. 35mm lens, vibrant colors, clean image." 
+      }
+    ]
+  },
+  {
+    category: "School Age (7-9y)",
+    items: [
+      { 
+        id: 'school_arab', 
+        label: 'Studio Arab (Glasses)', 
+        prompt: "A smart studio portrait of a 7-year-old Arab boy wearing stylish round glasses and a bow tie. He has a kind, intelligent expression. Dressed in a navy blazer. Professional studio lighting, neutral light-grey background. 85mm lens, detailed eyes, 4k, clean image." 
+      },
+      { 
+        id: 'school_eu', 
+        label: 'Street EU (Messy Hair)', 
+        prompt: "A candid street style photo of a 8-year-old European girl (brunette) with wild, windblown hair laughing on a busy street. She wears a trench coat and a red scarf. Golden hour backlighting, city bokeh. 50mm lens, cinematic atmosphere, clean image." 
+      }
+    ]
+  },
+  {
+    category: "Pre-teen (10-12y)",
+    items: [
+      { 
+        id: 'teen_asian', 
+        label: 'Studio Asian (Edgy)', 
+        prompt: "A high-fashion studio portrait of a 11-year-old Asian girl with a sharp bob cut and a serious, confident gaze. She wears an avant-garde oversized black hoodie. Dramatic studio lighting (Rembrandt style), neutral light-grey background. 85mm lens, editorial look, clean image." 
+      },
+      { 
+        id: 'teen_med', 
+        label: 'Street Med (Skater)', 
+        prompt: "A lifestyle street photo of a 12-year-old Italian boy with curly hair and sun-kissed skin. He is leaning against a wall holding a skateboard, looking cool. He wears a graphic tee and cargo pants. High contrast sunlight, graffiti wall background. 35mm lens, wide aperture, clean image." 
+      },
+      { 
+        id: 'teen_black', 
+        label: 'Studio Black (Styled)', 
+        prompt: "A glamorous studio portrait of a 10-year-old Black girl with elaborate braided hair styled with beads. She is posing with her chin on her hand, smiling gently. She wears a vibrant velvet dress. Soft studio lighting, neutral light-grey background. 85mm lens, glowing skin texture, clean image." 
+      }
+    ]
+  }
+];
+
+// --- END NEW CONSTANTS ---
+
+export const PROMPT_TEMPLATES = {
+  avatar_base: "Photorealistic {age_

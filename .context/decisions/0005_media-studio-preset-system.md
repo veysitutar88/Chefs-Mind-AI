@@ -49,7 +49,7 @@ This created friction for non-technical users and slowed down content creation w
 
 ## Decision
 
-**Implement Option C: Two-Tier Model + Preset System**
+### Implement Option C: Two-Tier Model + Preset System
 
 ### Model Selector Design
 
@@ -86,16 +86,16 @@ onPresetSelect(preset) {
 
 ### Dark Photography (Brand Signature)
 
-4. **Dark Food – Na'Vi Blue** — Moody dark + blue accents
-5. **Dark Food Premium** — Low-key fine dining, dramatic shadows
-6. **Na'Vi Blue Accent** — Signature June Six style
-7. **Fine Dining Macro (Dark)** — Macro precision + soft spotlight
+1. **Dark Food – Na'Vi Blue** — Moody dark + blue accents
+2. **Dark Food Premium** — Low-key fine dining, dramatic shadows
+3. **Na'Vi Blue Accent** — Signature June Six style
+4. **Fine Dining Macro (Dark)** — Macro precision + soft spotlight
 
 ### Atmosphere Photography
 
-8. **Rustic Bistro Table** — Warm wood textures, cozy
-9. **Rustic Warm Night** — Evening lighting, cinematic
-10. **Bar Amber Night** — Amber light, high contrast
+1. **Rustic Bistro Table** — Warm wood textures, cozy
+2. **Rustic Warm Night** — Evening lighting, cinematic
+3. **Bar Amber Night** — Amber light, high contrast
 
 ## Aspect Ratio Strategy
 
