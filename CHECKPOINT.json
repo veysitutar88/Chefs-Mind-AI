@@ -176,7 +176,9 @@
                     "frontend-enhanced/src/components/ui/MediaModelSelector.tsx",
                     "frontend-enhanced/src/components/ui/MediaFormatSelector.tsx",
                     "frontend-enhanced/src/components/ui/QualitySelector.tsx"
-                ]
+                ],
+                "block9_step3_status": "design-complete_implementation-pending",
+                "block9_step4_status": "ui-implemented_build-fails-tsx-error"
             }
         }
     ]
