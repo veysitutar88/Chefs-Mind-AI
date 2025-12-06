@@ -9,34 +9,10 @@ interface UpscaleButtonProps {
 export const UpscaleButton: React.FC<UpscaleButtonProps> = ({ lastImage, onUpscaleComplete }) => {
     const [loading, setLoading] = useState(false);
 
-    const handleUpscale = async () => {
+    const handleUpscale = () => {
         if (!lastImage) return;
-
-        setLoading(true);
-        try {
-            const res = await fetch('/api/media/upscale', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: lastImage, agent: 'foodframe', scale: '2x' })
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                if (data.url && onUpscaleComplete) {
-                    onUpscaleComplete(data.url);
-                }
-                // If mock/not implemented, we might just alert or log
-                if (res.status === 501) {
-                    alert("Upscale feature coming soon (Backend 501)");
-                }
-            } else {
-                console.error("Upscale failed");
-            }
-        } catch (error) {
-            console.error("Upscale error", error);
-        } finally {
-            setLoading(false);
-        }
+        // Stub for now as requested
+        alert("Upscale endpoint not connected yet.");
     };
 
     return (

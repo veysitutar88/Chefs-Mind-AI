@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, Sparkles, Lock, Video, Image as ImageIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 // 1. Define Advanced Models with Metadata
 const ADVANCED_MODELS = [
@@ -42,51 +43,87 @@ const ADVANCED_MODELS = [
     }
 ];
 
-interface MediaModelSelectorProps {
+export interface MediaModelSelectorProps {
     value: string;
-    onChange: (modelId: string) => void;
+    onChange: (value: string) => void;
     type: 'image' | 'video';
+    className?: string;
+    isOpen?: boolean;
+    onToggle?: () => void;
 }
 
-export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({ value, onChange, type }) => {
+export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({
+    value,
+    onChange,
+    type,
+    className,
+    isOpen = false,
+    onToggle
+}) => {
     const [availableModels, setAvailableModels] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
+    const [fetchError, setFetchError] = useState<boolean>(false);
+    // If onToggle is not provided, use local state (backward compatibility)
+    const [localIsOpen, setLocalIsOpen] = useState(false);
 
-    // 2. Fetch Availability (unchanged logic, just storing IDs)
+    // Derived open state
+    const isDropdownOpen = onToggle ? isOpen : localIsOpen;
+    const handleToggle = () => {
+        if (onToggle) {
+            onToggle();
+        } else {
+            setLocalIsOpen(!localIsOpen);
+        }
+    };
+
     useEffect(() => {
         const fetchModels = async () => {
             setLoading(true);
+            setFetchError(false);
             try {
-                const res = await fetch('/api/media/models');
+                // Task 3.1: AbortSignal timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const res = await fetch('/api/media/models', { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 if (res.ok) {
                     const data = await res.json();
-                    // Store the list of enabled provider IDs
                     setAvailableModels(data.providers?.[type] || []);
+                } else {
+                    throw new Error("Failed to fetch");
                 }
             } catch (error) {
-                console.error('Failed to fetch models', error);
+                console.warn("MediaModelSelector: Offline or API error, using fallback.");
+                setFetchError(true);
+                // Fallback list
+                const fallbackIds = ['imagen-4', 'gemini-3-image-pro', 'gpt-image-1', 'veo-3'];
+                setAvailableModels(fallbackIds);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchModels();
+        if (type) {
+            fetchModels();
+        }
     }, [type]);
 
-    // 3. Filter and Merge Logic
     const relevantModels = ADVANCED_MODELS.filter(m => m.type === type);
-
-    // Handle case where current value is not in our advanced list (fallback)
     const selectedModelDef = relevantModels.find(m => m.id === value);
     const selectedLabel = selectedModelDef ? selectedModelDef.label : value;
 
     return (
-        <div className="relative">
+        <div className={`relative group/selector ${className || ''}`}>
+            <div className="absolute top-0 right-0 -mt-2 -mr-2 z-10 flex gap-1 pointer-events-none">
+                {fetchError && <Badge variant="destructive" className="text-[10px] px-1 h-4 scale-75 origin-top-right shadow-sm">Offline</Badge>}
+            </div>
+
             {/* Trigger Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-borderSoft text-sm text-textPrimary hover:border-accent/50 transition-all w-full justify-between group"
+                onClick={handleToggle}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-borderSoft text-sm text-textPrimary hover:border-accent/50 transition-all w-full justify-between group min-w-[180px]"
                 disabled={loading}
             >
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -95,13 +132,20 @@ export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({ value, o
                         {loading ? 'Loading...' : selectedLabel}
                     </span>
                 </div>
-                <ChevronDown size={14} className={`text-textSecondary transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`text-textSecondary transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}
-            {isOpen && !loading && (
-                <div className="absolute top-full left-0 mt-2 w-[320px] bg-surface border border-borderSoft rounded-xl shadow-premium overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="p-2 space-y-1">
+            {isDropdownOpen && !loading && (
+                <div className="absolute bottom-full left-0 mb-2 w-[320px] bg-surface border border-borderSoft rounded-xl shadow-premium overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="p-2 space-y-1 max-h-[280px] overflow-y-auto custom-scrollbar">
+                        {/* Header for fallback mode */}
+                        {fetchError && (
+                            <div className="px-3 py-2 text-[10px] text-textSecondary border-b border-white/5 mb-1">
+                                Model API offline – using fallback list
+                            </div>
+                        )}
+
                         {relevantModels.map(model => {
                             const isConfigured = availableModels.includes(model.id);
                             const isSelected = model.id === value;
@@ -112,7 +156,7 @@ export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({ value, o
                                     onClick={() => {
                                         if (isConfigured) {
                                             onChange(model.id);
-                                            setIsOpen(false);
+                                            handleToggle();
                                         }
                                     }}
                                     disabled={!isConfigured}
@@ -143,11 +187,11 @@ export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({ value, o
                             );
                         })}
 
-                        {/* Fallback for models returned by API but not in our advanced list */}
+                        {/* Generic fallback items from API not in our list via availableModels */}
                         {availableModels.filter(id => !relevantModels.find(rm => rm.id === id)).map(id => (
                             <button
                                 key={id}
-                                onClick={() => { onChange(id); setIsOpen(false); }}
+                                onClick={() => { onChange(id); handleToggle(); }}
                                 className="w-full text-left p-3 rounded-lg hover:bg-white/5 text-textSecondary text-xs"
                             >
                                 {id} (Generic)

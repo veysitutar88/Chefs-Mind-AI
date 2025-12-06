@@ -8,29 +8,35 @@ const config: Config = {
         sans: ['Inter', 'SF Pro', 'Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        background: '#0E0F11', // Premium Dark Base
-        surface: '#1A1C20',    // Premium Surface
-        accent: '#4BC9FF',     // Accent Glow
-        accentSoft: '#8FD9FF', // Softer Accent
-        textPrimary: '#FFFFFF', // Pure White
-        textSecondary: '#A1A1AA', // Muted White
-        borderSoft: '#27272A',   // Soft Border
+        background: 'var(--bg-root)',
+        surface: 'var(--bg-surface)',
+        foreground: 'var(--text-primary)',
 
-        // Legacy brand colors (kept for compatibility if needed)
+        primary: {
+          DEFAULT: 'var(--accent)',
+          foreground: '#ffffff',
+        },
+        accent: 'var(--accent)',
+
+        textPrimary: 'var(--text-primary)',
+        textSecondary: 'var(--text-secondary)',
+        borderSoft: 'var(--border-soft)',
+
+        // Legacy brand colors (kept for compatibility)
         brand: {
-          blue: '#3E6BA3',
+          blue: '#0EA5E9', // Re-mapped to accent for consistency
           beige: '#B79F8C',
-          blueDark: '#2F537F',
+          blueDark: '#0f172a',
           beigeLight: '#CEB7A6',
         },
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(75, 201, 255, 0.15)',
-        'glow-active': '0 0 30px rgba(75, 201, 255, 0.25)',
+        'glow': '0 0 20px var(--accent-glow)',
+        'glow-active': '0 0 30px var(--accent-glow)',
         'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.5)',
       },
       backgroundImage: {
-        'gradient-fine': 'linear-gradient(180deg, #0E0F11 0%, #1A1C20 100%)',
+        'gradient-fine': 'linear-gradient(180deg, var(--bg-root) 0%, var(--bg-surface) 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',

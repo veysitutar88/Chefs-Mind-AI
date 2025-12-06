@@ -31,7 +31,7 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
   );
 
   return (
-    <aside className="w-[320px] md:w-[360px] lg:w-[400px] bg-surface border-l border-borderSoft flex flex-col animate-slide-in-right overflow-hidden">
+    <div className="h-full w-full bg-surface/50 backdrop-blur-md flex flex-col overflow-hidden">
       {/* Header with Close Button */}
       <div className="flex items-center justify-between p-4 border-b border-borderSoft">
         <h2 className="font-semibold text-textPrimary">Tools</h2>
@@ -234,6 +234,6 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
           </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 }

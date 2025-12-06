@@ -1,0 +1,39 @@
+{
+    "project": "Chef's Mind AI",
+    "enabled": true,
+    "active_checkpoint": "checkpoint-2025-12-06",
+    "active_block_step": "Block 9 — Step 3: Media Studio Error Handling & Polish",
+    "files": {
+        "master": [
+            "docs/Chef’s Mind AI — MASTER_STRATEGY v2.2 (Project Plan).pdf",
+            "docs/Chef’s Mind AI — Unified Master Context (D-FILE v2.1.6 → v2.2 Integration).txt",
+            "docs/Unified Master Context (JSON Edition)FullD-File.json"
+        ],
+        "routing_and_map": [
+            "docs/CHEF’S MIND AI — PROJECT SOURCE MAP (v2.2).txt",
+            "docs/PROJECT_SOURCE_MAP_v1.0.txt"
+        ],
+        "cognition_layer": [
+            "cognition_layer_guide.md",
+            ".context/knowledge_map.json",
+            ".context/heatmap.json",
+            ".context/decisions/",
+            ".context/evolution/"
+        ],
+        "session_state": [
+            "CHECKPOINT.json",
+            "SESSION.md"
+        ]
+    },
+    "load_order": [
+        "master",
+        "routing_and_map",
+        "cognition_layer",
+        "session_state"
+    ],
+    "safety": {
+        "qa_mode": "middleware_only",
+        "forbid_qa_agent": true,
+        "ignore_legacy_archive": true
+    }
+}

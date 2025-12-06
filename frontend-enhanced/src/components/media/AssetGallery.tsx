@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { ImageIcon, Video, Download, Trash2, Search, Filter, Grid, List, Calendar } from 'lucide-react';
+import { ImageIcon, Video, Download, Trash2, Search, Filter, Grid, List, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface MediaAsset {
   id: string;
@@ -53,7 +53,7 @@ export function AssetGallery({ className }: AssetGalleryProps) {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Ошибка при загрузке медиафайлов');
       }
@@ -192,7 +192,7 @@ export function AssetGallery({ className }: AssetGalleryProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Badge variant="secondary" className="text-xs">
-                {asset.type === 'image' ? 'Изображение' : 'Видео'}
+                {asset.type === 'image' ? 'Image' : 'Video'}
               </Badge>
               <span className="text-xs text-muted-foreground">{asset.provider}</span>
             </div>
@@ -212,7 +212,7 @@ export function AssetGallery({ className }: AssetGalleryProps) {
 
             {asset.duration && (
               <p className="text-xs text-muted-foreground">
-                Длительность: {formatDuration(asset.duration)}
+                Duration: {formatDuration(asset.duration)}
               </p>
             )}
 
@@ -229,7 +229,7 @@ export function AssetGallery({ className }: AssetGalleryProps) {
                   onChange={() => toggleAssetSelection(asset.id)}
                   className="mr-2"
                 />
-                Выбрать
+                Select
               </Button>
 
               <div className="flex gap-1">
@@ -277,14 +277,26 @@ export function AssetGallery({ className }: AssetGalleryProps) {
 
   if (error) {
     return (
-      <Card className={className}>
+      <Card className={`${className} bg-surface border-borderSoft`}>
         <CardHeader>
-          <CardTitle>Галерея медиафайлов</CardTitle>
+          <CardTitle className="text-textPrimary">Media Library</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-red-600">Ошибка: {error}</p>
-          <Button onClick={loadAssets} className="mt-2">
-            Попробовать снова
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center text-textSecondary">
+          <div className="p-4 rounded-full bg-red-500/10 mb-4 text-red-500 ring-1 ring-red-500/20 shadow-glow">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h3 className="text-lg font-semibold text-textPrimary mb-2">
+            Media assets are temporarily unavailable
+          </h3>
+          <p className="text-sm max-w-[250px] mx-auto mb-6 opacity-80">
+            {error || 'Please check your connection and try again.'}
+          </p>
+          <Button
+            onClick={loadAssets}
+            className="bg-accent hover:bg-accentSoft text-white shadow-glow hover:shadow-glow-active transition-all"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
           </Button>
         </CardContent>
       </Card>
@@ -296,9 +308,9 @@ export function AssetGallery({ className }: AssetGalleryProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Галерея медиафайлов ({assets.length})</CardTitle>
+            <CardTitle>Media Library ({assets.length})</CardTitle>
             <CardDescription>
-              Управляйте вашими сгенерированными изображениями и видео
+              Manage your generated images and videos
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -321,13 +333,13 @@ export function AssetGallery({ className }: AssetGalleryProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Панель фильтров */}
+        {/* Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Поиск по описанию, провайдеру или тегам..."
+                placeholder="Search by prompt, provider or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -337,51 +349,50 @@ export function AssetGallery({ className }: AssetGalleryProps) {
           <Select value={filter} onValueChange={(value: 'all' | 'image' | 'video') => setFilter(value)}>
             <SelectTrigger className="w-full sm:w-48">
               <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Фильтр" />
+              <SelectValue placeholder="Filter" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все файлы</SelectItem>
-              <SelectItem value="image">Изображения</SelectItem>
-              <SelectItem value="video">Видео</SelectItem>
+              <SelectItem value="all">All Files</SelectItem>
+              <SelectItem value="image">Images</SelectItem>
+              <SelectItem value="video">Videos</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Кнопки массовых операций */}
+        {/* Bulk Actions */}
         {selectedAssets.size > 0 && (
           <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
             <span className="text-sm font-medium">
-              Выбрано файлов: {selectedAssets.size}
+              Selected: {selectedAssets.size}
             </span>
             <Button variant="outline" size="sm">
-              Скачать выбранное
+              Download Selected
             </Button>
             <Button variant="outline" size="sm" className="text-red-600">
-              Удалить выбранное
+              Delete Selected
             </Button>
           </div>
         )}
 
-        {/* Сетка файлов */}
+        {/* Asset Grid */}
         {assets.length === 0 ? (
           <div className="text-center py-12">
             <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Нет медиафайлов
+              No media files
             </h3>
             <p className="text-gray-500 mb-4">
-              Начните создавать изображения и видео с помощью генератора
+              Start generating images and videos using the studio
             </p>
             <Button onClick={loadAssets}>
-              Обновить
+              Refresh
             </Button>
           </div>
         ) : (
-          <div className={`grid gap-4 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-              : 'grid-cols-1'
-          }`}>
+          <div className={`grid gap-4 ${viewMode === 'grid'
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            : 'grid-cols-1'
+            }`}>
             {assets.map((asset) => (
               <AssetCard key={asset.id} asset={asset} />
             ))}

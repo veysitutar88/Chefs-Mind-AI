@@ -15,6 +15,8 @@ import {
     Clock
 } from 'lucide-react';
 import { AssetGallery } from '../media/AssetGallery';
+import { MediaJob } from '@/hooks/useMediaGenerator';
+import { MediaJobWidget } from '@/components/ui/MediaJobWidget';
 
 interface RightSidebarProps {
     files: FileItem[];
@@ -22,6 +24,9 @@ interface RightSidebarProps {
     onAddTodo?: (text: string) => void;
     onToggleTodo?: (id: string) => void;
     onDeleteTodo?: (id: string) => void;
+    jobs?: MediaJob[];
+    onRetryJob?: (id: string) => void;
+    onClearJob?: (id: string) => void;
 }
 
 type TabId = 'search' | 'library' | 'assets' | 'calendar';
@@ -31,7 +36,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     todos = [],
     onAddTodo,
     onToggleTodo,
-    onDeleteTodo
+    onDeleteTodo,
+    jobs = [],
+    onRetryJob,
+    onClearJob
 }) => {
     const [activeTab, setActiveTab] = useState<TabId>('library');
     const [newTodoText, setNewTodoText] = useState('');
@@ -143,13 +151,28 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 {activeTab === 'assets' && (
                     <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <div className="p-4 pb-2">
-                            <h3 className="text-sm font-bold text-textPrimary uppercase tracking-wider flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-textPrimary uppercase tracking-wider flex items-center gap-2 mb-3">
                                 <ImageIcon size={16} className="text-accent" />
                                 Media Assets
                             </h3>
+
+                            {/* Active Jobs Section */}
+                            {jobs.length > 0 && (
+                                <div className="mb-4 space-y-2">
+                                    <h4 className="text-[10px] font-semibold text-textSecondary uppercase tracking-wider mb-2">Active Jobs</h4>
+                                    {jobs.map(job => (
+                                        <MediaJobWidget
+                                            key={job.id}
+                                            job={job}
+                                            onRetry={onRetryJob ? () => onRetryJob(job.id) : undefined}
+                                            onClear={onClearJob ? () => onClearJob(job.id) : undefined}
+                                        />
+                                    ))}
+                                    <div className="h-px bg-white/5 my-2"></div>
+                                </div>
+                            )}
                         </div>
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {/* We pass a custom class to override some styles for the sidebar context */}
                             <AssetGallery className="border-none shadow-none bg-transparent p-2 [&_.grid]:grid-cols-1 [&_.grid]:gap-3" />
                         </div>
                     </div>
@@ -241,4 +264,3 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         </div>
     );
 };
-

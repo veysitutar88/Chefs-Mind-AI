@@ -65,8 +65,25 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
     const isMediaAgent = activeAgent.id === 'food_frame';
 
+    const [activeDropdown, setActiveDropdown] = useState<'model' | 'format' | 'quality' | null>(null);
+
+    const toggleDropdown = (name: 'model' | 'format' | 'quality') => {
+        setActiveDropdown(prev => prev === name ? null : name);
+    };
+
+    const closeDropdowns = () => setActiveDropdown(null);
+
     return (
         <div className="flex flex-col h-full bg-background rounded-xl border border-white/5 overflow-hidden shadow-2xl relative">
+
+            {/* Task 1.3: Backdrop for closing dropdowns */}
+            {activeDropdown && (
+                <div
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={closeDropdowns}
+                    aria-label="Close dropdowns"
+                />
+            )}
 
             {/* Header */}
             <div className="absolute top-0 left-0 right-0 h-20 bg-surface/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 z-10 justify-between">
@@ -140,28 +157,34 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
                 {/* Media Actions for FoodFrame */}
                 {isMediaAgent && (
-                    <div className="flex flex-col gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex flex-col gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 relative z-50">
                         {/* Advanced Controls Row */}
                         <div className="flex items-center gap-2 flex-wrap">
                             <MediaModelSelector
                                 value={mediaOptions?.model || ''}
                                 onChange={(val) => onMediaOptionChange?.('model', val)}
-                                type="image" // Default to image for now, could toggle based on intent
+                                type="image"
+                                isOpen={activeDropdown === 'model'}
+                                onToggle={() => toggleDropdown('model')}
                             />
                             <MediaFormatSelector
                                 value={mediaOptions?.format || ''}
                                 onChange={(val) => onMediaOptionChange?.('format', val)}
+                                isOpen={activeDropdown === 'format'}
+                                onToggle={() => toggleDropdown('format')}
                             />
                             <QualitySelector
                                 value={mediaOptions?.quality || 'standard'}
                                 onChange={(val) => onMediaOptionChange?.('quality', val)}
+                                isOpen={activeDropdown === 'quality'}
+                                onToggle={() => toggleDropdown('quality')}
                             />
                             <UpscaleButton
                                 lastImage={mediaOptions?.lastImage}
                                 onUpscaleComplete={onUpscaleComplete}
                             />
                         </div>
-                        
+
                         {/* Additional Controls Row */}
                         <div className="flex items-center gap-4">
                             <SeedInput
