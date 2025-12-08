@@ -1,358 +1,112 @@
 {
-    "version": "1.0",
-    "last_updated": "2025-11-27T03:09:23+01:00",
-    "scan_hash": "36707bc15e2a4bd8e373da3e32f97038f2ec3812",
+    "version": "2.0-post-audit",
+    "last_updated": "2025-12-08T03:05:00+01:00",
     "nodes": {
-        "ClientUI": {
-            "files": [
-                "client/src/App.tsx",
-                "client/src/main.tsx",
-                "client/src/pages/auth-page.tsx",
-                "client/src/pages/dashboard-page.tsx"
-            ],
+        "FrontendEnhanced": {
+            "path": "frontend-enhanced/src",
+            "type": "frontend",
+            "status": "active",
+            "description": "Primary V3 UI based on Next.js App Router",
             "tags": [
-                "frontend",
                 "ui",
-                "vite",
-                "react"
+                "nextjs",
+                "canonical"
+            ],
+            "contains": [
+                "app/page.tsx",
+                "app/media/page.tsx",
+                "components/ui/"
             ]
         },
-        "ClientComponents": {
-            "files": [
-                "client/src/components/chat/chat-interface.tsx",
-                "client/src/components/chat/chat-input.tsx",
-                "client/src/components/chat/message.tsx",
-                "client/src/components/sidebar/agent-selector.tsx",
-                "client/src/components/media-studio/media-studio-panel.tsx"
-            ],
+        "ServerCore": {
+            "path": "server/",
+            "type": "backend",
+            "status": "active",
+            "description": "Primary Express/Drizzle Backend",
             "tags": [
-                "frontend",
-                "components",
-                "chat",
-                "ui"
-            ]
-        },
-        "ClientUILib": {
-            "files": [
-                "client/src/components/ui/button.tsx",
-                "client/src/components/ui/card.tsx",
-                "client/src/components/ui/dialog.tsx",
-                "client/src/components/ui/input.tsx"
-            ],
-            "tags": [
-                "frontend",
-                "ui-library",
-                "shadcn"
-            ]
-        },
-        "ClientHooks": {
-            "files": [
-                "client/src/hooks/use-auth.tsx",
-                "client/src/hooks/use-mobile.tsx",
-                "client/src/hooks/use-stt.ts",
-                "client/src/hooks/use-toast.ts"
-            ],
-            "tags": [
-                "frontend",
-                "hooks",
-                "react"
-            ]
-        },
-        "ClientLib": {
-            "files": [
-                "client/src/lib/api.ts",
-                "client/src/lib/protected-route.tsx",
-                "client/src/lib/queryClient.ts",
-                "client/src/lib/utils.ts",
-                "client/src/lib/ws-utils.ts"
-            ],
-            "tags": [
-                "frontend",
-                "utils",
                 "api",
-                "websocket"
+                "db",
+                "agents"
+            ],
+            "contains": [
+                "index.ts",
+                "routes.ts",
+                "agents/orchestrator.ts",
+                "services/enhanced-media.ts"
             ]
         },
-        "FrontendEnhancedUI": {
-            "files": [
-                "frontend-enhanced/src/components/ui/RightSidebar.tsx",
-                "frontend-enhanced/src/components/ui/ChatArea.tsx",
-                "frontend-enhanced/src/components/ui/ModelSwitcher.tsx",
-                "frontend-enhanced/src/components/ui/MediaModelSelector.tsx"
+        "CognitionLayer": {
+            "path": ".context/",
+            "type": "meta",
+            "status": "active",
+            "description": "Project Memory and Audit Logs",
+            "tags": [
+                "memory",
+                "audit",
+                "knowledge"
             ],
-        ],
-        "tags": [
-            "frontend",
-            "nextjs",
-            "components",
-            "ui"
-        ]
+            "contains": [
+                "knowledge_map.json",
+                "heatmap.json",
+                "deep_audit_v3_issues.json"
+            ]
+        },
+        "KiloCode": {
+            "path": ".kilocode/",
+            "type": "rules",
+            "status": "active",
+            "description": "Project Rules and Master Context",
+            "tags": [
+                "rules",
+                "context"
+            ]
+        },
+        "LegacyClient": {
+            "path": "client/",
+            "type": "frontend",
+            "status": "legacy",
+            "description": "Deprecated React Client",
+            "tags": [
+                "deprecated",
+                "legacy"
+            ]
+        },
+        "LegacyFrontend": {
+            "path": "frontend/",
+            "type": "frontend",
+            "status": "legacy",
+            "description": "Deprecated Frontend Root",
+            "tags": [
+                "deprecated",
+                "legacy"
+            ]
+        },
+        "LegacyFrontendSimple": {
+            "path": "frontend-simple/",
+            "type": "frontend",
+            "status": "legacy",
+            "description": "Deprecated Simple Frontend",
+            "tags": [
+                "deprecated",
+                "legacy"
+            ]
+        }
     },
-    "ServerCore": {
-        "files": [
-            "server/index.ts",
-            "server/enhanced-server.ts",
-            "server/demo-server.ts",
-            "server/vite.ts",
-            "server/auth.ts",
-            "server/session.ts"
-        ],
-        "tags": [
-            "backend",
-            "express",
-            "server",
-            "core"
-        ]
-    },
-    "ServerAuth": {
-        "files": [
-            "server/auth.ts",
-            "server/auth/google.ts",
-            "server/routes/auth.google.ts",
-            "server/middleware/jwtAuth.ts",
-            "server/middleware/rbac.ts"
-        ],
-        "tags": [
-            "backend",
-            "auth",
-            "oauth",
-            "jwt",
-            "rbac"
-        ]
-    },
-    "ServerAgents": {
-        "files": [
-            "server/agents/orchestrator.ts",
-            "server/agents/orchestrator.test.ts",
-            "server/graph/graph.ts",
-            "server/graph/nodes/orchestrator.ts",
-            "server/graph/nodes/chef.ts",
-            "server/graph/nodes/researcher.ts",
-            "server/graph/nodes/accountant.ts",
-            "server/graph/nodes/media.ts"
-        ],
-        "tags": [
-            "backend",
-            "agents",
-            "langgraph",
-            "orchestration",
-            "ai"
-        ]
-    },
-    "ServerRoutes": {
-        "files": [
-            "server/routes.ts",
-            "server/routes/agent-chat.ts",
-            "server/routes/enhanced-agent-chat.ts",
-            "server/routes/chat-history.ts",
-            "server/routes/media.ts",
-            "server/routes/sidebar.ts"
-        ],
-        "tags": [
-            "backend",
-            "routes",
-            "api",
-            "endpoints"
-        ]
-    },
-    "ServerServices": {
-        "files": [
-            "server/services/agentService.ts",
-            "server/services/chatService.ts",
-            "server/services/menuService.ts",
-            "server/services/orderService.ts",
-            "server/services/mediaService.ts"
-        ],
-        "tags": [
-            "backend",
-            "services",
-            "business-logic"
-        ]
-    },
-    "ServerMiddleware": {
-        "files": [
-            "server/middleware/errorHandler.ts",
-            "server/middleware/metrics.ts",
-            "server/middleware/qaGate.ts",
-            "server/middleware/safeMode.ts"
-        ],
-        "tags": [
-            "backend",
-            "middleware",
-            "error-handling",
-            "observability"
-        ]
-    },
-    "ServerConfig": {
-        "files": [
-            "server/config/env.schema.ts",
-            "server/config/llm-config.ts",
-            "server/config/media-config.ts",
-            "server/config/models.ts",
-            "server/config/agent-routing.ts"
-        ],
-        "tags": [
-            "backend",
-            "config",
-            "llm",
-            "media"
-        ]
-    },
-    "ServerDB": {
-        "files": [
-            "server/db.ts",
-            "server/storage.ts"
-        ],
-        "tags": [
-            "backend",
-            "database",
-            "drizzle",
-            "sqlite"
-        ]
-    },
-    "Shared": {
-        "files": [
-            "shared/schema.ts",
-            "shared/types.ts",
-            "shared/session.d.ts"
-        ],
-        "tags": [
-            "shared",
-            "types",
-            "schema",
-            "contracts"
-        ]
-    },
-    "CognitionLayer": {
-        "files": [
-            ".context/README_CONTEXT.md",
-            ".context/knowledge_map.json",
-            ".context/heatmap.json",
-            ".context/agent_state.json",
-            "COGNITION_LAYER_GUIDE.md",
-            "CONTEXT_WORKFLOWS_CHEATSHEET.md"
-        ],
-        "tags": [
-            "cognition",
-            "memory",
-            "git-native",
-            "meta"
-        ]
-    },
-    "Workflows": {
-        "files": [
-            ".agent/workflows/enriched-commit.md",
-            ".agent/workflows/scan-and-refresh-knowledge.md"
-        ],
-        "tags": [
-            "workflows",
-            "automation",
-            "cognition"
-        ]
-    },
-    "Scripts": {
-        "files": [
-            "scripts/migrate.ts",
-            "scripts/seed.ts",
-            "scripts/test-agent.ts"
-        ],
-        "tags": [
-            "scripts",
-            "utilities",
-            "devops"
-        ]
-    }
-},
-"edges": [
-    {
-        "from": "ClientUI",
-        "to": "ClientComponents",
-        "type": "import"
-    },
-    {
-        "from": "ClientComponents",
-        "to": "ClientUILib",
-        "type": "import"
-    },
-    {
-        "from": "ClientUI",
-        "to": "ClientHooks",
-        "type": "import"
-    },
-    {
-        "from": "ClientUI",
-        "to": "ClientLib",
-        "type": "import"
-    },
-    {
-        "from": "ClientLib",
-        "to": "ServerRoutes",
-        "type": "api-call"
-    },
-    {
-        "from": "FrontendEnhanced",
-        "to": "FrontendEnhancedUI",
-        "type": "import"
-    },
-    {
-        "from": "FrontendEnhanced",
-        "to": "ServerRoutes",
-        "type": "api-call"
-    },
-    {
-        "from": "ServerCore",
-        "to": "ServerRoutes",
-        "type": "import"
-    },
-    {
-        "from": "ServerCore",
-        "to": "ServerMiddleware",
-        "type": "import"
-    },
-    {
-        "from": "ServerCore",
-        "to": "ServerAuth",
-        "type": "import"
-    },
-    {
-        "from": "ServerRoutes",
-        "to": "ServerServices",
-        "type": "import"
-    },
-    {
-        "from": "ServerRoutes",
-        "to": "ServerAgents",
-        "type": "import"
-    },
-    {
-        "from": "ServerServices",
-        "to": "ServerDB",
-        "type": "import"
-    },
-    {
-        "from": "ServerAgents",
-        "to": "ServerConfig",
-        "type": "import"
-    },
-    {
-        "from": "ClientLib",
-        "to": "Shared",
-        "type": "import"
-    },
-    {
-        "from": "ServerCore",
-        "to": "Shared",
-        "type": "import"
-    },
-    {
-        "from": "ServerServices",
-        "to": "Shared",
-        "type": "import"
-    },
-    {
-        "from": "Workflows",
-        "to": "CognitionLayer",
-        "type": "workflow"
-    }
-]
+    "edges": [
+        {
+            "from": "FrontendEnhanced",
+            "to": "ServerCore",
+            "type": "api_calls"
+        },
+        {
+            "from": "KiloCode",
+            "to": "CognitionLayer",
+            "type": "defines_rules"
+        },
+        {
+            "from": "ServerCore",
+            "to": "CognitionLayer",
+            "type": "logs_state"
+        }
+    ]
 }

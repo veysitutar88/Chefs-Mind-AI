@@ -1,118 +1,31 @@
 {
-    "last_scan_hash": "36707bc15e2a4bd8e373da3e32f97038f2ec3812",
-    "scan_timestamp": "2025-11-27T03:09:23+01:00",
-    "total_files_tracked": 274,
-    "files": {
-        "client/src/App.tsx": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
+    "last_scan": "2025-12-08T03:05:00+01:00",
+    "review_status": "post_audit_v3",
+    "modules": {
+        "frontend-enhanced": {
+            "confidence": 0.95,
+            "status": "verified",
+            "notes": "Deep Scan confirmed structure alignment."
         },
-        "client/src/main.tsx": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
+        "server": {
+            "confidence": 0.85,
+            "status": "verified_with_issues",
+            "notes": "Structure valid, but Mock Logic detected in Agents/QA."
         },
-        "server/index.ts": {
-            "last_known_hash": "initial_scan",
+        ".context": {
             "confidence": 1.0,
-            "reason": "initial_scan"
+            "status": "active",
+            "notes": "Source of truth for Audit V3."
         },
-        "server/enhanced-server.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
+        "backend-media": {
+            "confidence": 0.7,
+            "status": "partial",
+            "notes": "Missing API keys and real-world testing."
         },
-        "server/agents/orchestrator.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/graph/graph.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/routes/agent-chat.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/routes/enhanced-agent-chat.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/services/agentService.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/services/chatService.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/config/llm-config.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "server/config/media-config.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "frontend-enhanced/src/app/page.tsx": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "frontend-enhanced/components/Chat.tsx": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "shared/schema.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "shared/types.ts": {
-            "last_known_hash": "initial_scan",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        ".context/knowledge_map.json": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        ".context/heatmap.json": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        ".agent/workflows/enriched-commit.md": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        ".agent/workflows/scan-and-refresh-knowledge.md": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "COGNITION_LAYER_GUIDE.md": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
-        },
-        "CONTEXT_WORKFLOWS_CHEATSHEET.md": {
-            "last_known_hash": "just_created",
-            "confidence": 1.0,
-            "reason": "initial_scan"
+        "legacy": {
+            "confidence": 0.1,
+            "status": "deprecated",
+            "notes": "Do not use for new development."
         }
-    },
-    "notes": "Initial scan. All 274 tracked files set to confidence 1.0. Representative sample shown above. Next scan will detect changes and mark files with confidence 0.0."
+    }
 }

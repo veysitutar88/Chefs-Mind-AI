@@ -1,0 +1,157 @@
+{
+    "version": "2025-12-08-audit",
+    "issues": [
+        {
+            "id": "GARBAGE_FILE_001",
+            "type": "garbage_file",
+            "path": "{",
+            "severity": "high",
+            "description": "Corrupt filename, safe to delete",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_FILE_002",
+            "type": "garbage_file",
+            "path": "{2}",
+            "severity": "high",
+            "description": "Corrupt filename, safe to delete",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_FILE_003",
+            "type": "garbage_file",
+            "path": "{console.error(e.stack)",
+            "severity": "high",
+            "description": "Corrupt filename, safe to delete",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_FILE_004",
+            "type": "garbage_file",
+            "path": "$null",
+            "severity": "high",
+            "description": "Corrupt filename (PowerShell artifact), safe to delete",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_FILE_005",
+            "type": "garbage_file",
+            "path": "Textdokument.txt",
+            "severity": "low",
+            "description": "Empty or temporary text file",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_FILE_006",
+            "type": "garbage_file",
+            "path": "chefs_mind_context.zip",
+            "severity": "medium",
+            "description": "Large archive file in root",
+            "recommended_action": "archive_or_delete"
+        },
+        {
+            "id": "GARBAGE_FILE_007",
+            "type": "garbage_file",
+            "path": "logs.rar",
+            "severity": "medium",
+            "description": "Compressed logs in root",
+            "recommended_action": "archive_or_delete"
+        },
+        {
+            "id": "GARBAGE_FILE_008",
+            "type": "garbage_file",
+            "path": "reports.rar",
+            "severity": "medium",
+            "description": "Compressed reports in root",
+            "recommended_action": "archive_or_delete"
+        },
+        {
+            "id": "GARBAGE_FILE_009",
+            "type": "garbage_file",
+            "path": "IMG_20251013_125614.jpg",
+            "severity": "medium",
+            "description": "Large image file (8MB) in root",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_DIR_001",
+            "type": "garbage_dir",
+            "path": "-p",
+            "severity": "medium",
+            "description": "Corrupt directory name",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "GARBAGE_DIR_002",
+            "type": "garbage_dir",
+            "path": "Новая папка",
+            "severity": "medium",
+            "description": "Non-standard directory name (New Folder)",
+            "recommended_action": "delete"
+        },
+        {
+            "id": "ENV_DUPLICATION",
+            "type": "config_smell",
+            "path": ".env*",
+            "severity": "medium",
+            "description": "Excessive .env variants (11 files)",
+            "recommended_action": "consolidate"
+        },
+        {
+            "id": "GITIGNORE_DIRTY",
+            "type": "config_smell",
+            "path": ".gitignore",
+            "severity": "low",
+            "description": "Contains broken entries like 'checkpoint_$(date' and duplicate 'frontend-enhanced/.next/'",
+            "recommended_action": "clean"
+        },
+        {
+            "id": "LEGACY_FOLDER_001",
+            "type": "legacy_folder",
+            "path": "frontend",
+            "severity": "medium",
+            "description": "Deprecated frontend folder",
+            "recommended_action": "archive"
+        },
+        {
+            "id": "LEGACY_FOLDER_002",
+            "type": "legacy_folder",
+            "path": "frontend-simple",
+            "severity": "medium",
+            "description": "Unused frontend variant",
+            "recommended_action": "archive"
+        },
+        {
+            "id": "LEGACY_FOLDER_003",
+            "type": "legacy_folder",
+            "path": "client",
+            "severity": "medium",
+            "description": "Legacy client code (Next.js)",
+            "recommended_action": "archive"
+        },
+        {
+            "id": "ORCHESTRATOR_MOCK",
+            "type": "implementation_gap",
+            "path": "server/agents/orchestrator.ts",
+            "severity": "high",
+            "description": "Orchestrator logic returns mock responses instead of calling real agents",
+            "recommended_action": "implement_agent_calls"
+        },
+        {
+            "id": "QA_GATE_MOCK",
+            "type": "implementation_gap",
+            "path": "server/middleware/qaGate.ts",
+            "severity": "high",
+            "description": "QA Gate middleware uses Math.random() for scoring",
+            "recommended_action": "connect_to_ai_service"
+        },
+        {
+            "id": "MASTER_CONTEXT_GARBAGE",
+            "type": "documentation_error",
+            "path": ".kilocode/rules/memory-bank/MASTER_CONTEXT_v2.1.6.mdown",
+            "severity": "medium",
+            "description": "Contains ~180 lines of Markdown tutorial at the end",
+            "recommended_action": "truncate"
+        }
+    ]
+}
