@@ -168,3 +168,26 @@
 - **Status:** TSX/lint errors left intentionally for manual fix in next session.
 - **Mode:** Antigravity reasoning session ended safely (no further code edits).
 - **Next Steps:** Manual fix of AssetGallery syntax, verify build, continue Block 9 remaining tasks.
+
+## 2025-12-08 — Deep V3 Upgrade Audit & Cleanup
+
+- **Phase:** Deep V3 Audit, Safe Cleanup, Cognition Rebuild, UI Flux Verification.
+- **Date/Time:** 2025-12-08
+- **Goal:** Perform a deep architectural audit, clean up garbage artifacts, rebuild the cognition layer, and verify UI integrity.
+- **Activities:**
+  - **Deep V3 Audit:** Analyzed architecture drift (Orchestrator/QA Gate mocks identified), cognition gaps, and config issues. Generated `AUDIT_DEEP_V3_FULL.md`.
+  - **Safe Cleanup:** Removed 11 verified garbage items (corrupt files, temp archives) while preserving legacy folders. Generated `cleanup_report_v2.json`.
+  - **Cognition Refresh:** Rebuilt `knowledge_map.json` (pointing to `frontend-enhanced`), refreshed `heatmap.json`, updated `MASTER_CONTEXT`, and synced `CHECKPOINT.json`.
+  - **UI Verification:** Conducted `UI-AUDIT-V3` and `UX-FLOW-AUDIT-V3`.
+    - Identified "Split Brain" Sidebar issue (Active "Tab" Sidebar vs Detached "Widget" Sidebar).
+    - Mapped Media UX fragmentation.
+    - Generated `AUDIT_UI_V3.md` and `AUDIT_UX_FLOW_V3.md`.
+  - **Artifacts:** `frontend_component_tree.json`, `ux_flow_map.mermaid`.
+- **Infrastructure:**
+  - **Safe Push:** Committed and pushed changes to `feature/block0-infra-fix`.
+  - **Checkpoint:** Created `checkpoints/checkpoint_post_audit_v2.1.8.json`.
+- **Status:** **CRITICAL ARCHITECTURAL SPLIT IDENTIFIED.** The frontend is running on a legacy/dummy sidebar, hiding Block 8 features. Backend logic (Orchestrator/QA) is mocked.
+- **Next Steps:**
+  1. **Fix Sidebar Wiring:** Swap `RightSidebar` in `page.tsx` to the widget-based version.
+  2. **Connect Backend Intelligence:** Replace Orchestrator mocks with real LLM logic.
+  3. **Unify Media UX:** Port premium selectors to the Media Studio page.
