@@ -1,112 +1,81 @@
 {
-    "version": "2.0-post-audit",
-    "last_updated": "2025-12-08T03:05:00+01:00",
-    "nodes": {
-        "FrontendEnhanced": {
-            "path": "frontend-enhanced/src",
-            "type": "frontend",
-            "status": "active",
-            "description": "Primary V3 UI based on Next.js App Router",
+    "version": "3.0.0",
+    "generated_at": "2025-12-09T04:00:00Z",
+    "active_modules": [
+        {
+            "name": "Frontend Enhanced",
+            "path": "frontend-enhanced",
+            "type": "ui",
             "tags": [
-                "ui",
                 "nextjs",
-                "canonical"
+                "react",
+                "tailwind"
             ],
-            "contains": [
-                "app/page.tsx",
-                "app/media/page.tsx",
-                "components/ui/"
+            "primary_files": [
+                "src/app/page.tsx",
+                "src/app/layout.tsx",
+                "src/components/layout/RightSidebar.tsx",
+                "src/app/media/page.tsx"
             ]
         },
-        "ServerCore": {
-            "path": "server/",
+        {
+            "name": "Server Core",
+            "path": "server",
             "type": "backend",
-            "status": "active",
-            "description": "Primary Express/Drizzle Backend",
             "tags": [
-                "api",
-                "db",
-                "agents"
+                "express",
+                "node",
+                "drizzle"
             ],
-            "contains": [
-                "index.ts",
-                "routes.ts",
-                "agents/orchestrator.ts",
-                "services/enhanced-media.ts"
+            "primary_files": [
+                "enhanced-server.ts",
+                "routes/media.ts",
+                "routes/enhanced-agent.ts",
+                "agents/orchestrator.ts"
             ]
         },
-        "CognitionLayer": {
-            "path": ".context/",
+        {
+            "name": "Cognition",
+            "path": ".context",
             "type": "meta",
-            "status": "active",
-            "description": "Project Memory and Audit Logs",
             "tags": [
-                "memory",
-                "audit",
-                "knowledge"
+                "maps",
+                "audit"
             ],
-            "contains": [
+            "primary_files": [
                 "knowledge_map.json",
-                "heatmap.json",
-                "deep_audit_v3_issues.json"
+                "heatmap.json"
             ]
         },
-        "KiloCode": {
-            "path": ".kilocode/",
-            "type": "rules",
-            "status": "active",
-            "description": "Project Rules and Master Context",
+        {
+            "name": "Documentation",
+            "path": "docs",
+            "type": "meta",
             "tags": [
-                "rules",
-                "context"
-            ]
-        },
-        "LegacyClient": {
-            "path": "client/",
-            "type": "frontend",
-            "status": "legacy",
-            "description": "Deprecated React Client",
-            "tags": [
-                "deprecated",
-                "legacy"
-            ]
-        },
-        "LegacyFrontend": {
-            "path": "frontend/",
-            "type": "frontend",
-            "status": "legacy",
-            "description": "Deprecated Frontend Root",
-            "tags": [
-                "deprecated",
-                "legacy"
-            ]
-        },
-        "LegacyFrontendSimple": {
-            "path": "frontend-simple/",
-            "type": "frontend",
-            "status": "legacy",
-            "description": "Deprecated Simple Frontend",
-            "tags": [
-                "deprecated",
-                "legacy"
+                "holy-six",
+                "guide"
+            ],
+            "primary_files": [
+                "UI_UX_CANON_v2.4.md",
+                "AGENT_ROUTING_DESIGN.md"
             ]
         }
-    },
-    "edges": [
+    ],
+    "legacy_modules": [
+        "client",
+        "frontend",
+        "frontend-simple"
+    ],
+    "relationships": [
         {
-            "from": "FrontendEnhanced",
-            "to": "ServerCore",
-            "type": "api_calls"
+            "from": "Frontend Enhanced",
+            "to": "Server Core",
+            "type": "api-call"
         },
         {
-            "from": "KiloCode",
-            "to": "CognitionLayer",
-            "type": "defines_rules"
-        },
-        {
-            "from": "ServerCore",
-            "to": "CognitionLayer",
-            "type": "logs_state"
+            "from": "Server Core",
+            "to": "Database",
+            "type": "query"
         }
     ]
 }

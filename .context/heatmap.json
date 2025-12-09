@@ -1,31 +1,31 @@
 {
-    "last_scan": "2025-12-08T03:05:00+01:00",
-    "review_status": "post_audit_v3",
-    "modules": {
-        "frontend-enhanced": {
-            "confidence": 0.95,
-            "status": "verified",
-            "notes": "Deep Scan confirmed structure alignment."
+    "version": "3.0.0",
+    "generated_at": "2025-12-09T04:00:00Z",
+    "baseline": "holy-six-v2.4",
+    "files": {
+        "frontend-enhanced/src/app/page.tsx": {
+            "confidence": 0.8,
+            "status": "active_but_needs_sidebar_fix"
         },
-        "server": {
-            "confidence": 0.85,
-            "status": "verified_with_issues",
-            "notes": "Structure valid, but Mock Logic detected in Agents/QA."
+        "frontend-enhanced/src/components/layout/RightSidebar.tsx": {
+            "confidence": 0.9,
+            "status": "detached_golden_code"
         },
-        ".context": {
-            "confidence": 1.0,
-            "status": "active",
-            "notes": "Source of truth for Audit V3."
-        },
-        "backend-media": {
-            "confidence": 0.7,
-            "status": "partial",
-            "notes": "Missing API keys and real-world testing."
-        },
-        "legacy": {
+        "frontend-enhanced/src/components/ui/RightSidebar.tsx": {
             "confidence": 0.1,
-            "status": "deprecated",
-            "notes": "Do not use for new development."
+            "status": "active_legacy_garbage"
+        },
+        "server/agents/orchestrator.ts": {
+            "confidence": 0.5,
+            "status": "mock_implementation"
+        },
+        "CHEFS_MIND_AI__HOLY_SIX_AND_WORKFLOW_v2.4.md": {
+            "confidence": 1.0,
+            "status": "canonical"
+        },
+        "CHECKPOINT.md": {
+            "confidence": 1.0,
+            "status": "canonical"
         }
     }
 }
