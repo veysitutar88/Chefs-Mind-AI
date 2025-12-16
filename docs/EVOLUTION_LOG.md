@@ -11,3 +11,4 @@
 | **2025-12-08** | v2.3-audit | Deep Audit | Critical "Split Brain" finding. Mocks identified. |
 | **2025-12-09** | v2.4-holy-six | **Project Canonize** | "Holy Six" doc suite created. Legacy files nuked. |
 | **2025-12-16** | v2.4-freeze | Context Freeze | **CHECKPOINT.md** is now Source of Truth. Cognition synced. |
+| **2025-12-16** | v2.4-sidebar | Sidebar Canon Repair | Switched imports from `ui/RightSidebar` to `layout/RightSidebar`; Block 8 widgets now visible. |

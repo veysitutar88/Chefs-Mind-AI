@@ -1,3 +1,9 @@
+/**
+ * ⚠️ DEPRECATED — DO NOT USE
+ * This component is the legacy tab-based RightSidebar.
+ * Use `@/components/layout/RightSidebar` instead (widget-based, Block 8 Followups).
+ * Kept for reference only. Will be removed in v3.0.
+ */
 import React, { useState } from 'react';
 import { FileItem, TodoItem } from '@/types/ui';
 import {

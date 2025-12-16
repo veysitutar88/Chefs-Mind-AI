@@ -24,7 +24,7 @@ No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully 
 
 - **Backend**: `server/` (Node/Express). Orchestrator uses Mocks.
 - **Frontend**: `frontend-enhanced/` (Next.js 14).
-  - **Sidebar**: **CRITICAL MISMATCH** (Active=`ui/RightSidebar`, Required=`layout/RightSidebar`).
+  - **Sidebar**: ✅ **FIXED** — Using `components/layout/RightSidebar` (widget-based, Block 8 Followups visible).
   - **Media**: Fragmentation between Chat (FoodFrame) and Page (`/media`).
 - **Cognition**: `knowledge_map.json` rebuilt against `frontend-enhanced`.
 

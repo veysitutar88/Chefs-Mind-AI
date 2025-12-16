@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { AgentCard } from '@/components/ui/AgentCard';
 import { ChatArea } from '@/components/ui/ChatArea';
-import { RightSidebar } from '@/components/ui/RightSidebar';
+import { RightSidebar } from '@/components/layout/RightSidebar';
 import { Logo } from '@/components/ui/Logo';
 import { AGENTS, INITIAL_FILES } from '@/constants/ui';
 import { AgentId, Message, TodoItem, ChatSession, FileItem } from '@/types/ui';
@@ -239,17 +239,10 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Right Sidebar (280px fixed) */}
+      {/* Right Sidebar (350px fixed) - CANON widget-based */}
       <aside className="w-[350px] hidden xl:block flex-shrink-0 bg-surface border-l border-borderSoft shadow-xl z-20">
         <RightSidebar
-          files={files}
-          todos={todos}
-          onAddTodo={handleAddTodo}
-          onToggleTodo={handleToggleTodo}
-          onDeleteTodo={handleDeleteTodo}
-          jobs={jobs}
-          onRetryJob={retryJob}
-          onClearJob={clearJob}
+          onClose={() => { /* Sidebar is always visible in this layout */ }}
         />
       </aside>
     </div>
