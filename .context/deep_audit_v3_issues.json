@@ -1,0 +1,65 @@
+[
+    {
+        "id": "ARCH-001",
+        "type": "Architecture Drift",
+        "component": "Cognition Layer",
+        "severity": "High",
+        "description": "Knowledge Map prioritizes legacy 'ClientUI' (client/src) over actual 'FrontendEnhanced' (frontend-enhanced/src). This misleads agents about the active frontend codebase.",
+        "location": ".context/knowledge_map.json",
+        "recommendation": "Rewrite Knowledge Map to mark 'ClientUI' as deprecated/legacy and promote 'FrontendEnhanced' to primary UI node."
+    },
+    {
+        "id": "ARCH-002",
+        "type": "Architecture Drift",
+        "component": "Agent Orchestration",
+        "severity": "Critical",
+        "description": "Orchestrator correctly classifies intents but returns hardcoded mock strings (e.g., 'Ответ от Chef...') instead of invoking agent logic or LLMs.",
+        "location": "server/agents/orchestrator.ts",
+        "recommendation": "Connect Orchestrator routes to actual LangGraph nodes or prompt chains defined in 'server/graph/nodes/'."
+    },
+    {
+        "id": "ARCH-003",
+        "type": "Architecture Drift",
+        "component": "QA Gate",
+        "severity": "Critical",
+        "description": "QA Gate middleware uses Math.random() for scoring content quality. It fails to implement the AI verification layer described in AGENT_ROUTING_DESIGN.",
+        "location": "server/middleware/qaGate.ts",
+        "recommendation": "Integrate the 'validateAndCorrectResponse' function (currently dead code) into the middleware flow and connect to OpenAI/Vertex."
+    },
+    {
+        "id": "ARCH-004",
+        "type": "Feature Mock",
+        "component": "Media Studio",
+        "severity": "Medium",
+        "description": "Upscale functionality targets a non-existent API 'api.nanobanana.com'. This is a placeholder that will always fail or fallback to simulation.",
+        "location": "server/routes/media.ts",
+        "recommendation": "Replace 'nanobanana' with a real provider (e.g., Replicate or Stability AI) or explicitly document as a demo mock."
+    },
+    {
+        "id": "CONF-001",
+        "type": "Configuration Gap",
+        "component": "Environment",
+        "severity": "High",
+        "description": "Missing critical API keys (OPENAI_API_KEY, VERTEX_PROJECT_ID) in .env.example. 'enhanced-media.ts' requires these to function, otherwise it will crash or fail.",
+        "location": ".env.example",
+        "recommendation": "Update .env.example with required AI provider keys."
+    },
+    {
+        "id": "CODE-001",
+        "type": "Dead Code",
+        "component": "Quality Services",
+        "severity": "Medium",
+        "description": "Function 'validateAndCorrectResponse' in qaGate.ts is fully implemented but never called by the middleware or any other service.",
+        "location": "server/middleware/qaGate.ts",
+        "recommendation": "Wire up this function to 'qaGateMiddleware' to enable real QA checking."
+    },
+    {
+        "id": "CODE-002",
+        "type": "Code Quality",
+        "component": "Frontend",
+        "severity": "Low",
+        "description": "Frontend Enhanced package.json has 'moment' and 'react-big-calendar' which might be heavy if not tree-shaken correctly, checking usage recommended.",
+        "location": "frontend-enhanced/package.json",
+        "recommendation": "Review bundle size impact of these libraries."
+    }
+]

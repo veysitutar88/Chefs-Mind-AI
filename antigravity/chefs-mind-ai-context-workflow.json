@@ -1,0 +1,65 @@
+{
+  "name": "chefs-mind-ai-context-workflow",
+  "description": "Chef's Mind AI – контекст, чекпоинты и nightly StopForToday",
+  "version": "1.0.0",
+
+  "project": "Chef's Mind AI",
+
+  "global_rules": [
+    "MASTER_MANIFEST.json является единственным источником правды по архитектуре и блокам.",
+    "Если документ противоречит MASTER_MANIFEST.json, не исправлять его автоматически, а записать конфликт в context/decisions.md со статусом 'TODO: verify'.",
+    "Работать только с файлами документации и контекста: docs/*, context/*, MemoryBank/*, Agents.md, CHECKPOINT.json, SESSION.md, .kilocode/rules/*.",
+    "Код в server/* и frontend-enhanced/* не изменять без прямой команды.",
+    "Не придумывать статусы и факты. При отсутствии данных использовать 'unknown' или 'TODO: verify'.",
+    "Всегда обновлять SESSION.md и CHECKPOINT.json в конце значимой миссии (StopForToday)."
+  ],
+
+  "files_of_interest": [
+    "docs/instructions.md",
+    "docs/project.md",
+    "docs/documentation.md",
+    "context/current-task.md",
+    "context/decisions.md",
+    "context/patterns.md",
+    "Agents.md",
+    "MemoryBank/",
+    "CHECKPOINT.json",
+    "SESSION.md"
+  ],
+
+  "templates": {
+    "session_md": "# Session Report – {{DATE}}\n\n## 1. Focus of this session\n- Block: {{BLOCK_ID}}\n- Main goal: {{MAIN_GOAL}}\n\n## 2. Work done\n- [ ] {{TASK_1}}\n- [ ] {{TASK_2}}\n- [ ] {{TASK_3}}\n\n## 3. Key decisions\n- {{DATE}} – {{DECISION_1}} (Reason: {{WHY_1}}, Impact: {{IMPACT_1}})\n\n## 4. Issues / open problems\n- {{ISSUE_1}} (status: {{STATUS_1}})\n\n## 5. Next steps (tomorrow)\n- [ ] {{NEXT_1}}\n- [ ] {{NEXT_2}}\n\n## 6. Files touched\n- {{FILE_1}}\n- {{FILE_2}}\n\n*Session closed at {{TIME}}*",
+    "checkpoint_json": "{\n  \"project\": \"Chef's Mind AI\",\n  \"version\": \"v2.1.6\",\n  \"updatedAt\": \"{{TIMESTAMP}}\",\n  \"blocks\": {\n    \"block_0_infra\": \"done\",\n    \"block_1_mvp_flow\": \"done\",\n    \"block_2_multi_agent_routing\": \"done\",\n    \"block_3_data_persistence\": \"done\",\n    \"block_4_media_studio\": \"in_progress\",\n    \"block_5_analytics_polish\": \"planned\"\n  },\n  \"frontend\": {\n    \"status\": \"dev\",\n    \"ports\": [3001],\n    \"notes\": \"Media Studio UI wired to /api/media/*\"\n  },\n  \"backend\": {\n    \"status\": \"dev\",\n    \"port\": 5001,\n    \"health\": \"unknown\",\n    \"notes\": \"enhanced-server.ts is main entry\"\n  },\n  \"agents\": [\n    { \"id\": \"chef\",         \"role\": \"culinary, menu & recipes\" },\n    { \"id\": \"accountant\",   \"role\": \"finance & purchasing\" },\n    { \"id\": \"researcher\",   \"role\": \"data & analysis\" },\n    { \"id\": \"media_studio\", \"role\": \"image/video generation\" },\n    { \"id\": \"qa_gate\",      \"role\": \"hallucination protection\" },\n    { \"id\": \"orchestrator\", \"role\": \"routing & multi-agent control\" }\n  ],\n  \"technical_debt\": {\n    \"ts_errors_estimate\": 0,\n    \"todo_items_estimate\": 0,\n    \"notes\": \"\"\n  },\n  \"deployment\": {\n    \"strategy\": \"docker\",\n    \"status\": \"deferred_by_user\",\n    \"notes\": \"\"\n  },\n  \"notes\": \"\"\n}",
+    "agents_md": "# Agents Overview – Chef's Mind AI\n\n## Core Orchestrator\n- **Orchestrator**\n  - Role: multi-agent routing based on MASTER_MANIFEST.json\n  - Notes: All responses may pass QA-Gate\n\n## Specialized Agents\n\n### Chef\n- Role: culinary, recipes, plating, menu design\n\n### Accountant\n- Role: finance, costs, purchasing\n\n### Researcher\n- Role: markets, trends, data\n\n### Media Studio\n- Role: images/videos, media assets\n\n### QA-Gate\n- Role: hallucination protection, validation, consistency check\n",
+    "current_task_md": "# Current Task – {{DATE}}\n\n## Title\n{{TITLE}}\n\n## Description\n{{DESCRIPTION}}\n\n## Priority\nHigh\n\n## Status\nIn progress\n\n## Steps\n- [ ] {{STEP_1}}\n- [ ] {{STEP_2}}\n- [ ] {{STEP_3}}",
+    "decisions_md": "# Decisions Log\n\n## {{DATE}}\n- Decision: {{DECISION}}\n- Reason: {{REASON}}\n- Impact: {{IMPACT}}\n- Status: confirmed\n",
+    "patterns_md": "# Patterns\n\n## {{PATTERN_NAME}}\nContext: {{CONTEXT}}\nPattern: {{PATTERN}}\nConsequence: {{CONSEQUENCE}}\n"
+  },
+
+  "tasks": {
+    "initialize_context": {
+      "description": "Проверить и создать/обновить все контекстные файлы Chef's Mind AI.",
+      "steps": [
+        "Прочитать MASTER_MANIFEST.json и CHEF_MIND_MASTER_CONTEXT_* как основной контекст.",
+        "Проверить существование файлов из 'files_of_interest'.",
+        "Создать отсутствующие файлы, используя шаблоны из раздела templates.",
+        "Не изменять код, только документацию и контекст.",
+        "Если обнаружены противоречия между docs/project.md и MASTER_MANIFEST.json – добавить запись в context/decisions.md со статусом 'TODO: verify'.",
+        "Выписать краткий отчёт в SESSION.md (по шаблону session_md).",
+        "Обновить CHECKPOINT.json (по шаблону checkpoint_json) только подтверждёнными данными."
+      ]
+    },
+
+    "stop_for_today": {
+      "description": "Вечерний StopForToday: фиксируем результат сессии и состояние проекта.",
+      "trigger": "manual_or_end_of_day",
+      "steps": [
+        "Собрать список реально изменённых файлов за текущую сессию.",
+        "Обновить SESSION.md: задачи, решения, проблемы, next steps, список файлов.",
+        "Обновить CHECKPOINT.json: updatedAt и любые статусы блоков, которые точно изменились.",
+        "Не менять версии блоков без подтверждения (оставлять 'TODO: verify', если есть сомнения).",
+        "Не выполнять git push/commit – только подготовить файлы, дальше решает пользователь."
+      ]
+    }
+  }
+}

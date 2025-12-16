@@ -1,0 +1,28 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Premium Dark Theme Tokens */
+    --bg-root: #0f172a;
+    /* Deep Slate */
+    --bg-surface: #1e293b;
+    /* Lighter Slate Panel */
+
+    --text-primary: #f8fafc;
+    /* High Contrast White */
+    --text-secondary: #94a3b8;
+    /* Muted Slate */
+
+    --accent: #0EA5E9;
+    /* Na'Vi Blue */
+    --accent-glow: rgba(14, 165, 233, 0.5);
+
+    --border-soft: #334155;
+  }
+}
+
+body {
+  font-family: system-ui, sans-serif;
+}

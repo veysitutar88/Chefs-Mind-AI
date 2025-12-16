@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 interface RBACGuardProps {
-  allowedRoles: string[];
+  allowedRoles?: string[];
   children: React.ReactNode;
   requireAdmin?: boolean;
 }
@@ -64,7 +64,7 @@ export function RBACGuard(props: RBACGuardProps) {
   // В dev/e2e режиме проверяем localStorage rbacRole
   const hasAccess = requireAdmin
     ? currentRole === 'admin'
-    : allowedRoles.includes(currentRole);
+    : allowedRoles?.includes(currentRole) ?? false;
 
   // Если нет доступа, возвращаем компактный плейсхолдер
   if (!hasAccess) {
@@ -73,7 +73,7 @@ export function RBACGuard(props: RBACGuardProps) {
       new URLSearchParams(
         typeof window !== 'undefined' ? window.location.search : ''
       ).get('e2e') === '1'
-        ? `Access denied. Required: ${requireAdmin ? 'admin' : allowedRoles.join(', ')}. Current: ${currentRole}`
+        ? `Access denied. Required: ${requireAdmin ? 'admin' : (allowedRoles?.join(', ') || 'unknown')}. Current: ${currentRole}`
         : 'Доступ ограничен';
 
     return (

@@ -42,6 +42,33 @@ export async function qualityControlNode(
     }
   }
 
+  // Media Routing Check (FoodFrame v3.0)
+  const lastMsg = state.messages[state.messages.length - 1];
+  if (lastMsg?.meta?.agent === 'Media' || lastMsg?.meta?.agent === 'FoodFrame AI') {
+    const model = lastMsg.meta.mediaModel as string | undefined;
+    const validModels = [
+      'gemini-3-image-pro',
+      'imagen-4',
+      'gpt-image-1',
+      'veo-3',
+      'veo-3.1'
+    ];
+
+    if (model && !validModels.includes(model)) {
+      reasons.push(`Invalid media model used: ${model}. Expected one of: ${validModels.join(', ')}`);
+    }
+
+    // Check for legacy model references in content if model meta is missing
+    if (!model) {
+      const legacyModels = ['imagen3', 'nanobanana', 'dall-e-2'];
+      for (const legacy of legacyModels) {
+        if (response.toLowerCase().includes(legacy)) {
+          reasons.push(`Legacy model reference detected: ${legacy}`);
+        }
+      }
+    }
+  }
+
   const passed = reasons.length === 0;
 
   console.log('[QA] passed=' + passed, 'reasons:', reasons);

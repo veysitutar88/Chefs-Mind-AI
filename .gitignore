@@ -17,3 +17,5 @@ frontend-enhanced/.next/
 playwright-report/
 test-results/
 frontend-enhanced/.next/
+.gemini/
+gha-creds-*.json

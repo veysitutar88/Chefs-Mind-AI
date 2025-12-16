@@ -1,0 +1,224 @@
+{
+  "version": "v2.1.2",
+  "project": "Chef’s Mind AI",
+  "updated": "2025-11-11T17:59:22Z",
+  "mode": "local",
+  "deploy": {
+    "ready": true,
+    "status": "deferred_by_user"
+  },
+  "readiness": {
+    "p1_progress": 1.0,
+    "p2_progress": 0.83,
+    "overall_e2e": 0.91
+  },
+  "principles": [
+    "Context First",
+    "Plan Before Code",
+    "Minimal Assumptions",
+    "QA Everywhere",
+    "Log Continuity",
+    "Persistent Context"
+  ],
+  "layers": [
+    "context",
+    "agents",
+    "instructions",
+    "vibe",
+    "execution",
+    "qa_logging",
+    "context_transport"
+  ],
+  "agents": {
+    "list": [
+      "chef",
+      "accountant",
+      "researcher",
+      "media",
+      "qa_gate"
+    ],
+    "orchestrator": {
+      "routing": "intent_classifier + policy_map",
+      "status": "planned"
+    }
+  },
+  "security": {
+    "auth": "jwt+oauth2",
+    "rbac": true,
+    "safe_mode": true,
+    "sha256_triple": true
+  },
+  "api_routes": [
+    "/api/enhanced-agent/chat",
+    "/api/import",
+    "/api/dbadmin",
+    "/api/calendar",
+    "/api/health",
+    "/metrics",
+    "/auth/google/status"
+  ],
+  "db": {
+    "tables": [
+      "orders",
+      "purchase_orders",
+      "suppliers",
+      "attachments",
+      "notes",
+      "calendar_links"
+    ],
+    "uuid": true,
+    "zod_schemas": true
+  },
+  "mcp": {
+    "google": "ok",
+    "calendar": "ok",
+    "media": "ok",
+    "hallucination_control": "ok"
+  },
+  "ai_models": {
+    "providers": [
+      "openai",
+      "perplexity",
+      "google_vertex"
+    ],
+    "status": {
+      "openai": "ok",
+      "perplexity": "ok",
+      "google_vertex": "missing_credentials"
+    },
+    "count": 8
+  },
+  "metrics": {
+    "prometheus": "active",
+    "ports": [
+      5000,
+      5002
+    ],
+    "cpu_user_system_ms": 9600,
+    "mem_rss_mb": 122,
+    "event_loop_lag_ms": 15
+  },
+  "smoke_tests": {
+    "oauth": "partial",
+    "calendar": "pass",
+    "rbac": "pass",
+    "metrics": "pass",
+    "media": "server_not_running",
+    "health_5000": "ok",
+    "health_5002": "ok_internal"
+  },
+  "issues": [
+    "OAuth refresh token missing",
+    "TypeScript ~44 errors in enhanced graph/media",
+    "routes.ts L472 parse error",
+    "Missing .env for prod; provide .env.sample",
+    "Vertex credentials missing"
+  ],
+  "context_transport": {
+    "enabled": true,
+    "files": [
+      "CONTEXT.md",
+      "SESSION.md",
+      "CHECKPOINT.json",
+      "last_session.json"
+    ],
+    "functions": [
+      "serialize_context",
+      "load_context",
+      "merge_context"
+    ]
+  },
+  "backup": {
+    "endpoint": "/api/db/backup",
+    "retention_days": 7,
+    "nightly_schedule": "02:00",
+    "status": "implemented"
+  },
+  "llm_behavior_profiles": {
+    "chef": {
+      "goal": "culinary reasoning, menu & costing",
+      "style": "professional, concise, 70-80% pro depth",
+      "vibe": [
+        "calm",
+        "precise",
+        "systemic"
+      ],
+      "qa_hooks": [
+        "fact_check",
+        "costing_validation"
+      ]
+    },
+    "accountant": {
+      "goal": "costing, suppliers, invoices",
+      "style": "strict, numerical, risk-aware",
+      "qa_hooks": [
+        "totals_consistency",
+        "rbac_guard"
+      ]
+    },
+    "researcher": {
+      "goal": "web/osint research with citations",
+      "style": "balanced, sources-first",
+      "qa_hooks": [
+        "source_quality",
+        "recency_check"
+      ]
+    },
+    "media": {
+      "goal": "image/video prompts & asset mgmt",
+      "style": "minimalist, fine-dining aesthetics",
+      "qa_hooks": [
+        "format_4x5",
+        "lighting_rules",
+        "microgreens_policy"
+      ]
+    },
+    "qa_gate": {
+      "goal": "validate correctness & tone",
+      "style": "neutral, deterministic",
+      "qa_hooks": [
+        "score",
+        "auto-correction",
+        "risk_flags"
+      ]
+    }
+  },
+  "frontend": {
+    "vite": "ok",
+    "ui_common_components": [
+      "StatusIndicator(pending)",
+      "HealthBadge(pending)",
+      "Skeleton(pending)"
+    ],
+    "routing_issue": "routes.ts L472"
+  },
+  "acceptance": {
+    "checks": [
+      "health",
+      "metrics",
+      "qa_gate",
+      "db_backups_list",
+      "db_backup_manual",
+      "calendar_create",
+      "import_csv"
+    ],
+    "artifacts_dir": "/out/reports/"
+  },
+  "roadmap": {
+    "blocks": [
+      "MVP user flow",
+      "Multi-agent routing",
+      "Data persistence",
+      "Media studio",
+      "Analytics & polish"
+    ],
+    "eta_weeks": 4
+  },
+  "definition_of_done": [
+    "Blocks 1–5 acceptance satisfied",
+    "CI lint+tsc+build+e2e green",
+    "Metrics/alerts stable",
+    "Context auto-updated",
+    "Release notes v2.2.0 with demo"
+  ]
+}

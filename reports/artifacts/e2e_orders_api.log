@@ -1,0 +1,12 @@
+2025-11-12T08:23:30.637Z | e2e_orders_api | FAILED: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+Expected: [32m200[39m
+Received: [31m500[39m | base=http://localhost:5001
+2025-11-12T08:47:31.586Z | e2e_orders_api | FAILED: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+Expected: [32m200[39m
+Received: [31m500[39m | base=http://localhost:5001
+2025-11-12T12:22:33.768Z | e2e_orders_api | FAILED: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+Expected: [32m200[39m
+Received: [31m500[39m | base=http://localhost:3001 

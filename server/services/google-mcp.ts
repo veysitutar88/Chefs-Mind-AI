@@ -107,3 +107,137 @@ export async function createEvent(params: {
 
   return r.data.id as string;
 }
+
+// CRUD методы для работы с событиями календаря Google
+export async function listCalendarEvents(params: {
+  calendarId?: string;
+  maxResults?: number;
+  timeMin?: string;
+  timeMax?: string;
+}) {
+  const auth = authedOAuth2();
+  const cal = google.calendar({ version: 'v3', auth });
+  const calendarId = params.calendarId || 'primary';
+
+  const response = await cal.events.list({
+    calendarId,
+    timeMin: params.timeMin || new Date().toISOString(),
+    timeMax: params.timeMax,
+    maxResults: params.maxResults || 50,
+    singleEvents: true,
+    orderBy: 'startTime',
+    fields: 'items(id,summary,description,start,end,created,updated,organizer,attendees,reminders,status,location)',
+  });
+
+  return response.data.items?.map(event => ({
+    id: event.id,
+    summary: event.summary,
+    description: event.description,
+    start: event.start?.dateTime || event.start?.date,
+    end: event.end?.dateTime || event.end?.date,
+    created: event.created,
+    updated: event.updated,
+    status: event.status,
+    location: event.location,
+    organizer: event.organizer?.email,
+    attendees: event.attendees?.map(a => ({ email: a.email, responseStatus: a.responseStatus })) || [],
+    reminders: event.reminders?.overrides || []
+  })) || [];
+}
+
+export async function updateCalendarEvent(params: {
+  eventId: string;
+  calendarId?: string;
+  summary?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  attendees?: string[];
+}) {
+  const auth = authedOAuth2();
+  const cal = google.calendar({ version: 'v3', auth });
+  const calendarId = params.calendarId || 'primary';
+
+  const requestBody: any = {};
+  
+  if (params.summary) requestBody.summary = params.summary;
+  if (params.description) requestBody.description = params.description;
+  if (params.startTime) requestBody.start = { dateTime: params.startTime };
+  if (params.endTime) requestBody.end = { dateTime: params.endTime };
+  if (params.location) requestBody.location = params.location;
+  if (params.attendees) {
+    requestBody.attendees = params.attendees.map(email => ({ email }));
+  }
+
+  const response = await cal.events.update({
+    calendarId,
+    eventId: params.eventId,
+    requestBody,
+  });
+
+  return {
+    id: response.data.id,
+    summary: response.data.summary,
+    updated: response.data.updated,
+  };
+}
+
+export async function deleteCalendarEvent(eventId: string, calendarId?: string) {
+  const auth = authedOAuth2();
+  const cal = google.calendar({ version: 'v3', auth });
+  const calendar = calendarId || 'primary';
+
+  await cal.events.delete({
+    calendarId: calendar,
+    eventId,
+  });
+
+  return { success: true, eventId };
+}
+
+// Метод для создания события с расширенными параметрами
+export async function createAdvancedCalendarEvent(params: {
+  summary: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  calendarId?: string;
+  location?: string;
+  attendees?: string[];
+  reminders?: Array<{ method: 'email' | 'popup'; minutes: number }>;
+}) {
+  const auth = authedOAuth2();
+  const cal = google.calendar({ version: 'v3', auth });
+  const calendarId = params.calendarId || 'primary';
+
+  const requestBody: any = {
+    summary: params.summary,
+    start: { dateTime: params.startTime },
+    end: { dateTime: params.endTime },
+  };
+
+  if (params.description) requestBody.description = params.description;
+  if (params.location) requestBody.location = params.location;
+  if (params.attendees) {
+    requestBody.attendees = params.attendees.map(email => ({ email }));
+  }
+  if (params.reminders) {
+    requestBody.reminders = {
+      useDefault: false,
+      overrides: params.reminders,
+    };
+  }
+
+  const response = await cal.events.insert({
+    calendarId,
+    requestBody,
+  });
+
+  return {
+    id: response.data.id,
+    summary: response.data.summary,
+    created: response.data.created,
+    calendarId,
+  };
+}

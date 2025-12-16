@@ -50,8 +50,8 @@ r.get('/callback', async (req, res) => {
 });
 
 // статус/логаут с расширенной информацией
-r.get('/status', (_req, res) => {
-  const status = authStatus();
+r.get('/status', async (_req, res) => {
+  const status = await authStatus();
   const scopes = (process.env.GOOGLE_SCOPES || '').split(/\s+/).filter(Boolean);
 
   res.json({

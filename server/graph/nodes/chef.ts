@@ -1,4 +1,3 @@
-// server/graph/nodes/chef.ts
 import type { GraphState, Role } from '../types.js';
 
 /**

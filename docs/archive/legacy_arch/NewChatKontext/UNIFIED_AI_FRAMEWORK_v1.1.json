@@ -1,0 +1,95 @@
+{
+  "version": "1.1",
+  "purpose": "Универсальная модель взаимодействия человека и AI-агентов с поддержкой контекстной памяти и анализа.",
+  "structure": {
+    "context_layer": "Описывает текущее состояние проекта",
+    "agent_layer": "Определяет роли и задачи агентов",
+    "instruction_layer": "Фиксирует правила поведения",
+    "vibe_layer": "Когнитивный режим и стиль выполнения",
+    "execution_layer": "Plan → Code → Test → Review → Analyze",
+    "qa_logging_layer": "Оценка результата и обновление контекста",
+    "context_transport_layer": "Перенос и восстановление контекста между агентами и сессиями"
+  },
+  "workflow": [
+    "User → ставит цель",
+    "Orchestrator → выбирает агента",
+    "Agent → уточняет задачу (ASK / PLAN)",
+    "Agent → выполняет (EXECUTE / CODE / ANALYZE)",
+    "QA-Gate → валидирует результат",
+    "System → обновляет CONTEXT + SESSION + CHANGELOG",
+    "Context Keeper → сохраняет снапшот контекста"
+  ],
+  "principles": [
+    "Context First",
+    "Plan Before Code",
+    "Minimal Assumptions",
+    "QA Everywhere",
+    "Log Continuity",
+    "Persistent Context"
+  ],
+  "new_modules": {
+    "context_transport_layer": {
+      "components": [
+        "context_snapshot (CONTEXT.md)",
+        "session_log (SESSION.md)",
+        "checkpoint_manifest (CHECKPOINT.json)",
+        "auto_resume (last_session.json)"
+      ],
+      "functions": [
+        "serialize_context()",
+        "load_context()",
+        "merge_context()"
+      ]
+    },
+    "context_keeper_agent": {
+      "description": "Следит за целостностью и последовательностью контекста",
+      "inputs": [
+        "session_id",
+        "files_loaded",
+        "progress"
+      ],
+      "actions": [
+        "record_progress",
+        "sync_with_checkpoint",
+        "recover_after_restart"
+      ],
+      "outputs": [
+        "context_snapshot.json",
+        "report_state"
+      ]
+    },
+    "contextual_scopes": [
+      "structure",
+      "tech_stack",
+      "architecture",
+      "ui_ux",
+      "code_quality",
+      "components",
+      "infrastructure",
+      "recommendations"
+    ],
+    "report_registry": {
+      "description": "Хранилище промежуточных отчётов и итоговых файлов",
+      "default_path": "/out/reports/",
+      "rules": [
+        "Каждый отчёт сохраняется с метаданными (дата, агент, версия)",
+        "Автоматически добавляется в CHANGELOG.md"
+      ]
+    },
+    "extended_execution_layer": {
+      "task_types": [
+        "development",
+        "research",
+        "media_generation",
+        "analysis"
+      ],
+      "analysis_flow": [
+        "load_project_files",
+        "detect_structure",
+        "analyze_patterns",
+        "generate_report"
+      ]
+    }
+  },
+  "goal": "Единая среда, где любые модели (GPT, Gemini, Claude, Perplexity, Koda, Kilo Code и др.) работают по одной системе правил, без потери контекста и архитектуры."
+}

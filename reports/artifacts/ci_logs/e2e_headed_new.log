@@ -1,0 +1,23 @@
+[2m[WebServer] [22mnode:internal/child_process:420
+[2m[WebServer] [22m    throw new ErrnoException(err, 'spawn');
+[2m[WebServer] [22m    ^
+[2m[WebServer] [22m
+[2m[WebServer] [22mError: spawn EINVAL
+[2m[WebServer] [22m[90m    at ChildProcess.spawn (node:internal/child_process:420:11)[39m
+[2m[WebServer] [22m[90m    at spawn (node:child_process:754:9)[39m
+[2m[WebServer] [22m    at [eval]:1:219
+[2m[WebServer] [22m[90m    at runScriptInThisContext (node:internal/vm:209:10)[39m
+[2m[WebServer] [22m[90m    at node:internal/process/execution:449:12[39m
+[2m[WebServer] [22m    at [eval]-wrapper:6:24
+[2m[WebServer] [22m[90m    at runScriptInContext (node:internal/process/execution:447:60)[39m
+[2m[WebServer] [22m[90m    at evalFunction (node:internal/process/execution:87:30)[39m
+[2m[WebServer] [22m[90m    at evalScript (node:internal/process/execution:99:3)[39m
+[2m[WebServer] [22m[90m    at node:internal/main/eval_string:74:3[39m {
+[2m[WebServer] [22m  errno: [33m-4071[39m,
+[2m[WebServer] [22m  code: [32m'EINVAL'[39m,
+[2m[WebServer] [22m  syscall: [32m'spawn'[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22m
+[2m[WebServer] [22mNode.js v22.17.0
+Error: Process from config.webServer was not able to start. Exit code: 1
+

@@ -1,0 +1,6 @@
+
+> rest-express@1.0.1 dev
+> concurrently "npm run dev:back" "npm run dev:front"
+
+'concurrently' is not recognized as an internal or external command,
+operable program or batch file.

@@ -1,0 +1,34 @@
+---
+title: Optimization Guidelines
+alwaysApply: true
+---
+
+# Optimization Guidelines — Chef’s Mind AI
+
+## Цель
+Сохранить контекст, минимизировать токены и ускорить работу агентов.
+
+## Правила контекст-экономии
+1. Перед запросом — читать только указанные файлы:
+   - `@/MASTER_CONTEXT_GUIDE_FULL.md`
+   - `@/.kilocode/rules/memory-bank/context.md`
+   - `@/.kilocode/rules/memory-bank/tasks.md`
+   - `@/.kilocode/rules/agent-protocol.md`
+2. При передаче контекста — отправлять ссылки (`@/path/file.md`), а не полный текст.
+3. Хранить в `CONTEXT.md` только актуальные ключевые данные (K/V), не логи.
+
+## Правила переключения контекста
+- Перед переключением агента: `/sync context`
+- После блока: `/cleanup session`
+- Для тяжёлых лонг-ранов: периодически запускать `/cleanup session` каждые N минут (настраивается).
+
+## Токен-экономия
+- Сводить длинные логи к дельтам (diff only).
+- Использовать `summary:` перед большим текстом, чтобы агент читал только резюме.
+- Хранить большие артефакты в `/out/reports/` и давать ссылку.
+
+## Быстрые команды (slash)
+- `/sync context` — синхронизация
+- `/cleanup session` — очистка сессии
+- `/run block` — запустить блок
+

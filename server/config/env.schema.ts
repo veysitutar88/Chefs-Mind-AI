@@ -44,7 +44,32 @@ export const envSchema = z.object({
   GOOGLE_OAUTH_REDIRECT_URI: z.string().url().optional(),
 
   // === MEDIA PROVIDERS ===
+  // === MEDIA PROVIDERS ===
   OPENAI_API_KEY: z.string().optional(),
+  GOOGLE_VERTEX_PROJECT_ID: z.string().optional(),
+  GOOGLE_VERTEX_LOCATION: z.string().default('us-central1'),
+  PERPLEXITY_API_KEY: z.string().optional(),
+  NANOBANANA_API_KEY: z.string().optional(),
+
+  // === AGENT ROUTING ===
+  SOUSCHEF_PROVIDER: z.string().default('openai'),
+  SOUSCHEF_MODEL: z.string().default('gpt-4o'),
+  GASTROCOUNT_PROVIDER: z.string().default('google'),
+  GASTROCOUNT_MODEL: z.string().default('gemini-1.5-pro'),
+  GASTROMIND_PROVIDER: z.string().default('perplexity'),
+  GASTROMIND_MODEL: z.string().default('sonar'),
+  FOODFRAME_IMG_PROVIDER: z.string().default('openai'),
+  FOODFRAME_IMG_MODEL: z.string().default('dall-e-3'),
+  FOODFRAME_VIDEO_PROVIDER: z.string().default('google'),
+  FOODFRAME_VIDEO_MODEL: z.string().default('veo-3'),
+  FOODFRAME_UPSCALE_PROVIDER: z.string().default('nanobanana'),
+
+  // === MEDIA FLAGS ===
+  ENABLE_UPSCALE_BUTTON: z.coerce.boolean().default(true),
+  ENABLE_MODEL_SWITCHER: z.coerce.boolean().default(true),
+  ENABLE_VIDEO_GENERATION: z.coerce.boolean().default(true),
+  DEFAULT_ASPECT_RATIO: z.string().default('16:9'),
+
   MEDIA_PROVIDER_DEFAULT: z.string().default('dall-e-3'),
   MEDIA_VIDEO_PROVIDER_DEFAULT: z.string().default('veo-3'),
   ALLOW_MEDIA_FALLBACK: z.string().default('true'),

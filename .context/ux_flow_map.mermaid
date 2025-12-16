@@ -1,0 +1,46 @@
+graph TD
+    User((User))
+
+    subgraph "Navigation (Left)"
+        Side[Agent Sidebar] -->|Select Agent| ChatCtx[Chat Context]
+        Side -->|Stub| Settings[Settings Modal]
+    end
+
+    subgraph "Main Workspace (Center)"
+        ChatCtx -->|Input| ChatArea
+        ChatArea -->|Condition: FoodFrame| MediaControls[Media Controls]
+        MediaControls -->|Premium Selectors| GeneratorAPI
+        ChatArea -->|Text| AgentOrchestrator
+    end
+
+    subgraph "Right Sidebar (Right)"
+        %% The Split Brain
+        TabSidebar[Active Tab-Sidebar]
+        WidgetSidebar[Detached Widget-Sidebar]
+
+        TabSidebar -->|Tab: Search| MockSearch[Mock Search]
+        TabSidebar -->|Tab: Library| Files[File List]
+        TabSidebar -->|Tab: Assets| Gallery[Asset Gallery]
+        TabSidebar -->|Tab: Calendar| MockTodo[Manual To-Do List]
+        
+        style TabSidebar fill:#f96,stroke:#333,stroke-width:2px
+        style WidgetSidebar fill:#eee,stroke:#999,stroke-dasharray: 5 5 hiding
+
+        WidgetSidebar -.->|Unreachable| Followups[Followup Widget (Block 8)]
+        WidgetSidebar -.->|Unreachable| RealCalendar[Real Calendar Data]
+        WidgetSidebar -.->|Unreachable| ActionLog[Sidebar Actions]
+    end
+
+    subgraph "Media Studio (Page)"
+        MediaPage[Media Page]
+        MediaPage -->|Tab: Generate| SimpleGen[Basic Generator]
+        SimpleGen -->|Input| GeneratorAPI
+        MediaPage -->|Tab: Gallery| Gallery
+        
+        style SimpleGen fill:#ff9,stroke:#333,stroke-width:2px
+    end
+    
+    User --> Side
+    User --> ChatArea
+    User --> TabSidebar
+    User --> MediaPage

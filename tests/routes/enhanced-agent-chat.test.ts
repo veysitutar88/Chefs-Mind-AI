@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
-import { createTestApp } from '../../tests/helpers/app.js';
+import { createTestApp } from '@/tests/helpers/app.js';
 
 // Mock QA Gate to ensure deterministic behavior and inject routing info
-vi.mock('../middleware/qaGate.js', () => {
+vi.mock('@/server/middleware/qaGate.js', () => {
   return {
     validateAndCorrectResponse: vi.fn(
       async (
@@ -31,7 +31,7 @@ vi.mock('../middleware/qaGate.js', () => {
 });
 
 // Mock Perplexity API to avoid external calls if used by researcher
-vi.mock('../services/perplexity.js', () => ({
+vi.mock('@/server/services/perplexity.js', () => ({
   analyzeWithPerplexity: vi.fn(async (text: string) => ({
     response: `Mocked web result for: ${text}`,
     metadata: { mocked: true },
@@ -39,7 +39,7 @@ vi.mock('../services/perplexity.js', () => ({
 }));
 
 // Mock OpenAI used by QA validator to avoid network
-vi.mock('../services/openai.js', () => ({
+vi.mock('@/server/services/openai.js', () => ({
   analyzeWithGPT: vi.fn(
     async () =>
       '{"qaScore":0.99,"wasCorrected":false,"correctedResponse":"OK","reasons":[]}'

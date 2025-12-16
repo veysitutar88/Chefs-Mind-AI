@@ -1,18 +1,44 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: chefs_mind_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./drizzle/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chefs_mind_ai"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5001:5000"  # Backend port mapping
+      - "5001:5001"  # Backend port mapping
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/chefs_mind_ai
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5001/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+volumes:
+  postgres_data:

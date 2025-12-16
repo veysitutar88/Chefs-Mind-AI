@@ -64,6 +64,10 @@ export interface MediaGenerationParams {
   durationSec?: number;
   generator?: string;
   negativePrompt?: string;
+  quality?: 'standard' | 'hd' | 'premium';
+  seed?: number;
+  steps?: number;
+  aspectRatio?: string;
 }
 
 export interface MediaGenerationResult {

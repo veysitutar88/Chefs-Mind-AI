@@ -1,0 +1,94 @@
+{
+    "version": "scan-v1",
+    "nodes": [
+        {
+            "name": "RootLayout",
+            "path": "frontend-enhanced/src/app/layout.tsx",
+            "children": [
+                "Home",
+                "MediaStudioPage"
+            ],
+            "status": "valid"
+        },
+        {
+            "name": "Home",
+            "path": "frontend-enhanced/src/app/page.tsx",
+            "children": [
+                "AgentSidebar",
+                "ChatArea",
+                "RightSidebar(UI)"
+            ],
+            "status": "valid"
+        },
+        {
+            "name": "MediaStudioPage",
+            "path": "frontend-enhanced/src/app/media/page.tsx",
+            "children": [
+                "Generator",
+                "JobList",
+                "AssetGallery"
+            ],
+            "status": "valid",
+            "issues": [
+                "hardcoded_hex_colors"
+            ]
+        },
+        {
+            "name": "RightSidebar(UI)",
+            "path": "frontend-enhanced/src/components/ui/RightSidebar.tsx",
+            "type": "component",
+            "status": "active",
+            "description": "Tab-based sidebar used in Home",
+            "dependencies": [
+                "AssetGallery",
+                "MediaJobWidget"
+            ]
+        },
+        {
+            "name": "RightSidebar(Layout)",
+            "path": "frontend-enhanced/src/components/layout/RightSidebar.tsx",
+            "type": "component",
+            "status": "detached",
+            "description": "Widget-based sidebar (Followups/Calendar) - NOT CONNECTED",
+            "dependencies": [
+                "FollowupWidget",
+                "useSidebarData",
+                "MediaThumbnail"
+            ],
+            "issues": [
+                "duplicate_component",
+                "unused_active_code"
+            ]
+        },
+        {
+            "name": "Generator",
+            "path": "frontend-enhanced/src/components/media/Generator.tsx",
+            "status": "active",
+            "dependencies": [
+                "ui/select",
+                "ui/button",
+                "ui/card"
+            ]
+        },
+        {
+            "name": "DetachedMediaComponents",
+            "path": "frontend-enhanced/src/components/ui/",
+            "status": "detached",
+            "children": [
+                "MediaModelSelector",
+                "MediaFormatSelector",
+                "QualitySelector",
+                "SeedInput",
+                "StepsInput"
+            ],
+            "issues": [
+                "components_exist_but_generator_uses_primitives"
+            ]
+        }
+    ],
+    "risks": [
+        "RightSidebar wiring mismatch (Home uses UI variant, but Layout variant generally contains newer Block 8 logic)",
+        "Media Studio components detached (Generator uses basic HTML/Shadcn instead of dedicated selectors)",
+        "Styling consistency (Hex codes vs Tailwind tokens)"
+    ]
+}

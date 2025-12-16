@@ -1,0 +1,542 @@
+# Mark# Chef’s Mind AI — MASTER CONTEXT v2.1.4 (UI Refresh)
+
+**Дата чекпоинта:** 2025-11-13  
+**Автор:** Igor + AI Orchestrator  
+**Статус:** Stable (локальный), Blocks 0–3 готовы, Block 4 в работе  
+**Режим разработки:** Local Surface + GitHub + KiloCode Memory Bank
+
+---
+
+## 0. Назначение документа
+
+Этот файл — **единственный источник правды** о текущем состоянии проекта Chef’s Mind AI:
+
+- описывает идею, архитектуру, блоки, статусы;
+- фиксирует новое видение **UI / UX**, которое мы уточнили в последних сессиях;
+- связывает код (файлы, модули), инфраструктуру, агентов, MCP и KiloCode.
+
+Документ используется:
+
+- как контекст для LLM (KiloCode, GPT, Gemini, Claude, Perplexity);
+- как входная точка для новых чатов / новых ассистентов;
+- как «фриз» проекта на момент версии **v2.1.4 + UI-refresh**.
+
+---
+
+## 1. Идея и позиционирование
+
+**Chef’s Mind AI** — это не «поварское приложение», а **AI-ядро для шеф-повара и ресторана**.
+
+- Базис: **система на ИИ**, которая помогает:
+  - управлять кухней, меню и рецептами;
+  - считать финансы и закупки;
+  - планировать календари и события;
+  - генерировать медиа (фото/видео/логотипы);
+  - контролировать качество ответов через QA-Gate.
+
+- Основная метафора бренда:  
+  **«Мозг шеф-повара, усиленный ИИ»** — Chef’s Mind AI, где повар = эксперт, а ИИ = интеллектуальный интерфейс и система управления.
+
+---
+
+## 2. Архитектура верхнего уровня
+
+### 2.1 Стек
+
+- **Frontend:** Next.js 15 + React 18 + Tailwind + shadcn/ui (`frontend-enhanced/`)   
+- **Backend:** Node.js 20 + Express + TypeScript (`server/`)  
+- **БД:** PostgreSQL 15 + Drizzle ORM (`shared/schema.ts`)   
+- **Агенты:** 5 специализированных AI-агентов (Chef, Accountant, Researcher, Media Studio, QA-Gate).   
+- **MCP:** 2 MCP-сервера (OpenAI MCP и Google MCP) + прямой Perplexity API.   
+- **Наблюдаемость:** `/health`, `/metrics` (Prometheus-совместимые).   
+- **Dev-инструменты:** KiloCode в VS Code + Memory Bank (.kilocode/rules/*).   
+
+### 2.2 Главные компоненты
+
+- `server/routes.ts` — монтирование всех основных API (`/api/enhanced-agent/chat`, `/api/dbadmin`, `/api/import`, `/api/calendar`, `/metrics`, `/health`).   
+- `server/agents/orchestrator.ts` — **AgentOrchestrator**: классификация намерений и маршрутизация запросов к нужным агентам (Block 2).   
+- `server/graph/nodes/quality_control.ts` — QA-узел, проверяющий ответы перед выдачей пользователю.   
+- `shared/schema.ts` — схемы БД: `orders`, `purchase_orders`, `suppliers`, `attachments`, `notes`, `calendar_links` и т.д.   
+- `server/routes/dbadmin.ts` — backup/restore с RBAC, SAFE_MODE и SHA256.   
+- `frontend-enhanced/` — основной UI (страницы Login/Dashboard/Chat, история чатов, заказы/поставщики, будущий Media Studio UI).   
+
+---
+
+## 3. Агенты и MCP
+
+### 3.1 Пять агентов
+
+1. **Chef (Su-Chef / Kitchen Agent)**
+   - Рецепты, техкарты, меню, расчёт порций.
+   - Работа с блюдами, банкетами, plating, food-фотография (концептуально).
+
+2. **Accountant**
+   - Финансы, заказы, закупки, маржа, отчёты.
+   - Orders / Purchase orders / Suppliers.
+   - Google Calendar / Sheets через Google MCP.
+
+3. **Researcher**
+   - Интернет-исследования, тренды, конкуренты.
+   - Работает поверх **Perplexity Sonar** (direct API, не через MCP).   
+
+4. **Media Studio**
+   - Генерация картинок/видео, логотипов, промо-материалов.
+   - Использует Imagen / Veo / DALL·E (через MCP и/или прямые API; видео временно отключено флагом).   
+
+5. **QA-Gate**
+   - Валидация ответов, авто-коррекция, логирование качества.
+   - Обязательный слой перед пользователем.
+
+### 3.2 MCP-сервера и модели
+
+- **MCP #1 — OpenAI MCP**
+  - GPT-4o / GPT-4o-mini / GPT-5.x, DALL·E.  
+  - Используется Chef + QA-Gate.
+
+- **MCP #2 — Google MCP**
+  - Gemini 2.5, Imagen, Veo, Google Calendar / Sheets / Docs / Drive.  
+  - Используется Accountant + Media Studio.
+
+- **Perplexity Sonar**
+  - Подключён напрямую (HTTP API) для Researcher.   
+
+---
+
+## 4. Блоки (Vertical Slices) и статус
+
+### 4.0 Block 0 — Infra-Fix ✅
+
+Цель: выровнять окружение и поведение сервисов.
+
+- Единый порт: **PORT=5001** во всех конфигурациях (`.env`, docker-compose, frontend env, Playwright baseURL).   
+- Флаг `ENABLE_VIDEO=false` ⇒ `POST /api/media/video/generate` всегда отдаёт `200 { ok:false, reason:"video_disabled" }` вместо 501.   
+- `/health` возвращает `{ ok:true, port:5001, video_enabled:false }`.  
+- `/metrics` даёт Prometheus-совместимый вывод.  
+- Все smokes/e2e зелёные (артефакты в `/out/reports/block0-infra-fix/*`).   
+
+### 4.1 Block 1 — MVP User Flow ✅ (по факту реализовано в процессе работы над Block 2–3)
+
+- Google Login → Dashboard → Chat (Chef по умолчанию).   
+- Эндпоинт `/api/enhanced-agent/chat` отдаёт ответ от агента; UI показывает результат.   
+
+### 4.2 Block 2 — Multi-Agent Routing ✅
+
+- Создан `server/agents/orchestrator.ts` (AgentOrchestrator).   
+- Система классификации интентов: `cooking`, `finance`, `research`, `media`, `qa`.  
+- `/api/enhanced-agent/chat` теперь проксирует запросы через оркестратор, добавляет `meta.agent`.   
+- Лёгкий кэш последних 3 запросов (Алгоритм Левенштейна для схожести).   
+- UI визуализирует активного агента (`AgentBadge` / бейдж в чате).   
+- Тесты:
+  - Unit: `server/tests/orchestrator.test.ts`
+  - E2E: `tests/e2e/enhanced-agent-chat.spec.ts`   
+
+**Производительность:** ~50ms классификация, ~95% точность маршрутизации.   
+
+### 4.3 Block 3 — Data Persistence ✅ (фактическое состояние)
+
+**1) История чатов**
+
+- Созданы таблицы:
+  - `chat_sessions (id, user_id, title, status, created_at, updated_at)`
+  - `chat_messages (id, session_id, role, content, intent, agent, metadata, created_at)`  
+- Реализованы CRUD API для сессий и сообщений, с валидацией Zod и RBAC.  
+- Страница `chat-history` + компонент `ChatHistory`:
+  - список сессий;
+  - поиск и фильтрация;
+  - просмотр деталей выбранной сессии.  
+
+**2) Orders / Suppliers**
+
+- Реализован полный E2E-цикл для заказов и поставщиков:
+  - Backend: CRUD эндпоинты для `orders` и `suppliers`, интегрированные с Drizzle.   
+  - Frontend: страницы и React-компоненты с полной логикой создания/просмотра/редактирования/удаления.
+  - E2E-тесты подтвердили корректную работу через UI.
+
+**3) Calendar & Backup**
+
+- Calendar: `/api/calendar` подключён к Google MCP; создание событий с напоминаниями.   
+- Backup UI: реализован триггер `/api/db/backup` + список бэкапов, backend реализован раньше в `dbadmin.ts`.   
+
+### 4.4 Block 4 — Media Studio ⚙ In Progress
+
+- Есть **дизайн-док** `docs/MEDIA_STUDIO_DESIGN.md` и стратегия Block 4 в ROADMAP.   
+- KiloCode начал менять этот блок и частично «залип» на попытке авто-реализации сложной логики; прогресс зафиксирован, но Block 4 считается **не завершённым**.
+- На текущем чекпоинте Media Studio UI будет пересобран на основе нового **Prompt Enhancer MCP** (см. раздел 6).
+
+### 4.5 Block 5 — Analytics & Polish 🕓 Planned
+
+- План: дашборд с p95 latency, error-rate, oauth-status, UI-компоненты `StatusIndicator`, `HealthBadge`, `Skeleton`, E2E-набор на весь флоу.   
+
+---
+
+## 5. Новый UI / UX (главное изменение этого чекпоинта)
+
+Ниже — **новый канонический дизайн UI**, который должен заменить все экспериментальные версии.
+
+### 5.1 Общая компоновка окна
+
+Экран делится на три вертикальные области:
+
+1. **Левый сайдбар (Agent Bar)**  
+2. **Центральная область (Main Chat)**  
+3. **Правый сайдбар (Tools Bar)**  
+
+Плюс **нижняя строка ввода** — единая для всех чатов.
+
+### 5.2 Левый сайдбар — «агенты как проекты»
+
+Сверху вниз:
+
+1. **Logo / Brand**  
+   - Маленький логотип Chef’s Mind AI.  
+2. **Agent-кнопки** (иконки/бейджи, как Projects в ChatGPT):
+   - `Accountant`
+   - `Su-Chef`
+   - `Research`
+   - `Media Studio`  
+   > Кнопки **Main Chat** как отдельного проекта **нет** — основной чат = стартовая страница, которая уже отображается в центре.
+3. **Settings**
+   - Последняя кнопка «Settings» открывает страницу настроек агентов и общих параметров.
+
+**Поведение при клике на агента (аналог Projects в ChatGPT):**
+
+- В центральной части открывается **специализированный агент-чат**:
+  - сверху: название агента + краткое описание и мини-контекст (5-й пункт, см. ниже);
+  - под ним: поле для ввода нового сообщения;
+  - ниже: список сессий (история этого агента, данные из Block 3 — `chat_sessions`).  
+- Для каждого агента:
+  - можно хранить 20–30 последних сессий;
+  - можно прикреплять файлы (проектные промпты, PDF, рецепты) — **pin-область** к конкретному агенту.
+
+### 5.3 Центральная область — главный чат
+
+**Вариант 1 — «Стартовый главный чат»**
+
+- По умолчанию (после логина) пользователь попадает в **Main Chat**:
+  - сверху — заголовок «Chef’s Mind AI (Main Chat)» + текущая модель (Gemini / GPT / Sonar);  
+  - в центре — диалоговая лента;
+  - внизу — общая строка ввода.
+
+**Особенности:**
+
+- Main Chat работает через **AgentOrchestrator**:
+  - пользователь пишет в одной линейке;
+  - оркестратор определяет intent и выбирает агента;
+  - в сообщении и UI показывается бейдж агента, ответившего на запрос.   
+- Через этот чат можно:
+  - задавать общие вопросы;
+  - использовать его как «OpenRouter с 4 агентами»;
+  - загружать документы для учётчика (см. 5.5).
+
+**Вариант 2 — Агент-чаты**
+
+- При выборе конкретного агента в левом сайдбаре центральная область становится «локальным проектом» этого агента:
+  - свой список сессий;
+  - свой pinned-контекст и инструкции;
+  - те же UI-паттерны, что у Main Chat.
+
+### 5.4 Нижняя строка ввода
+
+Единая линия управления LLM:
+
+- **Слева:**
+  - 📎 **Paperclip** — загрузка файлов (чеков, накладных, PDF-доков, картинок для Media Studio и т.д.).
+  - (Опционально) небольшие пресеты / быстрые действия.
+
+- **По центру:**
+  - Поле ввода текста.
+  - Встроенный режим автодополнения (по мере развития).
+
+- **Справа:**
+  - Переключатель **модели** (всплывающее меню или компактная кнопка):
+    - Gemini
+    - GPT (OpenAI)
+    - Perplexity
+    - (в будущем) локальные модели.
+  - 🎙 **Mic** — голосовой ввод.
+  - ➤ **Send** — отправка сообщения.
+
+**Требование:** переключатель модели должен быть **простой и явный**, без сложных гибридов. Основание — обсуждение о том, что гибриды пока «под вопросом» из-за сложности интеграции.
+
+### 5.5 Правый сайдбар
+
+Правый сайдбар — набор инструментов, привязанных к текущему контексту.
+
+Базовый набор кнопок:
+
+1. **Search / Поиск по чатам**
+   - полнотекстовый поиск по `chat_sessions` и `chat_messages` (Block 3).  
+
+2. **Library / Библиотека**
+   - pinned-файлы и промпты: рецепты, контракты, шаблоны писем, промпты Media Studio и т.д.
+
+3. **Calendar / Календарь** ✅
+   - вид календаря, который подтягивает события через `/api/calendar`.  
+   - используется Accountant/Accountant+Chef (банкеты, брони, заказы).   
+
+4. **DB Access (под вопросом)** ❓
+   - возможный просмотр некоторых таблиц (`orders`, `suppliers`) в read-only режиме.
+   - помечено как «под вопросом», чтобы не усложнять безопасность и RBAC.
+
+---
+
+## 6. Prompt Enhancer MCP (Media Studio и дальше)
+
+### 6.1 Идея
+
+В Media Studio и (опционально) в других агентов создаётся **отдельный MCP-подобный сервис** — **Prompt Enhancer**:
+
+- Вход: «сырое» сообщение пользователя (естественный язык).  
+- Выход: адаптированный промпт для конкретного генератора (Imagen, DALL·E, Veo, Stable Diffusion и т.п.), с нужным синтаксисом и структурой.
+
+### 6.2 Задачи Prompt Enhancer
+
+1. Определить, **для какого генератора** готовится промпт:
+   - Gemini Image / Video
+   - DALL·E
+   - локальный SD / ComfyUI-пайплайн (в будущем).
+
+2. Преобразовать промпт:
+   - соблюсти формат конкретного API (size, style, lighting, camera, aspect ratio);
+   - подмешать проектные настройки (Black Label Series, food-фотография, вертикальный формат 4:5 и т.д.).
+
+3. Вернуть:
+   - нормализованный prompt;
+   - опционально negative prompt;
+   - параметры генерации (steps, cfg, sampler, и пр. для SD-подобных систем).
+
+### 6.3 Встраивание в UI
+
+- В Media Studio пользователь **просто вводит промпт в чат**, выбирает модель (через переключатель LLM/генератора) — остальное делает Prompt Enhancer.
+- В будущем Prompt Enhancer может быть использован:
+  - в Su-Chef (генерация визуальных схем подачи);
+  - в Researcher (создание иллюстраций к отчётам).
+
+---
+
+## 7. KiloCode и Memory Bank
+
+- В репозитории есть инструкции для KiloCode (`КилокодИнструкция.md`, `.kilocode/rules/*`), описывающие:
+  - режимы Ask / Architect / Code / Debug / Orchestrator;
+  - правила безопасности (все write/exec только через diff-подтверждение);   
+  - Memory Bank как хранилище постоянного контекста (MASTER_CONTEXT, CHECKPOINT, ROADMAP).   
+
+**Роль этого файла:** быть **основным контекстным документом** для Memory Bank и всех LLM-агентов, в том числе KiloCode.
+
+---
+
+## 8. Структура репозитория (упрощённая карта)
+
+```text
+Chefs-Mind-AI/
+├── server/
+│   ├── routes.ts
+│   ├── agents/
+│   │   └── orchestrator.ts
+│   ├── graph/nodes/quality_control.ts
+│   ├── routes/dbadmin.ts
+│   └── services/google-mcp.ts
+├── shared/
+│   └── schema.ts
+├── frontend-enhanced/
+│   ├── src/app/chat-history/
+│   ├── src/app/(agent-chats)/...
+│   ├── src/components/chat/ChatHistory.tsx
+│   └── src/components/AgentBadge.tsx
+├── docs/
+│   ├── AGENT_ROUTING_DESIGN.md
+│   ├── MEDIA_STUDIO_DESIGN.md
+│   ├── DEPLOYMENT_STRATEGY.md
+│   ├── DEPLOYMENT_OPTIONS.md
+│   ├── progress_report_v_2_1.md
+│   ├── ROADMAP_v2.1.2.md
+│   └── (этот файл) MASTER_CONTEXT_v2.1.4_UI-REFRESH.md
+├── checkpoints/
+│   └── CHECKPOINT_v2.1.3.json (и далее)
+├── external/
+│   ├── lobe-chat/           # референс для multi-agent chat UI
+│   ├── open-webui/          # референс для общего chat layout
+│   ├── agent-squad/         # идеи по командам агентов
+│   ├── ComfyUI/             # идеи для node-based Media Studio
+│   └── stable-diffusion-prompt-* # идеи для prompt-структур
+└── .kilocode/
+    ├── rules/
+    └── workflows/
+down Document
+
+## Introduction
+
+Markdown is a plain text formatting syntax.
+
+Paragraphs are separated by empty lines.
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+## Character Styles
+
+These spans result in 'em' tags:
+
+- *single asterisks*
+- _single underscores_
+
+These spans result in 'strong' tags:
+
+- **double asterisks**
+- __double underscores__
+
+These spans result in 'del' tags:
+
+- ~~double tildes~~
+
+## Links and Images
+
+This is an [example inline link](https://www.actiprosoftware.com "Actipro Software") with tooltip text specified.
+[This link](https://www.actiprosoftware.com) has no tooltip text specified.
+
+URLs and e-mail addresses can be turned into links by enclosing them in angle braces:
+
+- <https://www.actiprosoftware.com>  
+- <support@microsoft.com>
+
+[This link](#markdown-document) links to the first heading in this document via custom ID.
+
+## Images
+
+This is an example of an image:
+
+![Image](https://www.microsoft.com/favicon.ico)
+
+This is an example of an image with a link:
+
+[![Image](https://www.google.com/favicon.ico)](https://www.google.com)
+
+## Blockquotes
+
+Markdown said:
+
+> This is the first level of quoting.
+>
+> > This is a nested blockquote.
+>
+> Back to the first level.
+
+## Lists
+
+Unordered list using minus signs (-):
+
+- Step 1
+- Step 2
+- Step 3
+  - Step 3a
+  - Step 3b
+  - Step 3c
+
+Unordered list using plus signs (+):
+
++ Step 1
++ Step 2
++ Step 3
+  + Step 3a
+  + Step 3b
+  + Step 3c
+
+Unordered list using asterisks (*):
+
+* Step 1
+* Step 2
+* Step 3
+  * Step 3a
+  * Step 3b
+  * Step 3c
+
+Ordered list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    1. Step 3a
+    1. Step 3b
+    1. Step 3c
+
+Nested (unordered within ordered) list:
+
+1. Step 1
+1. Step 2
+1. Step 3
+    - Step 3a
+    - Step 3b
+    - Step 3c
+
+Definition list:
+
+Term #1
+: This is the definition of term #1.
+
+Term #2
+: This is the definition of term #2.
+
+## Code Blocks
+
+Inline `code` can be delimited with characters.
+
+This code block is fenced with three backticks and has its language specified:
+
+```javascript
+var oldUnload = window.onbeforeunload;
+window.onbeforeunload = function() {
+    saveCoverage();
+    if (oldUnload) {
+        return oldUnload.apply(this, arguments);
+    }
+};
+```
+
+This code block is fenced with three tildes and has its language specified:
+
+~~~ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+~~~
+
+This code block is created by indenting the code, but no language can be specified:
+
+    var foo = 1;
+
+## Tables
+
+| Fruit  | Color  |
+|--------|--------|
+| Apples | Red    |
+| Grapes | Purple |
+| Lemons | Yellow |
+
+## Horizontal Rules
+
+Horizontal rules are formed by placing three or more hyphens, asterisks, or underscores on a line by themselves.
+
+---
+
+***
+
+___
+
+## HTML Tags
+
+<strong>HTML tags</strong> can optionally be used in <em>Markdown</em>.
+
+## Special Characters
+
+Unescaped:
+\ ` * _ { } [ ] ( ) # + - . !
+
+Backslash-Escaped:
+\\ \` \* \_ \{ \} \[ \] \( \) \# \+ \- \. \!

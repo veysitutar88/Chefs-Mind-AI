@@ -1,0 +1,26 @@
+
+> chefs-mind-ai-enhanced@2.0.0 build
+> next build
+
+   ▲ Next.js 16.0.0 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/layout.tsx:1:1
+Module not found: Can't resolve '../../styles/globals.css'
+> 1 | ﻿import '../../styles/globals.css';
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 |
+  3 | export default function RootLayout({
+  4 |   children,
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (./src/app/layout.tsx:1:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)

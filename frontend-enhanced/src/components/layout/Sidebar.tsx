@@ -5,7 +5,12 @@ import { usePathname } from 'next/navigation';
 const items = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/agents', label: 'Agents' },
-  { href: '/media', label: 'Media' },
+  { href: '/media', label: 'Media Studio' },
+  { href: '/dashboard/calendar', label: 'Календарь' },
+  { href: '/chat-history', label: 'История чата' },
+  { href: '/orders', label: 'Заказы' },
+  { href: '/suppliers', label: 'Поставщики' },
+  { href: '/dashboard/admin/backups', label: 'Резервные копии' },
 ];
 
 export default function Sidebar() {

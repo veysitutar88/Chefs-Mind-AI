@@ -1,0 +1,10 @@
+{
+    "last_scan_hash": "<git-hash>",
+    "files": {
+        "path/to/file": {
+            "last_known_hash": "<hash>",
+            "confidence": 1.0,
+            "reason": "initial_scan"
+        }
+    }
+}

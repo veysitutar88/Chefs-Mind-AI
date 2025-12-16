@@ -1,0 +1,376 @@
+2025-11-12T12:09:37.943Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T12:09:37.945Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T12:09:37.946Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T12:09:37.947Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T12:09:37.948Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T12:09:40.320Z | media_studio_error_handling | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:09:40.320Z | media_studio_status_tracking | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:09:40.320Z | media_studio_image_generation | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:09:40.321Z | media_studio_asset_gallery | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:09:40.320Z | media_studio_navigation | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:11:30.509Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T12:11:30.526Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T12:11:30.544Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T12:11:30.543Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T12:11:30.563Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T12:11:39.526Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T12:11:44.517Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T12:11:44.517Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T12:12:00.407Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T12:12:00.470Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T12:19:34.503Z | media_studio_status_tracking | STARTED | base=http://localhost:5001 
+2025-11-12T12:19:34.517Z | media_studio_status_tracking | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:5001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:19:34.533Z | media_studio_navigation | STARTED | base=http://localhost:5001 
+2025-11-12T12:19:34.546Z | media_studio_navigation | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:5001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:19:34.566Z | media_studio_image_generation | STARTED | base=http://localhost:5001 
+2025-11-12T12:19:34.574Z | media_studio_image_generation | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:5001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:19:34.581Z | media_studio_asset_gallery | STARTED | base=http://localhost:5001 
+2025-11-12T12:19:34.582Z | media_studio_error_handling | STARTED | base=http://localhost:5001 
+2025-11-12T12:19:34.587Z | media_studio_asset_gallery | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:5001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:19:34.588Z | media_studio_error_handling | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:5001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:22:31.314Z | media_studio_status_tracking | STARTED | base=http://localhost:3001 
+2025-11-12T12:22:31.340Z | media_studio_status_tracking | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:22:31.380Z | media_studio_navigation | STARTED | base=http://localhost:3001 
+2025-11-12T12:22:31.394Z | media_studio_navigation | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:22:31.481Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001 
+2025-11-12T12:22:31.486Z | media_studio_image_generation | STARTED | base=http://localhost:3001 
+2025-11-12T12:22:31.499Z | media_studio_asset_gallery | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:22:31.500Z | media_studio_image_generation | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T12:22:32.022Z | media_studio_error_handling | STARTED | base=http://localhost:3001 
+2025-11-12T12:22:32.029Z | media_studio_error_handling | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+
+2025-11-12T22:52:04.869Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T22:52:04.886Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T22:52:04.886Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T22:52:04.911Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T22:52:04.921Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T22:52:12.417Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T22:52:17.401Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T22:52:17.416Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T22:52:34.761Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T22:52:34.789Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T22:53:43.197Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T22:53:43.196Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T22:53:43.220Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T22:53:43.228Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T22:53:43.252Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T22:53:49.696Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T22:53:54.469Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T22:53:54.499Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T22:54:13.149Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T22:54:13.160Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T22:55:33.690Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T22:55:33.714Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T22:55:33.720Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T22:55:33.723Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T22:55:33.730Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T22:55:39.911Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T22:55:45.105Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T22:55:45.170Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T22:56:03.621Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T22:56:03.658Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T23:01:42.000Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T23:01:42.000Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T23:01:42.002Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T23:01:42.001Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T23:01:42.061Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T23:01:48.515Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T23:01:53.348Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T23:01:53.435Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T23:02:11.889Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T23:02:11.907Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T23:02:45.801Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T23:02:45.801Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T23:02:45.812Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T23:02:45.822Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T23:02:45.833Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T23:02:52.184Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T23:02:57.131Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T23:02:57.255Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T23:03:15.704Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T23:03:15.748Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+
+2025-11-12T23:03:56.456Z | media_studio_status_tracking | STARTED | base=http://localhost:3001
+2025-11-12T23:03:56.495Z | media_studio_asset_gallery | STARTED | base=http://localhost:3001
+2025-11-12T23:03:56.527Z | media_studio_error_handling | STARTED | base=http://localhost:3001
+2025-11-12T23:03:56.527Z | media_studio_navigation | STARTED | base=http://localhost:3001
+2025-11-12T23:03:56.544Z | media_studio_image_generation | STARTED | base=http://localhost:3001
+2025-11-12T23:04:02.691Z | media_studio_status_tracking | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Готово', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Готово', { exact: true })[22m
+
+2025-11-12T23:04:07.955Z | media_studio_navigation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Media Studio', { exact: true })
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Media Studio', { exact: true })[22m
+
+2025-11-12T23:04:07.986Z | media_studio_image_generation | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Генератор изображений и видео')
+Expected: visible
+Timeout: 10000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 10000ms[22m
+[2m  - waiting for getByText('Генератор изображений и видео')[22m
+
+2025-11-12T23:04:26.421Z | media_studio_asset_gallery | FAILED: expect.toBeVisible: Target page, context or browser has been closed
+2025-11-12T23:04:26.432Z | media_studio_error_handling | FAILED: locator.fill: Test timeout of 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('input[placeholder*="описание" i], textarea[placeholder*="описание" i]').first()[22m
+

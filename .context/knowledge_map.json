@@ -1,0 +1,87 @@
+{
+    "version": "3.1.0",
+    "generated_at": "2025-12-16T02:00:00Z",
+    "active_modules": [
+        {
+            "name": "Frontend Enhanced",
+            "path": "frontend-enhanced",
+            "type": "ui",
+            "tags": [
+                "nextjs",
+                "react",
+                "tailwind",
+                "media-studio"
+            ],
+            "primary_files": [
+                "src/app/page.tsx",
+                "src/app/layout.tsx",
+                "src/components/layout/RightSidebar.tsx",
+                "src/app/media/page.tsx"
+            ]
+        },
+        {
+            "name": "Server Core",
+            "path": "server",
+            "type": "backend",
+            "tags": [
+                "express",
+                "node",
+                "drizzle",
+                "agents"
+            ],
+            "primary_files": [
+                "enhanced-server.ts",
+                "routes/media.ts",
+                "routes/enhanced-agent.ts",
+                "agents/orchestrator.ts"
+            ]
+        },
+        {
+            "name": "Cognition",
+            "path": ".context",
+            "type": "meta",
+            "tags": [
+                "maps",
+                "audit",
+                "checkpoint"
+            ],
+            "primary_files": [
+                "knowledge_map.json",
+                "heatmap.json"
+            ]
+        },
+        {
+            "name": "Documentation",
+            "path": "docs",
+            "type": "meta",
+            "tags": [
+                "holy-six",
+                "guide",
+                "evolution"
+            ],
+            "primary_files": [
+                "UI_UX_CANON_v2.4.md",
+                "AGENT_ROUTING_DESIGN.md"
+            ]
+        }
+    ],
+    "legacy_modules": [
+        "client",
+        "frontend",
+        "frontend-simple"
+    ],
+    "relationships": [
+        {
+            "from": "Frontend Enhanced",
+            "to": "Server Core",
+            "type": "api-call",
+            "description": "Frontend consumes Express API endpoints"
+        },
+        {
+            "from": "Server Core",
+            "to": "Database",
+            "type": "query",
+            "description": "Drizzle ORM queries"
+        }
+    ]
+}

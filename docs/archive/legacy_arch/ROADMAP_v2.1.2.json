@@ -1,0 +1,137 @@
+{
+  "version": "v2.1.2",
+  "generated": "2025-11-11T17:55:31Z",
+  "mode": "local",
+  "strategy": "hybrid_vertical_priority",
+  "readiness": {
+    "p1": 1.0,
+    "p2": 0.83,
+    "overall_e2e": 0.91
+  },
+  "vertical_blocks": [
+    {
+      "name": "Block 1 — MVP User Flow",
+      "goal": "Google login → dashboard → Chef chat → answer",
+      "status": "in_progress",
+      "tasks": [
+        "Install dev deps: typescript@5.6.3, cross-env, @types/express, @types/cors; tsconfig skipLibCheck",
+        "Set .env.local: PORT=5003, SESSION_SECRET, DATABASE_URL or in-memory, Google OAuth keys",
+        "Obtain refresh token; /auth/google/status -> ok:true",
+        "UI: login button, redirect to /dashboard",
+        "UI: chat component posting to /api/enhanced-agent/chat (Chef-only)",
+        "Smoke: health, metrics, auth status, chat"
+      ],
+      "acceptance": [
+        "User can register/login and chat",
+        "No 4xx/5xx in logs",
+        "/health=200 and metrics exposed"
+      ]
+    },
+    {
+      "name": "Block 2 — Multi-Agent Routing",
+      "goal": "Orchestrator routes to right agent for intent",
+      "status": "pending",
+      "tasks": [
+        "Intent classifier + policy map",
+        "Backend: agent selection & metadata",
+        "UI: agent badges and source-of-truth",
+        "QA-Gate surfaced (score, correctedResponse)"
+      ],
+      "acceptance": [
+        "5 intents → correct agent answers (golden prompts)"
+      ]
+    },
+    {
+      "name": "Block 3 — Data Persistence",
+      "goal": "History, CRUD, calendar, backup UI",
+      "status": "partial",
+      "tasks": [
+        "Persist chat sessions + 7d cleanup",
+        "CRUD orders & suppliers (RBAC)",
+        "Google Calendar smoke OK",
+        "Backup: list + trigger from UI"
+      ],
+      "acceptance": [
+        "History survives reload",
+        "Manual backup appears in list",
+        "Calendar create returns 200"
+      ]
+    },
+    {
+      "name": "Block 4 — Media Studio",
+      "goal": "Generate image/video; list assets",
+      "status": "pending",
+      "tasks": [
+        "UI: prompt+model form + gallery",
+        "Backend: provider guards + fallbacks",
+        "Storage: asset metadata + download"
+      ],
+      "acceptance": [
+        "Image and video generated",
+        "Assets visible with metadata"
+      ]
+    },
+    {
+      "name": "Block 5 — Analytics & Polish",
+      "goal": "Insights, UI polish, tests",
+      "status": "pending",
+      "tasks": [
+        "Dashboard with p95, rps, error rate, OAuth status",
+        "Reports export to /out/reports + CHANGELOG",
+        "StatusIndicator, HealthBadge, Skeleton components",
+        "Playwright e2e suite: login/chat/backup/calendar/media"
+      ],
+      "acceptance": [
+        "Dashboards render without errors",
+        "CI green on default branch"
+      ]
+    }
+  ],
+  "cross_cutting": [
+    "Resolve ~44 TS errors in enhanced graph/media or exclude from MVP path",
+    "Fix routes.ts L472 (esbuild parse) or exclude for MVP",
+    "Standardize .env, add .env.sample",
+    "Add oauth_* metrics; histogram for chat latency",
+    "Vertex credentials when ready"
+  ],
+  "ci_cd": {
+    "pipeline": [
+      "lint",
+      "tsc",
+      "build",
+      "test:e2e"
+    ],
+    "artifacts_dir": "/out/reports"
+  },
+  "timeline_weeks": [
+    {
+      "week": 1,
+      "scope": "Block 1 — MVP user flow"
+    },
+    {
+      "week": 2,
+      "scope": "Block 2 + start Block 3"
+    },
+    {
+      "week": 3,
+      "scope": "Finish Block 3 + start Block 4"
+    },
+    {
+      "week": 4,
+      "scope": "Finish Block 4 + Block 5 + e2e hardening"
+    }
+  ],
+  "estimate": {
+    "functional_readiness": 0.91,
+    "block1_gap": 0.08,
+    "remaining_scope_blocks_2_to_5": 0.38,
+    "eta_weeks_to_v2_2_0": 4
+  },
+  "definition_of_done": [
+    "Blocks 1–5 acceptance met",
+    "CI (lint+tsc+build+e2e) green",
+    "Metrics stable; alerts configured",
+    "Context files auto-updated",
+    "Release notes v2.2.0 published with demo"
+  ]
+}

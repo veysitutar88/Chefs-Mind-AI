@@ -1,0 +1,31 @@
+2025-11-10T19:18:29.747Z | e2e_auth_smoke | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+ | base=http://localhost:3001
+2025-11-10T21:34:11.123Z | e2e_auth_smoke | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+ | base=http://localhost:3001
+2025-11-10T22:03:07.571Z | e2e_auth_smoke | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+ | base=http://localhost:3001
+2025-11-12T08:23:31.786Z | e2e_auth_smoke | FAILED: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3001/?e2e=1&login=admin
+Call log:
+[2m  - navigating to "http://localhost:3001/?e2e=1&login=admin", waiting until "load"[22m
+ | base=http://localhost:3001
+2025-11-12T08:47:36.620Z | e2e_auth_smoke | FAILED: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByText('Доступ ограничен')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" with timeout 5000ms[22m
+[2m  - waiting for getByText('Доступ ограничен')[22m
+ | base=http://localhost:3001
+2025-11-12T12:22:27.666Z | e2e_auth_smoke | FAILED: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+Call log:
+[2m  - navigating to "http://localhost:3001 /?e2e=1&login=admin", waiting until "load"[22m
+ | base=http://localhost:3001 

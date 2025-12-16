@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { createServer } from 'http';
-import { app } from '../../server/enhanced-server';
+import { app } from '@/server/enhanced-server';
 
 describe('Health Check Endpoint', () => {
   let server: any;

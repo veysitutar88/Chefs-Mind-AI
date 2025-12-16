@@ -1,0 +1,36 @@
+{
+    "version": "cleanup-safe-v2",
+    "deleted": [
+        "{",
+        "{2}",
+        "{console.error(e.stack)",
+        "$null",
+        "Textdokument.txt",
+        "chefs_mind_context.zip",
+        "logs.rar",
+        "reports.rar",
+        "IMG_20251013_125614.jpg",
+        "-p",
+        "Новая папка"
+    ],
+    "skipped": [
+        {
+            "path": "frontend",
+            "reason": "Legacy folder (requires archiving)"
+        },
+        {
+            "path": "frontend-simple",
+            "reason": "Legacy folder (requires archiving)"
+        },
+        {
+            "path": "client",
+            "reason": "Legacy folder (requires archiving)"
+        }
+    ],
+    "remaining_risks": [
+        "Configuration smells (.env variants) preserved.",
+        "Mock implementations in server/ preserved.",
+        "Legacy folders still present (need explicit archive plan)."
+    ],
+    "notes": "Functional project files preserved. Only verified garbage artifacts removed."
+}

@@ -1,0 +1,112 @@
+{
+  "version": "v2.1.2",
+  "mode": "local",
+  "ci": {
+    "nightly": true,
+    "time_utc": "02:00"
+  },
+  "deploy": {
+    "ready": true,
+    "status": "deferred_by_user"
+  },
+  "block0_infra_fix": {
+    "port": 5001,
+    "enable_video": false,
+    "health_fields": [
+      "ok",
+      "port",
+      "video_enabled"
+    ],
+    "acceptance": [
+      "dev/Docker up on 5001 without EADDRINUSE",
+      "POST /api/media/video/generate -> 200 ok:false reason:video_disabled",
+      "GET /health -> ok:true with port and video_enabled:false",
+      "GET /metrics -> prom-client header present",
+      "Playwright headed -> pass; reports archived"
+    ],
+    "status": "pending-PR"
+  },
+  "p1": {
+    "status": "complete",
+    "items": 5
+  },
+  "p2": {
+    "status": "partial",
+    "score": 0.83,
+    "missing": [
+      {
+        "item": "prometheus_detail",
+        "critical": false
+      },
+      {
+        "item": "ui_common_components",
+        "critical": false
+      }
+    ]
+  },
+  "agents": [
+    "chef",
+    "accountant_mcp",
+    "researcher_perplexity",
+    "media",
+    "qa_gate"
+  ],
+  "routes": [
+    "/api/enhanced-agent/chat",
+    "/api/import",
+    "/api/dbadmin",
+    "/api/calendar",
+    "/api/health",
+    "/metrics",
+    "/auth/google/status"
+  ],
+  "db": {
+    "tables": [
+      "orders",
+      "purchase_orders",
+      "suppliers",
+      "attachments",
+      "notes",
+      "calendar_links"
+    ]
+  },
+  "security": {
+    "auth": "jwt+oauth2",
+    "rbac": true,
+    "safe_mode": true,
+    "sha256_triple": true
+  },
+  "context_transport": {
+    "enabled": true,
+    "files": [
+      "CONTEXT.md",
+      "SESSION.md",
+      "CHECKPOINT.json",
+      "last_session.json"
+    ]
+  },
+  "acceptance_verification": {
+    "checks": [
+      "health",
+      "metrics",
+      "qa_gate",
+      "db_backups_list",
+      "db_backup_manual",
+      "calendar_create",
+      "import_csv"
+    ],
+    "artifacts_dir": "/out/reports/"
+  },
+  "next_blocks": [
+    "block1_mvp_user_flow",
+    "block2_multi_agent_routing",
+    "block3_persistence",
+    "block4_media_studio",
+    "block5_analytics_polish"
+  ],
+  "risks": [
+    "port/url drift",
+    "metrics_detail_missing",
+    "ui_common_components_missing"
+  ]
+}

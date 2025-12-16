@@ -23,21 +23,29 @@ const PORT = env.PORT;
 
 const app = express();
 
-// CORS configuration
-const whitelist = (env.CORS_ORIGIN || '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
+// CORS configuration - добавлен localhost:3001 для фронтенда
+const allowedOrigins = [
+  'http://localhost:3001',
+  'http://localhost:3000',
+  ...(env.CORS_ORIGIN || '')
+    .split(',')
+    .map((s: string) => s.trim())
+    .filter(Boolean),
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || whitelist.includes(origin)) {
+      // Разрешаем запросы без origin (например, мобильные приложения)
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 
@@ -55,7 +63,7 @@ app.use(
           'http://localhost:5003',
           'http://localhost:3000',
           'http://localhost:3001',
-          ...(process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || []),
+          ...(process.env.CORS_ORIGIN?.split(',').map((s: string) => s.trim()) || []),
         ],
       },
     },
@@ -96,7 +104,7 @@ const io = new Server(httpServer, {
       const allowedOrigins = [
         'http://localhost:3000',
         'http://localhost:3001',
-        ...(process.env.CORS_ORIGIN?.split(',').map(s => s.trim()) || []),
+        ...(process.env.CORS_ORIGIN?.split(',').map((s: string) => s.trim()) || []),
       ];
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);

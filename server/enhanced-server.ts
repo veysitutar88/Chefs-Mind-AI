@@ -3,6 +3,12 @@ import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
 import enhancedAgentRouter from './routes/enhanced-agent-chat.js';
+import modelsRouter from './routes/models.js';
+import mediaRouter from './routes/media.js';
+import searchRouter from './routes/search.js';
+import toolsRouter from './routes/tools.js';
+import sidebarAdvancedRouter from './routes/sidebar-advanced.js';
+import followupsDebugRouter from './routes/followups-debug.js';
 
 const app = express();
 const server = http.createServer(app); // Создаем HTTP сервер
@@ -21,6 +27,12 @@ app.use(express.json({ limit: '10mb' })); // Увеличенный лимит �
 
 // Routes
 app.use('/api/enhanced-agent', enhancedAgentRouter);
+app.use('/api/models', modelsRouter);
+app.use('/api/media', mediaRouter);
+app.use('/api/search', searchRouter);
+app.use('/api/tools', toolsRouter);
+app.use('/api/sidebar', sidebarAdvancedRouter);
+app.use('/api/followups/debug', followupsDebugRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
