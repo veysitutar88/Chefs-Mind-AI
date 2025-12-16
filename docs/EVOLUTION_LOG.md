@@ -12,3 +12,4 @@
 | **2025-12-09** | v2.4-holy-six | **Project Canonize** | "Holy Six" doc suite created. Legacy files nuked. |
 | **2025-12-16** | v2.4-freeze | Context Freeze | **CHECKPOINT.md** is now Source of Truth. Cognition synced. |
 | **2025-12-16** | v2.4-sidebar | Sidebar Canon Repair | Switched imports from `ui/RightSidebar` to `layout/RightSidebar`; Block 8 widgets now visible. |
+| **2025-12-16** | v2.4 | **Freeze & Merge** | Merged `feature/block0-infra-fix` to `main`. Tag: `ui-canon-v2.4`. Grep=0, dev OK. |

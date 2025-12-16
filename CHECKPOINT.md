@@ -16,8 +16,8 @@ No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully 
 ## 1. Active Context
 
 - **Active Block:** Block 9 — Media Studio Advanced Features
-- **Active Step:** Canonization Complete. Ready for Sidebar Repair.
-- **Last Action:** Context Freeze & Restoration
+- **Active Step:** Sidebar Canon Repair complete. Merged to main.
+- **Last Action:** Sidebar Canon Repair merged to main (Freeze & Merge)
 - **Current Sprint:** Deep V3 Audit & Cognition Fix
 
 ## 2. Infrastructure Status
@@ -32,7 +32,7 @@ No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully 
 
 - **Env**: `.env` (Missing Media Keys).
 - **Database**: Drizzle ORM (PostgreSQL).
-- **Git Branch**: `feature/block0-infra-fix`.
+- **Git Branch**: `main` (tag: `ui-canon-v2.4`).
 
 ## 4. Deprecated Context Files
 
