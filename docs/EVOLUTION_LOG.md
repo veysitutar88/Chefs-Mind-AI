@@ -10,3 +10,4 @@
 | **2025-12-02** | v2.4.0 | Block 8 & 9 (Partial) | Sidebar logic and Media logic added. |
 | **2025-12-08** | v2.3-audit | Deep Audit | Critical "Split Brain" finding. Mocks identified. |
 | **2025-12-09** | v2.4-holy-six | **Project Canonize** | "Holy Six" doc suite created. Legacy files nuked. |
+| **2025-12-16** | v2.4-freeze | Context Freeze | **CHECKPOINT.md** is now Source of Truth. Cognition synced. |

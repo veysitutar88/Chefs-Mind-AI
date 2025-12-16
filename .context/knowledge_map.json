@@ -1,6 +1,6 @@
 {
-    "version": "3.0.0",
-    "generated_at": "2025-12-09T04:00:00Z",
+    "version": "3.1.0",
+    "generated_at": "2025-12-16T02:00:00Z",
     "active_modules": [
         {
             "name": "Frontend Enhanced",
@@ -9,7 +9,8 @@
             "tags": [
                 "nextjs",
                 "react",
-                "tailwind"
+                "tailwind",
+                "media-studio"
             ],
             "primary_files": [
                 "src/app/page.tsx",
@@ -25,7 +26,8 @@
             "tags": [
                 "express",
                 "node",
-                "drizzle"
+                "drizzle",
+                "agents"
             ],
             "primary_files": [
                 "enhanced-server.ts",
@@ -40,7 +42,8 @@
             "type": "meta",
             "tags": [
                 "maps",
-                "audit"
+                "audit",
+                "checkpoint"
             ],
             "primary_files": [
                 "knowledge_map.json",
@@ -53,7 +56,8 @@
             "type": "meta",
             "tags": [
                 "holy-six",
-                "guide"
+                "guide",
+                "evolution"
             ],
             "primary_files": [
                 "UI_UX_CANON_v2.4.md",
@@ -70,12 +74,14 @@
         {
             "from": "Frontend Enhanced",
             "to": "Server Core",
-            "type": "api-call"
+            "type": "api-call",
+            "description": "Frontend consumes Express API endpoints"
         },
         {
             "from": "Server Core",
             "to": "Database",
-            "type": "query"
+            "type": "query",
+            "description": "Drizzle ORM queries"
         }
     ]
 }

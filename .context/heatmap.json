@@ -1,31 +1,35 @@
 {
-    "version": "3.0.0",
-    "generated_at": "2025-12-09T04:00:00Z",
-    "baseline": "holy-six-v2.4",
+    "version": "3.1.0",
+    "generated_at": "2025-12-16T02:00:00Z",
+    "baseline": "holy-six-v2.4-freeze",
     "files": {
+        "CHECKPOINT.md": {
+            "confidence": 1.0,
+            "status": "canonical_source_of_truth"
+        },
         "frontend-enhanced/src/app/page.tsx": {
             "confidence": 0.8,
-            "status": "active_but_needs_sidebar_fix"
+            "status": "active"
         },
         "frontend-enhanced/src/components/layout/RightSidebar.tsx": {
             "confidence": 0.9,
-            "status": "detached_golden_code"
+            "status": "active_golden"
         },
         "frontend-enhanced/src/components/ui/RightSidebar.tsx": {
-            "confidence": 0.1,
-            "status": "active_legacy_garbage"
+            "confidence": 0.0,
+            "status": "deprecated_clash"
         },
         "server/agents/orchestrator.ts": {
-            "confidence": 0.5,
-            "status": "mock_implementation"
+            "confidence": 0.6,
+            "status": "mock_active"
         },
-        "CHEFS_MIND_AI__HOLY_SIX_AND_WORKFLOW_v2.4.md": {
-            "confidence": 1.0,
-            "status": "canonical"
+        "server/enhanced-server.ts": {
+            "confidence": 0.9,
+            "status": "active_core"
         },
-        "CHECKPOINT.md": {
+        "docs/EVOLUTION_LOG.md": {
             "confidence": 1.0,
-            "status": "canonical"
+            "status": "active_log"
         }
     }
 }
