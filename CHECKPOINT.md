@@ -1,8 +1,12 @@
 # CHECKPOINT.md — The Single Source of Truth
 
-**Status:** Context Freeze Completed
-**Version:** v2.4-holy-six-complete
-**Date:** 2025-12-16
+🔒 Version Declaration (Canonical)                        Current Version: v2.4 (Active / Frozen)
+Status: Context Freeze Completed
+Scope: UI / Sidebar / Media Canon Repair
+
+v3.0 Status: PLANNED
+v3.0 has NOT started.
+No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully stabilized.
 
 > [!IMPORTANT]
 > This file is now the PRIMARY SOURCE OF TRUTH for the project.
