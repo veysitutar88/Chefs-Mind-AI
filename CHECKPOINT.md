@@ -13,6 +13,11 @@ No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully 
 > No other context file overrides this document.
 > `CHECKPOINT.json` is DEPRECATED and should be ignored.
 
+## Canonical Ops Pack: [docs/nd/ND__INDEX.md](docs/nd/ND__INDEX.md)
+
+**Startup rule:** Any agent session must read `CHECKPOINT.md` first, then `docs/nd/ND__INDEX.md`.
+**UI freeze anchor:** tag `ui-canon-v2.4` @ `e37ff0a`
+
 ## 1. Active Context
 
 - **Active Block:** Block 9 — Media Studio Advanced Features
