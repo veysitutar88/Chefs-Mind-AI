@@ -12,10 +12,10 @@ tmp/
 # Local database data
 /data
 postgres_data/
-checkpoint_$(date
+
 frontend-enhanced/.next/
 playwright-report/
 test-results/
-frontend-enhanced/.next/
+
 .gemini/
 gha-creds-*.json

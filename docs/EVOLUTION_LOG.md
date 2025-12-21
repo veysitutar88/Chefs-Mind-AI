@@ -15,3 +15,4 @@
 | **2025-12-16** | v2.4 | **Freeze & Merge** | Merged `feature/block0-infra-fix` to `main`. Tag: `ui-canon-v2.4`. Grep=0, dev OK. |
 | **2025-12-21** | v2.4.1 | **Canon Ops Freeze** | Added ND pack in `docs/nd/`. CHECKPOINT references ND index. Tag: `canon-ops-v2.4.1`. |
 | **2025-12-21** | A2 | **Legacy Archive** | Moved legacy context to `archive/` (normalized docs/archive, reports, kilocode/rules). Canon unchanged. |
+| **2025-12-21** | A3 | **Root Hygiene** | Cleaned up root garbage (test logs, scripts) and normalized .gitignore. |
