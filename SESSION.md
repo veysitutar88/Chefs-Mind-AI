@@ -5,7 +5,7 @@
 - **Goal:** Context Normalization and Documentation Archiving.
 - **Actions:**
   - Archived legacy documentation and context files.
-  - Established `MASTER_CONTEXT_v2.1.6.mdown` as canonical.
+  - Established `Legacy-Context_v2.1.6.mdown` as canonical.
   - Updated `CHECKPOINT.json` and `SESSION.md`.
   - Normalized `context/` and `docs/` directories.
 - **Status:** Context updated successfully.
@@ -17,7 +17,7 @@
 - **Actions:**
   - Performed full project scan.
   - Identified and archived outdated context files.
-  - Removed duplicate `MASTER_CONTEXT` from `docs/`.
+  - Removed duplicate `Legacy-Context` from `docs/`.
   - Verified canonical context in `.kilocode/rules/memory-bank/`.
   - Updated `CHECKPOINT.json` with cleanup log.
 - **Status:** Context stabilized. Ready for development.

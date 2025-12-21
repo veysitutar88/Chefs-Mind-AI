@@ -32,7 +32,7 @@
 #### Step 1.1 — Load Context
 
 ```text
-1. Load CHECKPOINT.json
+1. Load CHECKPOINT.md
 2. Load SESSION.md
 3. Load .context/knowledge_map.json
 4. Load .context/agent_state.json
@@ -111,7 +111,7 @@ For each diff, document:
 1. User reviews diffs
 2. User or Implementer applies approved diffs
 3. Run verification commands
-4. Update CHECKPOINT.json
+4. Update CHECKPOINT.md
 5. Update SESSION.md
 6. Commit with cognition layer sync
 ```

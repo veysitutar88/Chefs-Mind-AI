@@ -33,7 +33,7 @@ You are working on Chef's Mind AI, an AI-powered restaurant management platform 
    - Validate build and backend types
 
 4. Context Obedience:
-   Always load and respect D-FILE, MASTER_CONTEXT, JSON D-FILE, PROJECT_SOURCE_MAP, CHECKPOINT, SESSION.
+   Always load and respect CHECKPOINT.md, docs/nd/*, and docs/UI_SPEC_v2.2.md.
 
 ## Development Guidelines
 - Follow the hybrid vertical/horizontal development strategy
@@ -119,7 +119,7 @@ You are working on Chef's Mind AI, an AI-powered restaurant management platform 
 5.2. KiloCode must NOT invent new folders or architectures; it must follow:
      - PROJECT_SOURCE_MAP
      - UI_SPEC_v2.2
-     - MASTER_CONTEXT_v2.1.6
+     - CHECKPOINT.md
 
 ### 6. Safety on Over-Expansion
 6.1. If KiloCode detects that a task would require:
