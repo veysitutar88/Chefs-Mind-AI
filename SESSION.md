@@ -6,7 +6,7 @@
 - **Actions:**
   - Archived legacy documentation and context files.
   - Established `Legacy-Context_v2.1.6.mdown` as canonical.
-  - Updated `CHECKPOINT.json` and `SESSION.md`.
+  - Updated `CHECKPOINT (legacy)` and `SESSION.md`.
   - Normalized `context/` and `docs/` directories.
 - **Status:** Context updated successfully.
 - **End of Day:** Session closed at 2025-11-21T11:46:48+01:00. All changes saved and pushed.
@@ -19,12 +19,12 @@
   - Identified and archived outdated context files.
   - Removed duplicate `Legacy-Context` from `docs/`.
   - Verified canonical context in `.kilocode/rules/memory-bank/`.
-  - Updated `CHECKPOINT.json` with cleanup log.
+  - Updated `CHECKPOINT (legacy)` with cleanup log.
 - **Status:** Context stabilized. Ready for development.
 - **Context Expansion:**
-  - Regenerated high-level context files from `MASTER_CONTEXT_v2.1.6.mdown`.
+  - Regenerated high-level context files from `Legacy-Context_v2.1.6.mdown`.
   - Updated `context/` and `docs/` with detailed architecture, decisions, and patterns.
-  - Synced `CHECKPOINT.json` with expansion status.
+  - Synced `CHECKPOINT (legacy)` with expansion status.
 - **Next Step:** Ready for UI Integration Step.
 
 ## 2025-11-24
@@ -177,7 +177,7 @@
 - **Activities:**
   - **Deep V3 Audit:** Analyzed architecture drift (Orchestrator/QA Gate mocks identified), cognition gaps, and config issues. Generated `AUDIT_DEEP_V3_FULL.md`.
   - **Safe Cleanup:** Removed 11 verified garbage items (corrupt files, temp archives) while preserving legacy folders. Generated `cleanup_report_v2.json`.
-  - **Cognition Refresh:** Rebuilt `knowledge_map.json` (pointing to `frontend-enhanced`), refreshed `heatmap.json`, updated `MASTER_CONTEXT`, and synced `CHECKPOINT.json`.
+  - **Cognition Refresh:** Rebuilt `knowledge_map.json` (pointing to `frontend-enhanced`), refreshed `heatmap.json`, updated `Legacy-Context`, and synced `CHECKPOINT (legacy)`.
   - **UI Verification:** Conducted `UI-AUDIT-V3` and `UX-FLOW-AUDIT-V3`.
     - Identified "Split Brain" Sidebar issue (Active "Tab" Sidebar vs Detached "Widget" Sidebar).
     - Mapped Media UX fragmentation.
