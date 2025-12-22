@@ -7,10 +7,10 @@ export default function SettingsPage() {
     <AppLayout>
       <div className="p-8">
         <h1 className="text-3xl font-bold text-slate-200 mb-6">Settings</h1>
-        
+
         <div className="space-y-6">
           {/* General Settings */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="bg-slate-800 rounded-lg p-6 border border-white/5">
             <h2 className="text-xl font-semibold text-slate-200 mb-4">General</h2>
             <div className="space-y-4">
               <div>
@@ -35,7 +35,7 @@ export default function SettingsPage() {
           </div>
 
           {/* AI Settings */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="bg-slate-800 rounded-lg p-6 border border-white/5">
             <h2 className="text-xl font-semibold text-slate-200 mb-4">AI Settings</h2>
             <div className="space-y-4">
               <div>
@@ -58,7 +58,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Account Settings */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="bg-slate-800 rounded-lg p-6 border border-white/5">
             <h2 className="text-xl font-semibold text-slate-200 mb-4">Account</h2>
             <div className="space-y-4">
               <div>
