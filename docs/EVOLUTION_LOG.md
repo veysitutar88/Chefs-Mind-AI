@@ -17,3 +17,27 @@
 | **2025-12-21** | A2 | **Legacy Archive** | Moved legacy context to `archive/` (normalized docs/archive, reports, kilocode/rules). Canon unchanged. |
 | **2025-12-21** | A3 | **Root Hygiene** | Cleaned up root garbage (test logs, scripts) and normalized .gitignore. |
 | **2025-12-21** | A5 | **Telemetry Reset** | knowledge_map + heatmap regenerated (active scope only). Backups in archive/. |
+
+---
+
+### v2.5 Dry-Run — UI Settings Micro-Fix (BP-SETTINGS-001)
+
+**Date:** 2025-12-21  
+**Result:** SUCCESS (No-op)
+
+**Scope:** Settings page panel borders (UI, R2)  
+**Blueprint:** BP-SETTINGS-001  
+
+**Summary:**
+
+- Architect produced Blueprint for replacing `border-slate-700` → `border-white/5` on Settings panel containers.
+- Builder execution resulted in **no changes**, as target panels already matched canon.
+- Verification confirmed:
+  - Panels **General / AI Settings / Account** use `border-white/5`.
+  - Remaining `border-slate-700` occurrences exist only on input/select elements and were **out of scope**.
+
+**Conclusion:**
+v2.5 execution cycle validated end-to-end.
+System correctly handles compliant state without unnecessary diffs.
+
+---
