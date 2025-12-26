@@ -33,9 +33,9 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
           <span>✅</span>
           Follow-up Tasks
         </h3>
-        <div className="text-xs text-red-400/80 px-3 py-2 bg-red-500/10 rounded border border-red-500/20 flex justify-between items-center">
-          <span>Unable to load tasks</span>
-          <button onClick={onRefresh} className="text-red-400 hover:text-red-300 underline">Retry</button>
+        <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
+          Not connected
         </div>
       </div>
     );
@@ -69,8 +69,8 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${task.status === 'completed'
-                ? 'bg-accent border-accent'
-                : 'border-textSecondary/50 group-hover:border-accent'
+              ? 'bg-accent border-accent'
+              : 'border-textSecondary/50 group-hover:border-accent'
               }`}>
               {task.status === 'completed' && (
                 <svg className="w-3 h-3 text-background" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,8 +80,8 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
             </div>
             <div className="flex-1 min-w-0">
               <div className={`text-sm truncate transition-colors ${task.status === 'completed'
-                  ? 'text-textSecondary line-through'
-                  : 'text-textPrimary group-hover:text-accent'
+                ? 'text-textSecondary line-through'
+                : 'text-textPrimary group-hover:text-accent'
                 }`}>
                 {task.title}
               </div>

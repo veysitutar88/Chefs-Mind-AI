@@ -20,7 +20,7 @@
 
 ---
 
-### v2.5 Dry-Run — UI Settings Micro-Fix (BP-SETTINGS-001)
+## v2.5 Dry-Run — UI Settings Micro-Fix (BP-SETTINGS-001)
 
 **Date:** 2025-12-21  
 **Result:** SUCCESS (No-op)
@@ -41,3 +41,9 @@ v2.5 execution cycle validated end-to-end.
 System correctly handles compliant state without unnecessary diffs.
 
 ---
+
+| Date | Version | Event | Outcome |
+| :--- | :--- | :--- | :--- |
+| **2025-12-26** | v2.5 | UI: Responsive sidebar stabilization (Settings) | Fixed overlap and stabilized mobile/tablet layout. |
+| **2025-12-26** | v2.5 | UI: Sidebar Neutral State Polish | Replaced "Unable to load" errors with "Not connected" placeholders. |
+| **2025-12-26** | v2.5 | Cog: Baseline PCL established | Created docs/cognition/ baseline suite for architectural decision preservation. |

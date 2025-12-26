@@ -31,7 +31,7 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
   );
 
   return (
-    <div className="h-full w-full bg-surface/50 backdrop-blur-md flex flex-col overflow-hidden">
+    <div className="h-full w-80 flex-shrink-0 bg-surface/50 backdrop-blur-md flex flex-col overflow-hidden">
       {/* Header with Close Button */}
       <div className="flex items-center justify-between p-4 border-b border-borderSoft">
         <h2 className="font-semibold text-textPrimary">Tools</h2>
@@ -87,9 +87,10 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
                 <div className="animate-pulse bg-white/5 rounded h-16" />
               </>
             ) : media.error ? (
-              // Error state
-              <div className="text-xs text-red-400/80 px-3 py-2 bg-red-500/10 rounded border border-red-500/20">
-                Unable to load media
+              // Not connected state
+              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
+                Not connected
               </div>
             ) : filteredMedia.length === 0 ? (
               // Empty state
@@ -127,9 +128,10 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
                 <div className="animate-pulse bg-white/5 rounded h-12" />
               </>
             ) : calendar.error ? (
-              // Error state
-              <div className="text-xs text-red-400/80 px-3 py-2 bg-red-500/10 rounded border border-red-500/20">
-                Unable to load calendar
+              // Not connected state
+              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
+                Not connected
               </div>
             ) : filteredEvents.length === 0 ? (
               // Empty state
@@ -198,9 +200,10 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
                 <div className="animate-pulse bg-white/5 rounded h-10" />
               </>
             ) : chats.error ? (
-              // Error state
-              <div className="text-xs text-red-400/80 px-3 py-2 bg-red-500/10 rounded border border-red-500/20">
-                Unable to load chats
+              // Not connected state
+              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
+                Not connected
               </div>
             ) : filteredChats.length === 0 ? (
               // Empty state

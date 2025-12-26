@@ -39,8 +39,7 @@
 - **Model Selector:** UI present in headers and media modules but not functionally wired to backend.
 - **Right Sidebar:** Partially operational widget-based tool panel (data sources not yet aligned).
 - **Known UX Issues:**
-  - Right Sidebar overlays Settings page content on small viewports.
-  - Multiple stubs in Tool Sidebar show "Unable to load" (Backend alignment pending).
+  - Multiple stubs in Tool Sidebar show "Not connected" (intentional neutral state).
 
 ---
 
@@ -69,13 +68,20 @@
 - **Agent Unification:** Renamed all routes and UI strings to match Unified Canon IDs and Labels.
 
 - **ID/Label Separation:** Internal IDs (e.g., `souschef`) are distinct from UI Labels (`SousChef`).
-- **UI Stability:** Restored dev server boot on port 3010; fixed broken npm scripts via direct npx execution.
+- UI Stability: Restored dev server boot on port 3010; fixed broken npm scripts via direct npx execution.
+- **Settings UI Layout:** Resolved overlap issue by making sidebars responsive (LeftSidebar hidden < lg, RightSidebar hidden < xl) and stabilizing flexbox properties (min-w-0, flex-shrink-0, overflow-x-hidden).
 
 ---
 
 ### 7. OPEN ISSUES
 
-- **Settings UI Polish:** Overlap resolution and final alignment with UI_UX_CANON.
+- **6 Dev Overlay Issues (Deferred):**
+  1. Hydration Error (root/layout) - mismatched server/client state.
+  2. ModelSwitcher.tsx:31:35 - Failed to fetch (Backend not connected).
+  3. useSidebarData.ts:112:36 - Failed to fetch (Backend not connected).
+  4. useSidebarData.ts:140:36 - Failed to fetch (Backend not connected).
+  5. useSidebarData.ts:172:36 - Failed to fetch (Backend not connected).
+  6. useSidebarData.ts:203:36 - Failed to fetch (Backend not connected).
 
 - **i18n Wiring:** Language switchers (EN/RU) in UI are present but not connected to a translation system.
 - **Model Wiring:** Integration of UI model selection with the backend execution service.
@@ -84,8 +90,6 @@
 ---
 
 ### 8. NEXT STEP: UI-FINISH
-
-- **Settings UI:** Final layout fixes (resolve Right Sidebar overlap).
 
 - **Model Strategy:** Implement selection state propagation (Auto vs. Manual).
 - **i18n Implementation:** Wire the translation layer for EN/RU parity.
