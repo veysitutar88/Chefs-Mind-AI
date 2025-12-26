@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { AGENT_CANON } from '@/config/agents';
 
 interface Message {
   id: string;
@@ -14,12 +15,13 @@ interface ChatMessageProps {
   message: Message;
 }
 
-const agentInfo: Record<string, { name: string; icon: string; color: string }> = {
-  'Chef': { name: 'AI Sous-Chef', icon: '👨‍🍳', color: 'border-orange-500' },
-  'Accountant': { name: 'AI Brain-Chef', icon: '🧮', color: 'border-green-500' },
-  'Researcher': { name: 'AI Research', icon: '🔍', color: 'border-purple-500' },
-  'Media': { name: 'AI Media-Studio', icon: '🎨', color: 'border-pink-500' },
-  'Quality': { name: 'QA-Gate', icon: '✓', color: 'border-blue-500' },
+// Map backend roles to canonical IDs
+const roleToId: Record<string, string> = {
+  'Chef': 'souschef',
+  'Accountant': 'gastrocount',
+  'Researcher': 'gastromind',
+  'Media': 'foodframe',
+  'Quality': 'quality', // Special case
 };
 
 export function ChatMessage({ message }: ChatMessageProps) {
@@ -55,19 +57,35 @@ export function ChatMessage({ message }: ChatMessageProps) {
     );
   }
 
-  // Agent message
-  const agent = message.agent ? agentInfo[message.agent] : null;
+  // Agent message mapping
+  const id = message.agent ? roleToId[message.agent] || message.agent.toLowerCase().replace(/[^a-z]/g, '') : null;
+  const agent = id && id in AGENT_CANON ? AGENT_CANON[id as keyof typeof AGENT_CANON] : null;
+
+  const displayData = agent ? {
+    name: agent.label,
+    icon: agent.icon,
+    color: id === 'souschef' ? 'border-orange-500' :
+      id === 'gastrocount' ? 'border-green-500' :
+        id === 'gastromind' ? 'border-purple-500' :
+          id === 'foodframe' ? 'border-pink-500' : 'border-slate-700'
+  } : message.agent === 'Quality' ? {
+    name: 'QA-Gate',
+    icon: '✓',
+    color: 'border-blue-500'
+  } : {
+    name: message.agent || 'AI',
+    icon: '🤖',
+    color: 'border-slate-700'
+  };
 
   return (
     <div className="flex justify-start">
       <div className="max-w-[80%]">
-        {agent && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">{agent.icon}</span>
-            <span className="text-sm font-medium text-slate-300">{agent.name}</span>
-          </div>
-        )}
-        <div className={`bg-slate-800 text-slate-50 rounded-xl px-4 py-3 border ${agent?.color || 'border-slate-700'}`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">{displayData.icon}</span>
+          <span className="text-sm font-medium text-slate-300">{displayData.name}</span>
+        </div>
+        <div className={`bg-slate-800 text-slate-50 rounded-xl px-4 py-3 border ${displayData.color}`}>
           {message.text}
         </div>
         <div className="text-xs text-slate-500 mt-1">

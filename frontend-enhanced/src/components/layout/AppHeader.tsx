@@ -1,21 +1,15 @@
 'use client';
 
 import React from 'react';
+import { AGENT_CANON } from '@/config/agents';
 
 interface AppHeaderProps {
   currentAgent?: string;
 }
 
-const agentDisplayNames: Record<string, string> = {
-  'universal': '',
-  'sous-chef': 'AI Sous-Chef',
-  'brain-chef': 'AI Brain-Chef',
-  'research': 'AI Research',
-  'media-studio': 'AI Media-Studio',
-};
-
 export function AppHeader({ currentAgent }: AppHeaderProps) {
-  const displayName = currentAgent ? agentDisplayNames[currentAgent] || '' : '';
+  const agent = currentAgent ? (Object.values(AGENT_CANON).find(a => a.id === currentAgent) || null) : null;
+  const displayName = agent ? agent.label : '';
 
   return (
     <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6">

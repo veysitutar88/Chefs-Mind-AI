@@ -63,7 +63,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         }
     };
 
-    const isMediaAgent = activeAgent.id === 'food_frame';
+    const isMediaAgent = activeAgent.id === 'foodframe';
 
     const [activeDropdown, setActiveDropdown] = useState<'model' | 'format' | 'quality' | null>(null);
 

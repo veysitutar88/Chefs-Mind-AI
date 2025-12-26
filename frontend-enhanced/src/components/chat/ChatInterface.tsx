@@ -13,7 +13,7 @@ interface Message {
   timestamp: number;
 }
 
-type AgentId = 'chef' | 'accountant' | 'researcher' | 'media' | null;
+type AgentId = 'souschef' | 'gastrocount' | 'gastromind' | 'foodframe' | null;
 
 interface ChatInterfaceProps {
   initialAgentId: AgentId;

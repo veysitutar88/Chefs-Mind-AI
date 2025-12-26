@@ -10,7 +10,7 @@ interface AgentModelOption {
 }
 
 interface ModelSwitcherProps {
-    agentKey: "sous_chef" | "gastro_count" | "gastro_mind" | "food_frame";
+    agentKey: "souschef" | "gastrocount" | "gastromind" | "foodframe";
     selectedModelId: string | null;
     onChange: (modelId: string) => void;
 }

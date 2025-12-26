@@ -7,14 +7,14 @@ import { RightSidebar } from '@/components/layout/RightSidebar';
 import { Logo } from '@/components/ui/Logo';
 import { AGENTS, INITIAL_FILES } from '@/constants/ui';
 import { AgentId, Message, TodoItem, ChatSession, FileItem } from '@/types/ui';
-import { AgentSidebar } from '@/components/layout/AgentSidebar';
+import { LeftSidebar } from '@/components/layout/LeftSidebar';
 import { useMediaGenerator } from '@/hooks/useMediaGenerator';
 
 // Simple ID generator
 const simpleId = () => Math.random().toString(36).substring(2, 9);
 
 export default function Home() {
-  const [activeAgentId, setActiveAgentId] = useState<AgentId>('sous_chef');
+  const [activeAgentId, setActiveAgentId] = useState<AgentId>('souschef');
   const [chatState, setChatState] = useState<Record<AgentId, ChatSession>>({} as Record<AgentId, ChatSession>);
   const [agentModels, setAgentModels] = useState<Record<AgentId, string>>({} as Record<AgentId, string>); // Track model per agent
   const [isLoading, setIsLoading] = useState(false);
@@ -209,11 +209,7 @@ export default function Home() {
     <div className="flex h-screen w-full bg-gradient-to-br from-[#020617] via-[#081024] to-[#020617] overflow-hidden font-sans text-textPrimary">
       {/* Left Sidebar (320px fixed) */}
       <div className="w-[320px] hidden lg:block flex-shrink-0 h-full">
-        <AgentSidebar
-          agents={AGENTS}
-          activeAgentId={activeAgentId}
-          onAgentSelect={setActiveAgentId}
-        />
+        <LeftSidebar />
       </div>
 
       {/* Main Content Area */}

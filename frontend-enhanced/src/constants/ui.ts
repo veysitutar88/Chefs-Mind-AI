@@ -1,29 +1,34 @@
+import { AGENT_CANON } from '@/config/agents';
 import { AgentConfig } from '@/types/ui';
 
 export const AGENTS: AgentConfig[] = [
     {
-        id: 'sous_chef',
-        title: 'SousChef AI',
-        subtitle: 'Assists with recipes, plating, and prep sheets',
-        iconName: 'chef_hat'
+        id: AGENT_CANON.souschef.id,
+        title: AGENT_CANON.souschef.label,
+        subtitle: AGENT_CANON.souschef.subtitle,
+        iconName: AGENT_CANON.souschef.iconName,
+        icon: AGENT_CANON.souschef.icon
     },
     {
-        id: 'gastro_count',
-        title: 'GastroCount AI',
-        subtitle: 'Financial assistant: costs, reports, analysis',
-        iconName: 'calculator'
+        id: AGENT_CANON.gastrocount.id,
+        title: AGENT_CANON.gastrocount.label,
+        subtitle: AGENT_CANON.gastrocount.subtitle,
+        iconName: AGENT_CANON.gastrocount.iconName,
+        icon: AGENT_CANON.gastrocount.icon
     },
     {
-        id: 'gastro_mind',
-        title: 'GastroMind AI',
-        subtitle: 'Knowledge guide: research, trends, insights',
-        iconName: 'compass'
+        id: AGENT_CANON.gastromind.id,
+        title: AGENT_CANON.gastromind.label,
+        subtitle: AGENT_CANON.gastromind.subtitle,
+        iconName: AGENT_CANON.gastromind.iconName,
+        icon: AGENT_CANON.gastromind.icon
     },
     {
-        id: 'food_frame',
-        title: 'FoodFrame AI',
-        subtitle: 'Food visuals, photos, videos',
-        iconName: 'image'
+        id: AGENT_CANON.foodframe.id,
+        title: AGENT_CANON.foodframe.label,
+        subtitle: AGENT_CANON.foodframe.subtitle,
+        iconName: AGENT_CANON.foodframe.iconName,
+        icon: AGENT_CANON.foodframe.icon
     }
 ];
 

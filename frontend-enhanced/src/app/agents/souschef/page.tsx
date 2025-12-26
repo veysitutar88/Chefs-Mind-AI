@@ -2,14 +2,17 @@
 
 import { AppLayout } from '../../../components/layout/AppLayout';
 import { ChatInterface } from '../../../components/chat/ChatInterface';
+import { AGENT_CANON } from '@/config/agents';
 
 export default function SousChefPage() {
+  const agent = AGENT_CANON.souschef;
+
   return (
-    <AppLayout currentAgent="sous-chef">
+    <AppLayout currentAgent={agent.id}>
       <ChatInterface
-        initialAgentId="chef"
-        title="AI Sous-Chef"
+        initialAgentId={agent.id}
+        title={agent.label}
       />
     </AppLayout>
- );
+  );
 }

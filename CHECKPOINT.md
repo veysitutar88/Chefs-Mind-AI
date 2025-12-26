@@ -1,47 +1,94 @@
-# CHECKPOINT.md — The Single Source of Truth
+# Chef’s Mind AI — Project Checkpoint (v2.5)
 
-🔒 Version Declaration (Canonical)                        Current Version: v2.4 (Active / Frozen)
-Status: Context Freeze Completed
-Scope: UI / Sidebar / Media Canon Repair
+**Date:** 2025-12-26  
+**Status:** Operational (v2.5 Prep Complete)
 
-v3.0 Status: PLANNED
-v3.0 has NOT started.
-No tasks, specs, or architecture changes may reference v3.0 until v2.4 is fully stabilized.
+---
 
-> [!IMPORTANT]
-> This file is now the PRIMARY SOURCE OF TRUTH for the project.
-> No other context file overrides this document.
-> `CHECKPOINT.json` is DEPRECATED and should be ignored.
+### 1. PROJECT META
 
-## Canonical Ops Pack: [docs/nd/ND__INDEX.md](docs/nd/ND__INDEX.md)
+- **Project Name:** Chef’s Mind AI
+- **UI Version:** 2.5 (Enhanced Console)
+- **Ops Version:** 2.5 (PCL/ND Pack active)
+- **Agent Version:** 2.5 (Unified Canon)
+- **Runtime Status:**
+  - **Port:** 3010 (Stable)
+  - **Server:** Next.js 16 (Turbopack)
+  - **Stability:** UI Boot restored and verified.
 
-**Startup rule:** Any agent session must read `CHECKPOINT.md` first, then `docs/nd/ND__INDEX.md`.
-**UI freeze anchor:** tag `ui-canon-v2.4` @ `e37ff0a`
+---
 
-## 1. Active Context
+### 2. AGENT CANON (LOCKED)
 
-- **Active Block:** Block 9 — Media Studio Advanced Features
-- **Active Step:** Sidebar Canon Repair complete. Merged to main.
-- **Last Action:** Sidebar Canon Repair merged to main (Freeze & Merge)
-- **Current Sprint:** Deep V3 Audit & Cognition Fix
+| ID | Label | Subtitle | Scope |
+| :--- | :--- | :--- | :--- |
+| **souschef** | SousChef | Recipes • Prep • Plating | Text, Recipes, Ops |
+| **gastrocount** | GastroCount | Costs • Inventory • Reports | Finance, Data |
+| **gastromind** | GastroMind | Research • Trends • Insights | Search, Research |
+| **foodframe** | FoodFrame | Photos • Video • Creative | **Visuals only** (No text gen) |
 
-## 2. Infrastructure Status
+*Note: Legacy AI suffixes ("AI Sous-Chef", etc.) are deprecated and removed from UI.*
 
-- **Backend**: `server/` (Node/Express). Orchestrator uses Mocks.
-- **Frontend**: `frontend-enhanced/` (Next.js 14).
-  - **Sidebar**: ✅ **FIXED** — Using `components/layout/RightSidebar` (widget-based, Block 8 Followups visible).
-  - **Media**: Fragmentation between Chat (FoodFrame) and Page (`/media`).
-- **Cognition**: `knowledge_map.json` rebuilt against `frontend-enhanced`.
+---
 
-## 3.  Deployment & Environment
+### 3. UI STATE
 
-- **Env**: `.env` (Missing Media Keys).
-- **Database**: Drizzle ORM (PostgreSQL).
-- **Git Branch**: `main` (tag: `ui-canon-v2.4`).
+- **Left Sidebar:** Unified. Single source of truth (src/config/agents.ts). Uses card-based premium UI.
 
-## 4. Deprecated Context Files
+- **Settings Page:** Accessible at `/settings`. Panelled layout (General, AI, Account).
+- **Model Selector:** UI present in headers and media modules but not functionally wired to backend.
+- **Right Sidebar:** Partially operational widget-based tool panel (data sources not yet aligned).
+- **Known UX Issues:**
+  - Right Sidebar overlays Settings page content on small viewports.
+  - Multiple stubs in Tool Sidebar show "Unable to load" (Backend alignment pending).
 
-The following files are considered legacy/deprecated and should not be used as sources of truth:
+---
 
-- `CHECKPOINT.json` (Use `CHECKPOINT.md`)
-- `.context/agent_state.json` (Stale)
+### 4. ORCHESTRATION / MODELS
+
+- **Routing:** Core strategy is Auto-Routing by the orchestrator.
+
+- **Manual Override:** UI controls (ModelSwitcher) are visible but not currently sending selection state to backend orchestrator.
+- **FoodFrame Constraints:** Strictly limited to photo/video generation; no conversational output.
+
+---
+
+### 5. ANTIGRAVITY ROLE
+
+- **Definition:** Antigravity is a runtime execution tool.
+
+- **Boundaries:**
+  - Does NOT hold project memory.
+  - Does NOT define project canon.
+  - Executes strictly according to human-provided instructions and validated Blueprints.
+
+---
+
+### 6. FIXED TODAY
+
+- **Agent Unification:** Renamed all routes and UI strings to match Unified Canon IDs and Labels.
+
+- **ID/Label Separation:** Internal IDs (e.g., `souschef`) are distinct from UI Labels (`SousChef`).
+- **UI Stability:** Restored dev server boot on port 3010; fixed broken npm scripts via direct npx execution.
+
+---
+
+### 7. OPEN ISSUES
+
+- **Settings UI Polish:** Overlap resolution and final alignment with UI_UX_CANON.
+
+- **i18n Wiring:** Language switchers (EN/RU) in UI are present but not connected to a translation system.
+- **Model Wiring:** Integration of UI model selection with the backend execution service.
+- **Visual Inconsistencies:** Minor token drift to be addressed in the final UI-Finish pass.
+
+---
+
+### 8. NEXT STEP: UI-FINISH
+
+- **Settings UI:** Final layout fixes (resolve Right Sidebar overlap).
+
+- **Model Strategy:** Implement selection state propagation (Auto vs. Manual).
+- **i18n Implementation:** Wire the translation layer for EN/RU parity.
+
+---
+**END OF CHECKPOINT**

@@ -1,10 +1,11 @@
-export type AgentId = 'sous_chef' | 'gastro_count' | 'gastro_mind' | 'food_frame';
+export type AgentId = 'souschef' | 'gastrocount' | 'gastromind' | 'foodframe';
 
 export interface AgentConfig {
     id: AgentId;
     title: string;
     subtitle: string;
     iconName: 'chef_hat' | 'calculator' | 'compass' | 'image';
+    icon?: string;
 }
 
 export interface Message {
