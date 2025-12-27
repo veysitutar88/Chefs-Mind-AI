@@ -2,241 +2,193 @@
 
 import React, { useState } from 'react';
 import { useSidebarData } from '@/lib/useSidebarData';
-import { MediaThumbnail } from '@/components/ui/MediaThumbnail';
-import { FollowupWidget } from '../ui/FollowupWidget';
+import { usePathname } from 'next/navigation';
+import { Folder, CheckSquare, Calendar, PenTool, FileText, Image as ImageIcon, Plus, Check, Sliders, Wand2 } from 'lucide-react';
+import { MediaModelSelector } from '../ui/MediaModelSelector';
+import { MediaPresetSelector } from '../ui/MediaPresetSelector';
+import { AGENTS } from '@/constants/ui';
 
 interface RightSidebarProps {
   onClose: () => void;
 }
 
 export function RightSidebar({ onClose }: RightSidebarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { media, chats, calendar, tasks, loading, error, refetchTasks, refresh } = useSidebarData();
+  const pathname = usePathname();
+  const { media, tasks, calendar, loading, error, refetchTasks } = useSidebarData();
+  const [taskInput, setTaskInput] = useState('');
 
-  const searchQueryLower = searchQuery.toLowerCase();
+  // FoodFrame State
+  const [selectedModel, setSelectedModel] = useState('imagen-4');
+  const [activePreset, setActivePreset] = useState<string | undefined>(undefined);
 
-  // Filter data based on search query
-  const filteredMedia = media.items.filter(item =>
-    item.prompt.toLowerCase().includes(searchQueryLower)
-  );
-  const filteredChats = chats.sessions.filter(session =>
-    (session.title || 'Untitled Chat').toLowerCase().includes(searchQueryLower)
-  );
+  // Derived Active Agent
+  const activeAgentId = AGENTS.find(a => pathname?.includes(a.id))?.id;
+  const isFoodFrame = activeAgentId === 'foodframe';
 
-  const filteredFollowups = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchQueryLower)
-  );
-  const filteredEvents = calendar.events.filter(event =>
-    event.summary.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Mock file extensions map
+  const getFileIcon = (provider: string) => {
+    if (provider === 'gemini') return <FileText size={16} className="text-blue-400" />;
+    return <ImageIcon size={16} className="text-purple-400" />;
+  };
 
+  // Mock sections based on Design A (Unified Panel)
   return (
-    <div className="h-full w-80 flex-shrink-0 bg-surface/50 backdrop-blur-md flex flex-col overflow-hidden">
-      {/* Header with Close Button */}
-      <div className="flex items-center justify-between p-4 border-b border-borderSoft">
-        <h2 className="font-semibold text-textPrimary">Tools</h2>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-white/10 rounded transition-colors text-textSecondary hover:text-textPrimary"
-          aria-label="Close sidebar"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
+    <div className="w-80 h-full bg-slate-950/50 backdrop-blur-xl border-l border-white/5 flex flex-col">
 
-      {/* Search Section */}
-      <div className="p-4 border-b border-borderSoft">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search chats, files..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 bg-white/5 border border-borderSoft rounded-lg text-sm text-textPrimary placeholder-textSecondary/50 focus:outline-none focus:ring-2 focus:ring-accent transition-all"
-          />
-          <svg
-            className="absolute left-3 top-2.5 w-4 h-4 text-textSecondary/50"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-        <div className="mt-2 text-xs text-textSecondary/70">
-          Press <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-textSecondary">⌘K</kbd> for quick search
-        </div>
-      </div>
+      {/* 1. MEDIA PANEL (FOODFRAME ONLY) OR LIBRARY */}
+      {isFoodFrame ? (
+        <div className="flex flex-col h-full bg-slate-900/20">
+          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-purple-500/5">
+            <h3 className="font-bold text-sm text-purple-400 flex items-center gap-2">
+              <Wand2 size={16} />
+              CREATIVE STUDIO
+            </h3>
+            <span className="text-[10px] bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">
+              Media Mode
+            </span>
+          </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {/* Recent Media Section */}
-        <div className="p-4">
-          <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
-            <span>🎨</span>
-            Recent Media
-          </h3>
-          <div className="space-y-2 text-sm">
-            {media.loading ? (
-              // Loading skeleton
-              <>
-                <div className="animate-pulse bg-white/5 rounded h-16" />
-                <div className="animate-pulse bg-white/5 rounded h-16" />
-                <div className="animate-pulse bg-white/5 rounded h-16" />
-              </>
-            ) : media.error ? (
-              // Not connected state
-              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
-                Not connected
+          <div className="p-4 space-y-6 overflow-y-auto no-scrollbar">
+            {/* Model Selector */}
+            <div>
+              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Model Engine</label>
+              <MediaModelSelector
+                value={selectedModel}
+                onChange={setSelectedModel}
+                type="image"
+                className="w-full"
+              />
+            </div>
+
+            {/* Preset Selector */}
+            <div>
+              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Styling Presets</label>
+              <MediaPresetSelector
+                activePresetId={activePreset}
+                onSelect={(p) => setActivePreset(p.id)}
+              />
+            </div>
+
+            {/* Format Selector Stub (Using static buttons for now to match simplicity) */}
+            <div>
+              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Format</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['1:1', '16:9', '9:16'].map(fmt => (
+                  <button key={fmt} className="text-xs bg-slate-900 border border-white/10 hover:border-purple-500/50 rounded py-2 text-slate-300 transition-colors">
+                    {fmt}
+                  </button>
+                ))}
               </div>
-            ) : filteredMedia.length === 0 ? (
-              // Empty state
-              <div className="text-xs text-textSecondary px-3 py-2 text-center italic bg-white/5 rounded">
-                {searchQuery ? 'No matching media' : 'No media generated yet'}
-              </div>
-            ) : (
-              // Render media items
-              filteredMedia.slice(0, 5).map((item, index) => (
-                <MediaThumbnail
-                  key={item.id}
-                  url={item.assetUrl}
-                  type={item.provider.includes('video') || item.provider.includes('veo') ? 'video' : 'image'}
-                  prompt={item.prompt}
-                  createdAt={item.createdAt}
-                  className="animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                />
-              ))
-            )}
+            </div>
           </div>
         </div>
+      ) : (
+        /* STANDARD PANEL (Library + To Do) */
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-6">
 
-        {/* Calendar Widget */}
-        <div className="p-4 border-t border-borderSoft">
-          <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
-            <span>📅</span>
-            Calendar
-          </h3>
-          <div className="text-sm text-textSecondary">
-            {calendar.loading ? (
-              // Loading skeleton
-              <>
-                <div className="animate-pulse bg-white/5 rounded h-12 mb-2" />
-                <div className="animate-pulse bg-white/5 rounded h-12" />
-              </>
-            ) : calendar.error ? (
-              // Not connected state
-              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
-                Not connected
-              </div>
-            ) : filteredEvents.length === 0 ? (
-              // Empty state
-              <div className="text-xs text-textSecondary px-3 py-2 text-center italic bg-white/5 rounded">
-                {searchQuery ? 'No matching events' : 'No upcoming events'}
-              </div>
-            ) : (
-              // Render events
-              <div className="space-y-2">
-                {filteredEvents.slice(0, 3).map((event, index) => {
-                  const startTime = 'dateTime' in event.start
-                    ? new Date(event.start.dateTime)
-                    : new Date(event.start.date);
+          {/* LIBRARY SECTION */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <Folder size={12} />
+                Library
+              </h3>
+              <button className="text-[10px] text-cyan-400 hover:text-cyan-300 transition-colors">View All</button>
+            </div>
 
-                  const now = new Date();
-                  const isToday = startTime.toDateString() === now.toDateString();
-                  const dateStr = isToday ? 'Today' : startTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                  const timeStr = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-                  return (
-                    <div
-                      key={event.id}
-                      className="group px-3 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg border border-transparent hover:border-accent/20 animate-fade-in-up opacity-0"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="font-medium truncate text-textPrimary group-hover:text-accent transition-colors" title={event.summary}>
-                        {event.summary}
-                      </div>
-                      <div className="text-textSecondary/80 group-hover:text-textSecondary flex items-center gap-1.5 mt-1">
-                        <span className={isToday ? "text-accent font-medium" : ""}>{dateStr}</span>
-                        <span className="w-0.5 h-0.5 rounded-full bg-textSecondary/50"></span>
-                        <span>{timeStr}</span>
-                      </div>
+            <div className="space-y-2">
+              {loading ? (
+                <div className="h-20 flex items-center justify-center text-xs text-slate-600">Loading assets...</div>
+              ) : media.length > 0 ? (
+                media.slice(0, 3).map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer border border-transparent hover:border-white/5">
+                    <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center">
+                      {item.type === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : <FileText size={14} className="text-blue-400" />}
                     </div>
-                  );
-                })}
-                {filteredEvents.length > 3 && (
-                  <div className="text-[10px] text-center text-textSecondary pt-1 cursor-pointer hover:text-accent transition-colors animate-fade-in-up opacity-0" style={{ animationDelay: '200ms' }}>
-                    View all {filteredEvents.length} events
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-slate-300 truncate font-medium">{item.url.split('/').pop()}</div>
+                      <div className="text-[10px] text-slate-500">{new Date(item.createdAt).toLocaleDateString()}</div>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-xs text-slate-600 italic px-2">No active files found.</div>
+              )}
+            </div>
+          </div>
+
+          <div className="h-px bg-white/5" />
+
+          {/* TO-DO LIST SECTION */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <CheckSquare size={12} />
+                To-Do List
+              </h3>
+              <span className="text-[10px] bg-slate-800 px-1.5 rounded text-slate-400">{tasks.filter(t => t.status === 'pending').length}</span>
+            </div>
+
+            <div className="space-y-2">
+              {/* Quick Add */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  className="flex-1 bg-slate-900 border border-white/10 rounded px-2 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/50"
+                  placeholder="Add new task..."
+                  value={taskInput}
+                  onChange={e => setTaskInput(e.target.value)}
+                />
+                <button className="bg-slate-800 hover:bg-cyan-500/20 hover:text-cyan-400 text-slate-400 p-1.5 rounded transition-all">
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {tasks.map(task => (
+                  <div key={task.id} className="flex items-center gap-3 group cursor-pointer">
+                    <div className={`
+                        w-5 h-5 rounded-md border flex items-center justify-center transition-all
+                        ${task.status === 'completed'
+                        ? 'bg-cyan-500 border-cyan-500 text-white'
+                        : 'border-white/20 hover:border-cyan-500/50 bg-transparent'}
+                    `}>
+                      {task.status === 'completed' && <Check size={12} strokeWidth={3} />}
+                    </div>
+                    <span className={`text-sm transition-colors ${task.status === 'completed' ? 'text-slate-500 line-through' : 'text-slate-300 group-hover:text-white'}`}>
+                      {task.title}
+                    </span>
+                    {task.priority === 'high' && <span className="text-[10px] text-red-400 self-center border border-red-500/20 px-1.5 rounded">High</span>}
+                  </div>
+                ))}
+                {tasks.length === 0 && (
+                  <div className="text-xs text-slate-600 italic px-2">No pending tasks.</div>
                 )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Follow-up Tasks Widget (Block 8) */}
-        <FollowupWidget
-          tasks={filteredFollowups}
-          loading={loading}
-          error={error}
-          onRefresh={refetchTasks}
-        />
+          <div className="h-px bg-white/5" />
 
-        {/* Quick Stats - Recent Chats */}
-        <div className="p-4 border-t border-borderSoft">
-          <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
-            <span>💬</span>
-            Recent Chats
-          </h3>
-          <div className="space-y-2 text-sm">
-            {chats.loading ? (
-              // Loading skeleton
-              <>
-                <div className="animate-pulse bg-white/5 rounded h-10" />
-                <div className="animate-pulse bg-white/5 rounded h-10" />
-              </>
-            ) : chats.error ? (
-              // Not connected state
-              <div className="text-xs text-textSecondary/60 px-3 py-2 bg-white/5 rounded border border-white/5 italic flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-textSecondary/30" />
-                Not connected
-              </div>
-            ) : filteredChats.length === 0 ? (
-              // Empty state
-              <div className="text-xs text-textSecondary px-3 py-2 text-center italic bg-white/5 rounded">
-                {searchQuery ? 'No matching chats' : 'No chat sessions yet'}
-              </div>
-            ) : (
-              // Render chat sessions
-              filteredChats.map((session, index) => (
-                <div
-                  key={session.id}
-                  className="flex justify-between items-center px-3 py-2 bg-white/5 rounded hover:bg-white/10 cursor-pointer transition-all duration-200 hover:scale-[1.01] border border-transparent hover:border-accent/20 animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="text-textPrimary/90 truncate group-hover:text-textPrimary">
-                      {session.title || 'Untitled Chat'}
-                    </div>
-                    <div className="text-xs text-textSecondary/70">
-                      {session.agentType}
-                    </div>
-                  </div>
-                  {session.messageCount && (
-                    <span className="text-xs font-semibold text-accent">
-                      {session.messageCount}
-                    </span>
-                  )}
-                </div>
-              ))
-            )}
+          {/* QUICK TOOLS - Static visual only for Design A compliance */}
+          <div>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Sliders size={12} />
+              Quick Tools
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              <button className="flex flex-col items-center justify-center p-3 bg-slate-900 border border-white/5 hover:border-cyan-500/30 rounded-lg group transition-all">
+                <Calendar size={16} className="text-slate-400 group-hover:text-cyan-400 mb-2 transition-colors" />
+                <span className="text-[10px] text-slate-400 font-medium">Schedule</span>
+              </button>
+              <button className="flex flex-col items-center justify-center p-3 bg-slate-900 border border-white/5 hover:border-cyan-500/30 rounded-lg group transition-all">
+                <PenTool size={16} className="text-slate-400 group-hover:text-cyan-400 mb-2 transition-colors" />
+                <span className="text-[10px] text-slate-400 font-medium">Notes</span>
+              </button>
+            </div>
           </div>
+
         </div>
-      </div>
+      )}
     </div>
   );
 }

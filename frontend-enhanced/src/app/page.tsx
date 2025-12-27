@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AgentCard } from '@/components/ui/AgentCard';
 import { ChatArea } from '@/components/ui/ChatArea';
-import { RightSidebar } from '@/components/layout/RightSidebar';
-import { Logo } from '@/components/ui/Logo';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { AGENTS, INITIAL_FILES } from '@/constants/ui';
 import { AgentId, Message, TodoItem, ChatSession, FileItem } from '@/types/ui';
-import { LeftSidebar } from '@/components/layout/LeftSidebar';
 import { useMediaGenerator } from '@/hooks/useMediaGenerator';
 
 // Simple ID generator
@@ -206,41 +203,19 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-[#020617] via-[#081024] to-[#020617] overflow-hidden font-sans text-textPrimary">
-      {/* Left Sidebar (320px fixed) */}
-      <div className="w-[320px] hidden lg:block flex-shrink-0 h-full">
-        <LeftSidebar />
-      </div>
-
-      {/* Main Content Area */}
-      <main className="flex-1 min-w-0 h-full relative z-0 flex flex-col">
-        {/* Subtle gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-radial from-accent/5 to-transparent opacity-30 pointer-events-none"></div>
-
-        <div className="flex-1 px-4 md:px-6 py-6 overflow-hidden">
-          <div className="h-full w-full bg-surface rounded-2xl shadow-premium border border-borderSoft/50 overflow-hidden relative flex flex-col">
-            <ChatArea
-              activeAgent={activeAgent}
-              messages={currentSession.messages}
-              onSendMessage={handleSendMessage}
-              isLoading={isLoading}
-              onMediaAction={handleMediaAction}
-              mediaOptions={mediaOptions}
-              onMediaOptionChange={handleMediaOptionChange}
-              onUpscaleComplete={handleUpscaleComplete}
-              selectedModelId={agentModels[activeAgentId] || null}
-              onModelChange={handleModelChange}
-            />
-          </div>
-        </div>
-      </main>
-
-      {/* Right Sidebar (350px fixed) - CANON widget-based */}
-      <aside className="w-[350px] hidden xl:block flex-shrink-0 bg-surface border-l border-borderSoft shadow-xl z-20">
-        <RightSidebar
-          onClose={() => { /* Sidebar is always visible in this layout */ }}
-        />
-      </aside>
-    </div>
+    <AppLayout>
+      <ChatArea
+        activeAgent={activeAgent}
+        messages={currentSession.messages}
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        onMediaAction={handleMediaAction}
+        mediaOptions={mediaOptions}
+        onMediaOptionChange={handleMediaOptionChange}
+        onUpscaleComplete={handleUpscaleComplete}
+        selectedModelId={agentModels[activeAgentId] || null}
+        onModelChange={handleModelChange}
+      />
+    </AppLayout>
   );
 }

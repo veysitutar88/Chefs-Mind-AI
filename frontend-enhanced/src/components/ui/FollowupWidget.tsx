@@ -13,7 +13,7 @@ interface FollowupWidgetProps {
 export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWidgetProps) {
   if (loading) {
     return (
-      <div className="p-4 border-t border-borderSoft">
+      <div className="p-4">
         <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
           <span>✅</span>
           Follow-up Tasks
@@ -28,7 +28,7 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
 
   if (error) {
     return (
-      <div className="p-4 border-t border-borderSoft">
+      <div className="p-4">
         <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
           <span>✅</span>
           Follow-up Tasks
@@ -43,7 +43,7 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
 
   if (tasks.length === 0) {
     return (
-      <div className="p-4 border-t border-borderSoft">
+      <div className="p-4">
         <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
           <span>✅</span>
           Follow-up Tasks
@@ -56,7 +56,7 @@ export function FollowupWidget({ tasks, loading, error, onRefresh }: FollowupWid
   }
 
   return (
-    <div className="p-4 border-t border-borderSoft">
+    <div className="p-4">
       <h3 className="text-sm font-semibold text-textSecondary mb-3 flex items-center gap-2">
         <span>✅</span>
         Follow-up Tasks

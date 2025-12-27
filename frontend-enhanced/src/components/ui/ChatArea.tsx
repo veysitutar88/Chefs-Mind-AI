@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AgentConfig, Message } from '@/types/ui';
 import { Send, Image as ImageIcon, Video, Grid, Loader2, Paperclip, Bot } from 'lucide-react';
 import { Logo } from './Logo';
+import { ChatShell } from './ChatShell';
 import { MediaModelSelector } from './MediaModelSelector';
 import { MediaFormatSelector } from './MediaFormatSelector';
 import { UpscaleButton } from './UpscaleButton';
@@ -74,7 +75,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     const closeDropdowns = () => setActiveDropdown(null);
 
     return (
-        <div className="flex flex-col h-full bg-background rounded-xl border border-white/5 overflow-hidden shadow-2xl relative">
+        <ChatShell>
 
             {/* Task 1.3: Backdrop for closing dropdowns */}
             {activeDropdown && (
@@ -229,7 +230,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             placeholder={`Message ${activeAgent.title}...`}
-                            className="w-full bg-surface border border-white/10 text-textPrimary rounded-xl py-4 pl-6 pr-14 focus:outline-none focus:border-accent/50 focus:shadow-glow transition-all placeholder:text-textSecondary/50 hover:border-white/20"
+                            className="w-full bg-slate-950/50 border border-white/10 text-textPrimary rounded-xl py-4 pl-6 pr-14 focus:outline-none focus:border-accent/50 focus:shadow-glow transition-all placeholder:text-textSecondary/50 hover:border-white/20"
                             disabled={isLoading}
                         />
                         <button
@@ -257,6 +258,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                     AI generated content may be inaccurate. Check important info.
                 </p>
             </div>
-        </div>
+        </ChatShell>
     );
 };

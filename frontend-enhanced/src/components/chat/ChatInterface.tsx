@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
+import { ChatShell } from '../ui/ChatShell';
 
 interface Message {
   id: string;
@@ -96,7 +97,7 @@ export function ChatInterface({ initialAgentId, title, subtitle }: ChatInterface
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <ChatShell>
       {/* Header Area */}
       {(title || subtitle) && (
         <div className="border-b border-slate-800 p-4">
@@ -134,6 +135,6 @@ export function ChatInterface({ initialAgentId, title, subtitle }: ChatInterface
       <div className="border-t border-slate-800 p-4">
         <ChatInput onSend={handleSendMessage} disabled={isLoading} />
       </div>
-    </div>
+    </ChatShell>
   );
 }

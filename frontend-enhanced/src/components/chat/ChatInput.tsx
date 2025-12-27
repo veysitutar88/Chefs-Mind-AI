@@ -9,7 +9,6 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [message, setMessage] = useState('');
-  const [selectedModel, setSelectedModel] = useState('gemini');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,7 +41,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       {/* Attachment Button */}
       <button
         type="button"
-        className="p-2 text-slate-400 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+        className="p-3 text-slate-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 rounded-xl transition-all duration-200"
         aria-label="Attach file"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +52,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       {/* Voice Input Button */}
       <button
         type="button"
-        className="p-2 text-slate-400 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+        className="p-3 text-slate-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 rounded-xl transition-all duration-200"
         aria-label="Voice input"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,27 +70,18 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           placeholder="Type your message..."
           disabled={disabled}
           rows={1}
-          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+          className="w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:shadow-[0_0_15px_rgba(6,182,212,0.15)] resize-none transition-all duration-200"
           style={{ minHeight: '48px', maxHeight: '120px' }}
         />
       </div>
 
-      {/* Model Selector */}
-      <select
-        value={selectedModel}
-        onChange={(e) => setSelectedModel(e.target.value)}
-        className="px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-      >
-        <option value="gemini">Gemini</option>
-        <option value="gpt4">GPT-4</option>
-        <option value="perplexity">Perplexity</option>
-      </select>
+
 
       {/* Send Button */}
       <button
         type="submit"
         disabled={!message.trim() || disabled}
-        className="p-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors"
+        className="p-3 bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-800 disabled:text-slate-600 disabled:border disabled:border-white/5 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-cyan-500/20 hover:scale-105 active:scale-95"
         aria-label="Send message"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
