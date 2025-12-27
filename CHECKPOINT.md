@@ -5,7 +5,7 @@
 
 ---
 
-### 1. PROJECT META
+## 1. PROJECT META
 
 - **Project Name:** Chef’s Mind AI
 - **UI Version:** 2.5 (Enhanced Console)
@@ -18,7 +18,7 @@
 
 ---
 
-### 2. AGENT CANON (LOCKED)
+## 2. AGENT CANON (LOCKED)
 
 | ID | Label | Subtitle | Scope |
 | :--- | :--- | :--- | :--- |
@@ -31,7 +31,7 @@
 
 ---
 
-### 3. UI STATE
+## 3. UI STATE
 
 - **Left Sidebar:** Unified. Single source of truth (src/config/agents.ts). Uses card-based premium UI.
 
@@ -43,7 +43,7 @@
 
 ---
 
-### 4. ORCHESTRATION / MODELS
+## 4. ORCHESTRATION / MODELS
 
 - **Routing:** Core strategy is Auto-Routing by the orchestrator.
 
@@ -52,7 +52,7 @@
 
 ---
 
-### 5. ANTIGRAVITY ROLE
+## 5. ANTIGRAVITY ROLE
 
 - **Definition:** Antigravity is a runtime execution tool.
 
@@ -63,7 +63,7 @@
 
 ---
 
-### 6. FIXED TODAY
+## 6. FIXED TODAY
 
 - **Global Layout/Scroll:** Removed browser-level scrollbars; removed top header "strip" height; enforced strict 100vh app shell.
 - **Left Sidebar:** Optimized to fit exactly 5 agent items (Universal + 4) without scrolling; logo converted to static placeholder.
@@ -72,7 +72,7 @@
 
 ---
 
-### 7. OPEN ISSUES
+## 7. OPEN ISSUES
 
 - **6 Dev Overlay Issues (Deferred):**
   1. Hydration Error (root/layout) - mismatched server/client state.
@@ -89,10 +89,11 @@
 
 ---
 
-### 8. NEXT STEP: UI-FINISH
+## 8. NEXT STEP: UI-FINISH
 
 - **Model Strategy:** Implement selection state propagation (Auto vs. Manual).
 - **i18n Implementation:** Wire the translation layer for EN/RU parity.
 
 ---
-**END OF CHECKPOINT**
+
+## END OF CHECKPOINT
