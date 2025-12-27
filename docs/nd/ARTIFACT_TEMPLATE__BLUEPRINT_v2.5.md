@@ -34,9 +34,9 @@ ONLY these files may be modified by Builder.
 Format:
 
 - READ:
-  - <path>
+  - `path`
 - WRITE:
-  - <path>
+  - `path`
 
 Rules:
 
