@@ -47,3 +47,4 @@ System correctly handles compliant state without unnecessary diffs.
 | **2025-12-26** | v2.5 | UI: Responsive sidebar stabilization (Settings) | Fixed overlap and stabilized mobile/tablet layout. |
 | **2025-12-26** | v2.5 | UI: Sidebar Neutral State Polish | Replaced "Unable to load" errors with "Not connected" placeholders. |
 | **2025-12-26** | v2.5 | Cog: Baseline PCL established | Created docs/cognition/ baseline suite for architectural decision preservation. |
+| **2025-12-27** | v2.5 | UI: Global Layout & Scroll Freeze | Removed global scroll, top strip; enforced 100vh shell; verified 5-agent sidebar fit. |

@@ -1,7 +1,7 @@
 # Chef’s Mind AI — Project Checkpoint (v2.5)
 
-**Date:** 2025-12-26  
-**Status:** Operational (v2.5 Prep Complete)
+**Date:** 2025-12-27  
+**Status:** Operational (v2.5 Prep - Layout Freeze)
 
 ---
 
@@ -65,11 +65,10 @@
 
 ### 6. FIXED TODAY
 
-- **Agent Unification:** Renamed all routes and UI strings to match Unified Canon IDs and Labels.
-
-- **ID/Label Separation:** Internal IDs (e.g., `souschef`) are distinct from UI Labels (`SousChef`).
-- UI Stability: Restored dev server boot on port 3010; fixed broken npm scripts via direct npx execution.
-- **Settings UI Layout:** Resolved overlap issue by making sidebars responsive (LeftSidebar hidden < lg, RightSidebar hidden < xl) and stabilizing flexbox properties (min-w-0, flex-shrink-0, overflow-x-hidden).
+- **Global Layout/Scroll:** Removed browser-level scrollbars; removed top header "strip" height; enforced strict 100vh app shell.
+- **Left Sidebar:** Optimized to fit exactly 5 agent items (Universal + 4) without scrolling; logo converted to static placeholder.
+- **Agent Unification:** Renamed routes and UI labels to match canonical config.
+- **Proof of Work:** Screenshots of updated layout saved in `docs/proof/ui_*.png`.
 
 ---
 
@@ -83,7 +82,8 @@
   5. useSidebarData.ts:172:36 - Failed to fetch (Backend not connected).
   6. useSidebarData.ts:203:36 - Failed to fetch (Backend not connected).
 
-- **i18n Wiring:** Language switchers (EN/RU) in UI are present but not connected to a translation system.
+- **i18n Wiring:** Language switchers (EN/RU) toggle click has no effect (not wired to translation system).
+- **Theme Wiring:** Theme toggle click has no effect (not wired to state/system).
 - **Model Wiring:** Integration of UI model selection with the backend execution service.
 - **Visual Inconsistencies:** Minor token drift to be addressed in the final UI-Finish pass.
 

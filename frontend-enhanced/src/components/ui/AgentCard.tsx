@@ -22,17 +22,18 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, isActive, onClick }
         <button
             onClick={() => onClick(agent.id)}
             className={`
-        w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-200 text-left group
-        border 
+        w-[calc(100%-1rem)] mx-auto flex items-center gap-4 py-2 px-3 rounded-[2rem] transition-all duration-300 text-left group
+        min-h-[64px]
+        relative overflow-visible
         ${isActive
-                    ? 'background-surface border-accent/30 background-glow-active scale-[1.02]'
-                    : 'background-surface/50 border-transparent hover:border-white/10 background-surface hover:shadow-premium hover:scale-[1.02]'
+                    ? 'bg-gradient-to-r from-accent/20 via-accent/5 to-transparent shadow-[0_0_15px_-3px_rgba(56,189,248,0.3)]'
+                    : 'hover:bg-white/5 hover:shadow-lg hover:shadow-black/20'
                 }
       `}
         >
             <div className={`
-        flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-colors
-        ${isActive ? 'background-accent/20 text-accent' : 'background-white/5 text-textSecondary group-hover:text-textPrimary group-hover:background-white/10'}
+        flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300
+        ${isActive ? 'bg-accent/20 text-accent shadow-[0_0_10px_-2px_rgba(56,189,248,0.4)]' : 'bg-white/5 text-textSecondary group-hover:text-white group-hover:bg-white/10'}
       `}>
                 <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
             </div>

@@ -14,19 +14,19 @@ export function AppLayout({ children, currentAgent }: AppLayoutProps) {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-slate-950 text-slate-50">
       {/* Header */}
       <AppHeader currentAgent={currentAgent} />
 
-      {/* Main Layout */}
-      <div className="flex h-[calc(100vh-64px)] overflow-x-hidden">
+      {/* Main Layout (3 Columns) */}
+      <div className="flex-1 w-full h-full overflow-hidden flex">
         {/* Left Sidebar - Agent Navigation */}
-        <div className="hidden lg:flex h-full">
+        <div className="hidden lg:flex h-full flex-shrink-0">
           <LeftSidebar />
         </div>
 
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main className="flex-1 min-w-0 h-full overflow-hidden relative flex flex-col">
           {children}
         </main>
 
