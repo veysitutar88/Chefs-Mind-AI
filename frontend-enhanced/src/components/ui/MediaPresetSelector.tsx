@@ -175,15 +175,15 @@ export const MediaPresetSelector: React.FC<MediaPresetSelectorProps> = ({ onSele
                         key={preset.id}
                         onClick={() => onSelect(preset)}
                         className={`
-                            relative flex flex-col items-start p-3 rounded-xl border transition-all duration-200 text-left
+                            relative flex flex-col items-center p-3 rounded-2xl border transition-all duration-200 text-center group
                             ${isActive
-                                ? 'bg-accent/10 border-accent text-accent'
-                                : 'bg-surface border-borderSoft text-textSecondary hover:border-accent/50 hover:text-textPrimary'
+                                ? 'bg-accent/10 border-accent/50 text-accent shadow-[0_0_15px_-3px_rgba(56,189,248,0.15)]'
+                                : 'bg-surface border-borderSoft text-textSecondary hover:border-accent/40 hover:text-textPrimary hover:bg-white/5'
                             }
                         `}
                     >
-                        <div className={`mb-2 p-1.5 rounded-lg ${isActive ? 'bg-accent/20' : 'bg-white/5'}`}>
-                            <Icon size={16} />
+                        <div className={`mb-2 p-2.5 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-accent/20 text-accent shadow-[0_0_10px_-2px_rgba(56,189,248,0.5)]' : 'bg-white/5 text-textSecondary group-hover:bg-white/10 group-hover:text-white group-hover:shadow-[0_0_10px_-4px_rgba(255,255,255,0.3)]'}`}>
+                            <Icon size={18} />
                         </div>
                         <span className="text-xs font-semibold mb-0.5">{preset.label}</span>
                         <span className="text-[10px] opacity-70 leading-tight">{preset.description}</span>

@@ -89,7 +89,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             {/* Header */}
             <div className="absolute top-0 left-0 right-0 h-20 bg-surface/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 z-10 justify-between">
                 <div className="flex items-center gap-3">
-                    <Logo iconOnly className="opacity-50 scale-75 hover:opacity-100 transition-opacity" />
+                    {/* Only show logo for Universal Chat (or if explicitly requested) - FoodFrame should be text only */}
+                    {activeAgent.id === 'universal' && (
+                        <Logo iconOnly className="opacity-50 scale-75 hover:opacity-100 transition-opacity" />
+                    )}
                     <div>
                         <h2 className="text-lg font-bold text-textPrimary flex items-center gap-2">
                             {activeAgent.title}

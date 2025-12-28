@@ -23,11 +23,11 @@ export function LeftSidebar() {
 
       {/* 1. Static Header / Logo Placeholder (Non-interactive) - Fixed Height */}
       <div
-        className="flex-shrink-0 flex items-center justify-center pointer-events-none select-none h-20 w-full"
+        className="flex-shrink-0 flex items-center justify-center pointer-events-none select-none h-24 w-full"
         aria-hidden="true"
       >
-        <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl border border-white/5 opacity-80">
-          <Logo size="medium" className="pointer-events-none" />
+        <div className="relative w-24 h-24 flex items-center justify-center opacity-40 border-2 border-dashed border-white/10 rounded-lg">
+          <span className="text-[10px] text-textSecondary font-mono tracking-widest text-center leading-tight">LOGO<br />SLOT<br />4:5</span>
         </div>
       </div>
 

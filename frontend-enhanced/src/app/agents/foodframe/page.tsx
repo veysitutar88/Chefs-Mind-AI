@@ -1,7 +1,7 @@
 'use client';
 
 import { AppLayout } from '../../../components/layout/AppLayout';
-import { ChatInterface } from '../../../components/chat/ChatInterface';
+import { FoodFrameStudio } from '../../../components/chat/FoodFrameStudio';
 import { AGENT_CANON } from '@/config/agents';
 
 export default function FoodFramePage() {
@@ -9,10 +9,7 @@ export default function FoodFramePage() {
 
   return (
     <AppLayout currentAgent={agent.id}>
-      <ChatInterface
-        initialAgentId={agent.id}
-        title={agent.label}
-      />
+      <FoodFrameStudio />
     </AppLayout>
   );
 }

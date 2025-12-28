@@ -115,15 +115,19 @@ export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({
     const selectedLabel = selectedModelDef ? selectedModelDef.label : value;
 
     return (
-        <div className={`relative group/selector ${className || ''}`}>
-            <div className="absolute top-0 right-0 -mt-2 -mr-2 z-10 flex gap-1 pointer-events-none">
-                {fetchError && <Badge variant="destructive" className="text-[10px] px-1 h-4 scale-75 origin-top-right shadow-sm">Offline</Badge>}
-            </div>
+        <div className={`relative group/selector flex flex-col gap-1 ${className || ''}`}>
+            {/* Label / Offline Status Row */}
+            {fetchError && (
+                <div className="flex items-center gap-1.5 px-1 mb-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse" />
+                    <span className="text-[10px] font-bold text-red-400 tracking-wide uppercase">Offline Mode</span>
+                </div>
+            )}
 
             {/* Trigger Button */}
             <button
                 onClick={handleToggle}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-borderSoft text-sm text-textPrimary hover:border-accent/50 transition-all w-full justify-between group min-w-[180px]"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-borderSoft text-sm text-textPrimary hover:border-accent/50 transition-all w-full justify-between group min-w-[180px] hover:shadow-glow hover:bg-slate-900/80"
                 disabled={loading}
             >
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -137,7 +141,7 @@ export const MediaModelSelector: React.FC<MediaModelSelectorProps> = ({
 
             {/* Dropdown Menu */}
             {isDropdownOpen && !loading && (
-                <div className="absolute bottom-full left-0 mb-2 w-[320px] bg-surface border border-borderSoft rounded-xl shadow-premium overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute bottom-full left-0 mb-2 w-[320px] bg-slate-950 border border-borderSoft rounded-xl shadow-premium overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-2 space-y-1 max-h-[280px] overflow-y-auto custom-scrollbar">
                         {/* Header for fallback mode */}
                         {fetchError && (

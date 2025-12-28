@@ -29,18 +29,18 @@ export const QualitySelector: React.FC<QualitySelectorProps> = ({ value, onChang
     <div className="relative">
       <button
         onClick={handleToggle}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-borderSoft text-xs text-textPrimary hover:border-accent/50 transition-all min-w-[120px] justify-between"
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-borderSoft text-xs text-textPrimary hover:border-accent/50 transition-all min-w-[140px] justify-between hover:shadow-glow hover:bg-slate-900/80"
         disabled={false}
       >
         <div className="flex items-center gap-2">
-          <Sparkles size={12} className="text-accent" />
-          <span>{selectedQuality.label}</span>
+          <Sparkles size={14} className="text-accent" />
+          <span className="font-medium">{selectedQuality.label}</span>
         </div>
-        <ChevronDown size={12} className={`text-textSecondary transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`text-textSecondary transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-full bg-surface border border-borderSoft rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute bottom-full left-0 mb-2 w-full bg-slate-950 border border-borderSoft rounded-xl shadow-premium overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
           {QUALITY_OPTIONS.map(quality => (
             <button
               key={quality.id}

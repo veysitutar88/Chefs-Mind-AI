@@ -80,7 +80,7 @@ export interface SidebarData {
     refetchTasks: () => Promise<void>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5003';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
 
 export function useSidebarData(): SidebarData {
     // Media state

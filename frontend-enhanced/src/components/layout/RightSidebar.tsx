@@ -33,53 +33,31 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
 
   // Mock sections based on Design A (Unified Panel)
   return (
-    <div className="w-80 h-full bg-slate-950/50 backdrop-blur-xl border-l border-white/5 flex flex-col">
+    <div className="w-80 h-full bg-slate-950 border-l border-white/5 flex flex-col">
 
       {/* 1. MEDIA PANEL (FOODFRAME ONLY) OR LIBRARY */}
       {isFoodFrame ? (
-        <div className="flex flex-col h-full bg-slate-900/20">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-purple-500/5">
-            <h3 className="font-bold text-sm text-purple-400 flex items-center gap-2">
-              <Wand2 size={16} />
-              CREATIVE STUDIO
-            </h3>
-            <span className="text-[10px] bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">
-              Media Mode
-            </span>
-          </div>
+        <div className="flex flex-col h-full bg-transparent">
 
           <div className="p-4 space-y-6 overflow-y-auto no-scrollbar">
-            {/* Model Selector */}
+            {/* 1. Styling Presets (Moved to Top) */}
             <div>
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Model Engine</label>
-              <MediaModelSelector
-                value={selectedModel}
-                onChange={setSelectedModel}
-                type="image"
-                className="w-full"
-              />
-            </div>
-
-            {/* Preset Selector */}
-            <div>
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Styling Presets</label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs text-slate-500 font-bold uppercase tracking-wider block">Styling Presets</label>
+                <button className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-white/5 rounded" aria-label="Add Preset">
+                  <Plus size={14} />
+                </button>
+              </div>
               <MediaPresetSelector
                 activePresetId={activePreset}
                 onSelect={(p) => setActivePreset(p.id)}
               />
             </div>
 
-            {/* Format Selector Stub (Using static buttons for now to match simplicity) */}
-            <div>
-              <label className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-3 block">Format</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['1:1', '16:9', '9:16'].map(fmt => (
-                  <button key={fmt} className="text-xs bg-slate-900 border border-white/10 hover:border-purple-500/50 rounded py-2 text-slate-300 transition-colors">
-                    {fmt}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* 2. Model Engine (Read Only Label) */}
+
+
+
           </div>
         </div>
       ) : (
@@ -99,14 +77,14 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
             <div className="space-y-2">
               {loading ? (
                 <div className="h-20 flex items-center justify-center text-xs text-slate-600">Loading assets...</div>
-              ) : media.length > 0 ? (
-                media.slice(0, 3).map(item => (
+              ) : media.items.length > 0 ? (
+                media.items.slice(0, 3).map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer border border-transparent hover:border-white/5">
                     <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center">
-                      {item.type === 'image' ? <ImageIcon size={14} className="text-purple-400" /> : <FileText size={14} className="text-blue-400" />}
+                      {getFileIcon(item.provider)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-slate-300 truncate font-medium">{item.url.split('/').pop()}</div>
+                      <div className="text-xs text-slate-300 truncate font-medium">{(item.assetUrl || 'untitled').split('/').pop()}</div>
                       <div className="text-[10px] text-slate-500">{new Date(item.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
@@ -188,7 +166,8 @@ export function RightSidebar({ onClose }: RightSidebarProps) {
           </div>
 
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
