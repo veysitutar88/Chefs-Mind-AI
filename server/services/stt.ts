@@ -1,5 +1,5 @@
 import OpenAI, { toFile } from 'openai';
-import type { WebSocket } from 'ws';
+import WebSocket from 'ws';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';

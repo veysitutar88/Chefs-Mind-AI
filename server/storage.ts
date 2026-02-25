@@ -68,11 +68,13 @@ export interface IStorage {
     data: UpdateAgentSettings
   ): Promise<AgentSettings | undefined>;
 
-  sessionStore: session.Store;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sessionStore: any;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.Store;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sessionStore: any;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({

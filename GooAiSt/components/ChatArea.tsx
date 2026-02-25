@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AgentId, Message, AgentConfig } from '../types';
+import { Message, AgentConfig } from '../types';
 import { Send, Image as ImageIcon, Video, Grid, Loader2, Paperclip, Bot } from 'lucide-react';
 import { Logo } from './Logo';
 

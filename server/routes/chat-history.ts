@@ -29,7 +29,9 @@ router.get('/history', async (req, res) => {
     // Валидация query-параметров
     const queryParams = GetChatHistoryQuerySchema.parse(req.query);
     const { page, limit, agentType } = queryParams;
-    
+    const safePage = page ?? 1;
+    const safeLimit = limit ?? 10;
+
     // Получение ID текущего пользователя
     const userId = req.user?.id;
     if (!userId) {
@@ -54,15 +56,15 @@ router.get('/history', async (req, res) => {
       .where(and(...conditions));
     
     // Вычисление количества записей для пагинации
-    const offset = (page - 1) * limit;
-    
+    const offset = (safePage - 1) * safeLimit;
+
     // Получение сессий с пагинацией
     const sessions = await db
       .select()
       .from(chatSessions)
       .where(and(...conditions))
       .orderBy(desc(chatSessions.createdAt))
-      .limit(limit)
+      .limit(safeLimit)
       .offset(offset);
     
     // Для каждой сессии получаем количество сообщений
@@ -123,7 +125,9 @@ router.get('/history/:sessionId', async (req, res) => {
     // Валидация query-параметров
     const queryParams = GetChatMessagesQuerySchema.parse(req.query);
     const { page, limit } = queryParams;
-    
+    const safePage2 = page ?? 1;
+    const safeLimit2 = limit ?? 10;
+
     // Получение ID сессии из параметров пути
     const sessionId = req.params.sessionId;
     
@@ -164,16 +168,16 @@ router.get('/history/:sessionId', async (req, res) => {
       .where(eq(messages.sessionId, sessionId));
     
     // Вычисление количества записей для пагинации
-    const offset = (page - 1) * limit;
-    
+    const offset2 = (safePage2 - 1) * safeLimit2;
+
     // Получение сообщений с пагинацией
     const sessionMessages = await db
       .select()
       .from(messages)
       .where(eq(messages.sessionId, sessionId))
       .orderBy(messages.createdAt)
-      .limit(limit)
-      .offset(offset);
+      .limit(safeLimit2)
+      .offset(offset2);
     
     // Формирование ответа
     const response = {

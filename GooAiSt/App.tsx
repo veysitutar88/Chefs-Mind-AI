@@ -15,7 +15,7 @@ const App: React.FC = () => {
   const [activeAgentId, setActiveAgentId] = useState<AgentId>('sous_chef');
   const [chatState, setChatState] = useState<ChatState>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [files, setFiles] = useState(INITIAL_FILES);
+  const [files] = useState(INITIAL_FILES);
   const [todos, setTodos] = useState<TodoItem[]>([
     { id: '1', text: 'Review weekend prep', completed: false },
     { id: '2', text: 'Order truffles', completed: true },

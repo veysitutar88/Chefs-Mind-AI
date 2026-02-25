@@ -23,7 +23,7 @@ export async function mountVite(app: Express, server: Server) {
     configFile: false,
     customLogger: {
       ...viteLogger,
-      error: (msg, options) => {
+      error: (msg: string, options?: unknown) => {
         viteLogger.error(msg, options);
         process.exit(1);
       },

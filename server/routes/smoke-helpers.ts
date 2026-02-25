@@ -8,9 +8,9 @@ import path from 'path';
 const router = Router();
 
 // GET /auth/google/status - alias for OAuth status without session
-router.get('/auth/google/status', (req, res) => {
+router.get('/auth/google/status', async (req, res) => {
   try {
-    const status = authStatus();
+    const status = await authStatus();
     res.json({
       provider: 'google',
       ...status,

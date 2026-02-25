@@ -9,7 +9,9 @@ import { env as appEnv } from './index.js';
 
 type Env = 'production' | 'development';
 
-export function cookieInfoForLog(c: session.CookieOptions) {
+type CookieOpts = { secure?: boolean | 'auto'; sameSite?: boolean | string; domain?: string; [key: string]: unknown };
+
+export function cookieInfoForLog(c: CookieOpts) {
   return `secure=${!!(c as any).secure}, sameSite=${(c as any).sameSite ?? 'unset'}, domain=${(c as any).domain ?? 'unset'}, name=${process.env.SESSION_NAME ?? 'sid'}`;
 }
 
@@ -57,7 +59,7 @@ export async function buildSession(env: Env): Promise<RequestHandler> {
         'session'
       );
 
-      const cookieOpts = sessionConfig.cookie as session.CookieOptions;
+      const cookieOpts = sessionConfig.cookie as CookieOpts;
       const middleware = session(sessionConfig);
       log(
         `[sessions] store=${(store as any).constructor.name}, ${cookieInfoForLog(cookieOpts)}, env=${env}`,
@@ -141,7 +143,7 @@ export async function buildSession(env: Env): Promise<RequestHandler> {
       'session'
     );
 
-    const cookieOpts = sessionConfig.cookie as session.CookieOptions;
+    const cookieOpts = sessionConfig.cookie as CookieOpts;
     const middleware = session(sessionConfig);
     log(
       `[sessions] store=${store.constructor.name}, ${cookieInfoForLog(cookieOpts)}, env=${env}`,
@@ -184,7 +186,7 @@ export async function buildSession(env: Env): Promise<RequestHandler> {
       'session'
     );
 
-    const cookieOpts = sessionConfig.cookie as session.CookieOptions;
+    const cookieOpts = sessionConfig.cookie as CookieOpts;
     const middleware = session(sessionConfig);
     log(
       `[sessions] store=${(store as any).constructor.name}, ${cookieInfoForLog(cookieOpts)}, env=${env}`,

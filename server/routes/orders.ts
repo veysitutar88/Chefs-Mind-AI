@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
     }
 
     const { page, limit, status } = queryValidation.data;
-    const offset = (page - 1) * limit;
+    const safeOffset = ((page ?? 1) - 1) * (limit ?? 10);
     
     // Построение условий запроса
     const conditions = [];
@@ -47,8 +47,8 @@ router.get('/', async (req, res) => {
       .from(orders)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(orders.order_date))
-      .limit(limit)
-      .offset(offset);
+      .limit(limit ?? 10)
+      .offset(safeOffset);
 
     res.json({
       ok: true,
@@ -122,8 +122,8 @@ router.post('/', async (req, res) => {
     const [newOrder] = await dbWrite
       .insert(orders)
       .values({
-        customerId: customer_id || null,
-        orderDate: order_date ? new Date(order_date) : new Date(),
+        customer_id: customer_id || null,
+        order_date: order_date ? new Date(order_date) : new Date(),
         status,
         total: total !== undefined ? String(total) : null,
         items: items || null
@@ -179,8 +179,8 @@ router.put('/:id', async (req, res) => {
     const [updatedOrder] = await dbWrite
       .update(orders)
       .set({
-        customerId: customer_id !== undefined ? customer_id : undefined,
-        orderDate: order_date ? new Date(order_date) : undefined,
+        customer_id: customer_id !== undefined ? customer_id : undefined,
+        order_date: order_date ? new Date(order_date) : undefined,
         status,
         total: total !== undefined ? String(total) : undefined,
         items: items !== undefined ? items : undefined

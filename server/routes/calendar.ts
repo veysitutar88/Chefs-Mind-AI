@@ -104,7 +104,7 @@ router.post(
       if (orderId) {
         try {
           const { dbWrite } = await import('../db.js');
-          const { calendarLinks } = await import('@shared/schema.js');
+          const { calendarLinks } = (await import('@shared/schema.js')) as any;
           const { v4: uuidv4 } = await import('uuid');
 
           await dbWrite.insert(calendarLinks).values({
@@ -253,11 +253,11 @@ router.delete(
       // Удаляем связь из calendar_links если существует
       try {
         const { dbWrite } = await import('../db.js');
-        const { calendarLinks } = await import('@shared/schema.js');
+        const { calendarLinks } = (await import('@shared/schema.js')) as any;
+        const { and, eq } = await import('drizzle-orm');
 
         await dbWrite.delete(calendarLinks)
-          .where((calendarLinks.googleEventId.eq(eventId)))
-          .and(calendarLinks.userId.eq(userGoogleId));
+          .where(and(eq(calendarLinks.googleEventId, eventId), eq(calendarLinks.userId, userGoogleId)));
       } catch (dbError) {
         console.warn('Failed to remove calendar link from database:', dbError);
         // Не блокируем удаление события если не удалось удалить связь

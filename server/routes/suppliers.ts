@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
     }
 
     const { page, limit, search } = queryValidation.data;
-    const offset = (page - 1) * limit;
+    const safeOffset = ((page ?? 1) - 1) * (limit ?? 10);
     
     // Построение условий запроса
     const conditions = [];
@@ -46,8 +46,8 @@ router.get('/', async (req, res) => {
       .from(suppliers)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(suppliers.name))
-      .limit(limit)
-      .offset(offset);
+      .limit(limit ?? 10)
+      .offset(safeOffset);
 
     res.json({
       ok: true,
@@ -116,7 +116,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { name, contactPerson, phone, email, address } = validation.data;
+    const { name, contact_person: contactPerson, phone, email, address } = validation.data;
 
     // Проверка уникальности email если указан
     if (email) {
@@ -137,7 +137,7 @@ router.post('/', async (req, res) => {
       .insert(suppliers)
       .values({
         name,
-        contactPerson: contactPerson || null,
+        contact_person: contactPerson || null,
         phone: phone || null,
         email: email || null,
         address: address || null
@@ -175,7 +175,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const { name, contactPerson, phone, email, address } = validation.data;
+    const { name, contact_person: contactPerson, phone, email, address } = validation.data;
 
     // Проверяем существование поставщика
     const [existingSupplier] = await dbRead
@@ -209,7 +209,7 @@ router.put('/:id', async (req, res) => {
       .update(suppliers)
       .set({
         name,
-        contactPerson: contactPerson !== undefined ? contactPerson : undefined,
+        contact_person: contactPerson !== undefined ? contactPerson : undefined,
         phone: phone !== undefined ? phone : undefined,
         email: email !== undefined ? email : undefined,
         address: address !== undefined ? address : undefined

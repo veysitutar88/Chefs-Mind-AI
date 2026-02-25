@@ -61,7 +61,7 @@ export async function setupAuth(app: Express) {
   app.use(jwtAuthMiddleware);
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy(async (username: string, password: string, done: (err: Error | null, user?: Express.User | false) => void) => {
       const user = await storage.getUserByUsername(username);
       if (!user || !(await comparePasswords(password, user.password))) {
         return done(null, false);
@@ -77,8 +77,8 @@ export async function setupAuth(app: Express) {
     })
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: string, done) => {
+  passport.serializeUser((user: Express.User, done: (err: any, id?: string) => void) => done(null, user.id));
+  passport.deserializeUser(async (id: string, done: (err: any, user?: Express.User | false) => void) => {
     // Проверяем кеш
     const cachedEntry = userCache.get(id);
     if (cachedEntry) {
