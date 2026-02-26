@@ -48,10 +48,13 @@ RUN chown -R nodejs:nodejs .
 USER nodejs
 
 # Expose the application port
-EXPOSE 5000
+EXPOSE 5001
 
 # Set the production environment
 ENV NODE_ENV=production
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:5001/health || exit 1
 
 # Command to run the application
 CMD ["node", "dist/server/index.js"]

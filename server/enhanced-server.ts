@@ -1,3 +1,8 @@
+// Load environment variables first so LLM clients pick up API keys at init time
+import { config as loadEnv } from 'dotenv';
+loadEnv();                               // reads .env
+loadEnv({ path: '.env.local', override: true }); // reads .env.local (real keys override dummies)
+
 import express from 'express';
 import cors from 'cors';
 import http from 'http';

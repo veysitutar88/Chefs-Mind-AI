@@ -1,0 +1,62 @@
+name: Security
+
+on:
+  # Weekly audit every Monday at 06:00 UTC
+  schedule:
+    - cron: '0 6 * * 1'
+  # Scan dependency changes on every PR
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write  # required for dependency-review SARIF upload
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run npm audit (root)
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+      - name: Install frontend dependencies
+        run: cd frontend-enhanced && npm ci
+
+      - name: Run npm audit (frontend)
+        working-directory: frontend-enhanced
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+  dependency-review:
+    name: Dependency Review (PR only)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail on high or critical vulnerabilities introduced by the PR
+          fail-on-severity: high
+          # Allow GPL-3.0 — remove if you need a stricter license policy
+          deny-licenses: AGPL-3.0, LGPL-2.0

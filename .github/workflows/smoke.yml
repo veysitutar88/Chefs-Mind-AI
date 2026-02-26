@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
@@ -22,7 +29,7 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Type Check
-        run: tsc -p . --noEmit
+        run: npm run check
       - name: Build Frontend
         run: cd frontend-enhanced && npm run build
       - name: Archive Reports

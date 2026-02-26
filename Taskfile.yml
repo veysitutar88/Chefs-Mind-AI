@@ -1,0 +1,420 @@
+version: '3'
+
+output: prefixed
+
+dotenv: ['.env']
+
+vars:
+  APP_NAME: chefs-mind-ai
+  NODE: node
+  NPM: npm
+  TSX: npx tsx
+  # Git metadata
+  GIT_COMMIT:
+    sh: git rev-parse --short HEAD 2>/dev/null || echo "unknown"
+  GIT_BRANCH:
+    sh: git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown"
+  BUILD_DATE:
+    sh: date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown"
+
+env:
+  NODE_ENV: '{{default "development" .NODE_ENV}}'
+  PORT: '{{default "5003" .PORT}}'
+
+tasks:
+
+  # ─────────────────────────────────────────────
+  ##@ Default
+  # ─────────────────────────────────────────────
+
+  default:
+    desc: Show available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  # ─────────────────────────────────────────────
+  ##@ Development
+  # ─────────────────────────────────────────────
+
+  dev:
+    desc: Start backend + Next.js frontend concurrently
+    summary: |
+      Starts both the Express backend (port 5001) and the Next.js frontend
+      (port 3001) concurrently using the npm concurrently runner.
+      Startup order: PostgreSQL must already be running.
+    cmds:
+      - '{{.NPM}} run dev'
+
+  dev:back:
+    desc: Start Express backend only (port 5001)
+    cmds:
+      - cross-env PORT=5001 npx tsx server/enhanced-server.ts
+
+  dev:front:
+    desc: Start Next.js frontend only (port 3001)
+    dir: frontend-enhanced
+    cmds:
+      - npx next dev -p 3001
+
+  dev:sandbox:
+    desc: Start Vite sandbox frontend only (port 3000)
+    dir: client
+    cmds:
+      - npx vite --port 3000
+
+  dev:full:
+    desc: Start infra + backend + frontend (all-in-one)
+    summary: Spins up PostgreSQL first, waits for it, then starts app.
+    cmds:
+      - task: infra:up
+      - task: dev
+
+  # ─────────────────────────────────────────────
+  ##@ Build
+  # ─────────────────────────────────────────────
+
+  build:
+    desc: Build server (TypeScript → dist/)
+    cmds:
+      - '{{.NPM}} run build:server'
+
+  build:client:
+    desc: Build Next.js production bundle
+    dir: frontend-enhanced
+    cmds:
+      - '{{.NPM}} run build'
+
+  build:all:
+    desc: Build server and Next.js frontend
+    cmds:
+      - task: build
+      - task: build:client
+
+  typecheck:
+    desc: Run TypeScript type checker (no emit)
+    cmds:
+      - '{{.NPM}} run check'
+
+  # ─────────────────────────────────────────────
+  ##@ Lint & Format
+  # ─────────────────────────────────────────────
+
+  lint:
+    desc: Run ESLint
+    cmds:
+      - '{{.NPM}} run lint'
+
+  lint:fix:
+    desc: Run ESLint with auto-fix
+    cmds:
+      - '{{.NPM}} run lint:fix'
+
+  fmt:
+    desc: Format code with Prettier
+    cmds:
+      - npx prettier --write "**/*.{ts,tsx,js,json,css,md}" --ignore-path .gitignore
+
+  fmt:check:
+    desc: Check formatting with Prettier (no write)
+    cmds:
+      - npx prettier --check "**/*.{ts,tsx,js,json,css,md}" --ignore-path .gitignore
+
+  check:
+    desc: Run lint + typecheck (CI pre-gate)
+    cmds:
+      - '{{.NPM}} run ci:lint-tsc'
+
+  # ─────────────────────────────────────────────
+  ##@ Testing
+  # ─────────────────────────────────────────────
+
+  test:
+    desc: Run unit and integration tests (Vitest)
+    cmds:
+      - '{{.NPM}} test'
+
+  test:watch:
+    desc: Run Vitest in watch mode
+    cmds:
+      - '{{.NPM}} run test:watch'
+
+  test:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - '{{.NPM}} run test:coverage'
+
+  test:e2e:
+    desc: Run Playwright end-to-end tests
+    cmds:
+      - '{{.NPM}} run test:e2e'
+
+  test:e2e:headed:
+    desc: Run Playwright e2e tests in headed mode (visible browser)
+    cmds:
+      - '{{.NPM}} run test:e2e:headed'
+
+  test:media:
+    desc: Run media agent integration tests
+    cmds:
+      - '{{.NPM}} run test:media'
+
+  test:mcp:
+    desc: Run MCP prompt-enhancer tests
+    cmds:
+      - '{{.NPM}} run test:mcp'
+
+  test:all:
+    desc: Run all tests (unit + e2e)
+    cmds:
+      - task: test
+      - task: test:e2e
+
+  # ─────────────────────────────────────────────
+  ##@ Database (Drizzle)
+  # ─────────────────────────────────────────────
+
+  db:generate:
+    desc: Generate new migration from schema changes (shared/schema.ts)
+    cmds:
+      - '{{.NPM}} run drizzle:generate'
+
+  db:migrate:
+    desc: Apply pending database migrations
+    cmds:
+      - '{{.NPM}} run drizzle:migrate'
+
+  db:push:
+    desc: Push schema directly to DB (dev only — no migration file)
+    prompt: This will push schema changes directly to the database. Only use in development. Continue?
+    cmds:
+      - '{{.NPM}} run db:push'
+
+  db:seed:
+    desc: Seed the database with initial data
+    cmds:
+      - '{{.NPM}} run db:seed'
+
+  db:studio:
+    desc: Open Drizzle Studio (database browser)
+    cmds:
+      - npx drizzle-kit studio
+
+  # ─────────────────────────────────────────────
+  ##@ Infrastructure (Docker — Dev)
+  # ─────────────────────────────────────────────
+
+  infra:up:
+    desc: Start dev infrastructure (PostgreSQL only)
+    cmds:
+      - docker compose -f docker-compose.yml up -d postgres
+      - docker compose -f docker-compose.yml wait postgres || true
+    silent: false
+
+  infra:down:
+    desc: Stop dev infrastructure
+    cmds:
+      - docker compose -f docker-compose.yml down
+
+  infra:logs:
+    desc: Tail infrastructure logs
+    cmds:
+      - docker compose -f docker-compose.yml logs -f postgres
+
+  infra:status:
+    desc: Show status of dev infrastructure services
+    cmds:
+      - docker compose -f docker-compose.yml ps
+
+  # ─────────────────────────────────────────────
+  ##@ Docker — Development
+  # ─────────────────────────────────────────────
+
+  docker:dev:up:
+    desc: Start all dev services (backend + postgres) via docker compose
+    cmds:
+      - docker compose -f docker-compose.yml up -d
+
+  docker:dev:down:
+    desc: Stop and remove dev containers
+    cmds:
+      - docker compose -f docker-compose.yml down
+
+  docker:dev:logs:
+    desc: Tail logs for all dev services
+    cmds:
+      - docker compose -f docker-compose.yml logs -f
+
+  docker:dev:shell:
+    desc: Open a shell inside the running backend container
+    cmds:
+      - docker compose -f docker-compose.yml exec backend sh
+
+  docker:dev:test:
+    desc: Run unit tests inside the backend container
+    cmds:
+      - docker compose -f docker-compose.yml exec backend npm test
+
+  # ─────────────────────────────────────────────
+  ##@ Docker — Production
+  # ─────────────────────────────────────────────
+
+  docker:build:
+    desc: Build production Docker image (multi-stage)
+    cmds:
+      - docker build --target runner -t {{.APP_NAME}}:{{.GIT_COMMIT}} .
+      - docker tag {{.APP_NAME}}:{{.GIT_COMMIT}} {{.APP_NAME}}:latest
+    silent: false
+
+  docker:build:frontend:
+    desc: Build production Next.js frontend Docker image
+    dir: frontend-enhanced
+    cmds:
+      - docker build -t {{.APP_NAME}}-frontend:{{.GIT_COMMIT}} .
+      - docker tag {{.APP_NAME}}-frontend:{{.GIT_COMMIT}} {{.APP_NAME}}-frontend:latest
+
+  docker:prod:up:
+    desc: Start production compose stack (backend + frontend + db + prometheus)
+    cmds:
+      - docker compose -f docker-compose.prod.yml up -d
+
+  docker:prod:down:
+    desc: Stop production compose stack
+    cmds:
+      - docker compose -f docker-compose.prod.yml down
+
+  docker:prod:logs:
+    desc: Tail production logs
+    cmds:
+      - docker compose -f docker-compose.prod.yml logs -f
+
+  docker:push:
+    desc: Push production image to registry
+    summary: |
+      Pushes {{.APP_NAME}}:latest to the configured registry.
+      Ensure DOCKER_REGISTRY is set and you're logged in.
+    vars:
+      REGISTRY: '{{default "ghcr.io" .DOCKER_REGISTRY}}'
+    cmds:
+      - docker push {{.REGISTRY}}/{{.APP_NAME}}:{{.GIT_COMMIT}}
+      - docker push {{.REGISTRY}}/{{.APP_NAME}}:latest
+
+  docker:clean:
+    desc: Remove stopped containers and dangling images
+    prompt: This will remove stopped containers and dangling images. Continue?
+    cmds:
+      - docker compose -f docker-compose.yml down --remove-orphans 2>/dev/null || true
+      - docker image prune -f
+
+  # ─────────────────────────────────────────────
+  ##@ Deploy (Production Scripts)
+  # ─────────────────────────────────────────────
+
+  deploy:
+    desc: Full production deployment (build → start → health check)
+    cmds:
+      - bash deploy/scripts/deploy.sh
+
+  deploy:update:
+    desc: Zero-downtime rolling update (pull → rebuild → restart)
+    cmds:
+      - bash deploy/scripts/update.sh
+
+  deploy:rollback:
+    desc: Roll back to previous git commit and redeploy
+    cmds:
+      - bash deploy/scripts/rollback.sh
+
+  deploy:backup:
+    desc: Create PostgreSQL database backup to deploy/backups/
+    cmds:
+      - bash deploy/scripts/backup.sh
+
+  deploy:health:
+    desc: Check health of all production services
+    cmds:
+      - bash deploy/scripts/health-check.sh
+
+  deploy:logs:
+    desc: Tail production logs (pass service name as CLI_ARGS, e.g. task deploy:logs -- backend)
+    cmds:
+      - bash deploy/scripts/logs.sh {{.CLI_ARGS}}
+
+  # ─────────────────────────────────────────────
+  ##@ Smoke Tests
+  # ─────────────────────────────────────────────
+
+  smoke:
+    desc: Run smoke test — hit /api/health and check response
+    cmds:
+      - curl -sf http://localhost:{{.PORT}}/api/health | {{.NODE}} -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); process.exit(j.status==='ok'?0:1)" || (echo "Health check failed" && exit 1)
+      - echo "Health check passed"
+
+  smoke:media:
+    desc: Run media smoke tests
+    cmds:
+      - '{{.NPM}} run smoke:media'
+
+  # ─────────────────────────────────────────────
+  ##@ CI Gate
+  # ─────────────────────────────────────────────
+
+  ci:
+    desc: Full CI pipeline — lint, typecheck, test, build
+    summary: |
+      Runs the complete quality gate:
+        1. ESLint
+        2. TypeScript typecheck
+        3. Vitest unit tests
+        4. Server build
+      Run this before opening a PR.
+    cmds:
+      - task: check
+      - task: test
+      - task: build
+
+  ci:full:
+    desc: Full CI pipeline including e2e tests
+    cmds:
+      - task: ci
+      - task: test:e2e
+
+  # ─────────────────────────────────────────────
+  ##@ Utilities
+  # ─────────────────────────────────────────────
+
+  install:
+    desc: Install all dependencies (root + frontend-enhanced)
+    cmds:
+      - '{{.NPM}} install'
+      - cd frontend-enhanced && {{.NPM}} install
+
+  clean:
+    desc: Remove build artefacts (dist/, .next/, node_modules/.cache)
+    cmds:
+      - rm -rf dist/
+      - rm -rf frontend-enhanced/.next/
+      - rm -rf node_modules/.cache/
+      - echo "Cleaned dist/, frontend-enhanced/.next/, node_modules/.cache/"
+
+  clean:all:
+    desc: Deep clean — removes dist/, .next/, and all node_modules
+    prompt: This will delete all node_modules. You will need to run 'task install' after. Continue?
+    cmds:
+      - rm -rf dist/
+      - rm -rf frontend-enhanced/.next/
+      - rm -rf node_modules/
+      - rm -rf frontend-enhanced/node_modules/
+      - echo "Deep clean done. Run 'task install' to reinstall."
+
+  info:
+    desc: Show project build info
+    silent: true
+    cmds:
+      - echo "App:      {{.APP_NAME}}"
+      - echo "Commit:   {{.GIT_COMMIT}}"
+      - echo "Branch:   {{.GIT_BRANCH}}"
+      - echo "Built:    {{.BUILD_DATE}}"
+      - echo "Node:     $(node --version)"
+      - echo "NPM:      $(npm --version)"
+      - echo "PORT:     {{.PORT}}"
