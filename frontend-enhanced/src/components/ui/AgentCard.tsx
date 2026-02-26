@@ -40,7 +40,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({ agent, isActive, onClick }
 
             <div className="flex flex-col min-w-0">
                 <span className={`font-semibold text-base truncate transition-colors ${isActive ? 'text-accent' : 'text-textPrimary group-hover:text-white'}`}>
-                    {agent.title}
+                    {agent.label}
                 </span>
                 <span className="text-xs text-textSecondary leading-snug line-clamp-2 group-hover:text-textSecondary/80">
                     {agent.subtitle}

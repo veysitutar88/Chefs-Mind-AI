@@ -1,266 +1,421 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { AgentConfig, Message } from '@/types/ui';
-import { Send, Image as ImageIcon, Video, Grid, Loader2, Paperclip, Bot } from 'lucide-react';
-import { Logo } from './Logo';
-import { ChatShell } from './ChatShell';
-import { MediaModelSelector } from './MediaModelSelector';
-import { MediaFormatSelector } from './MediaFormatSelector';
-import { UpscaleButton } from './UpscaleButton';
-import { ModelSwitcher } from './ModelSwitcher';
-import { QualitySelector } from './QualitySelector';
-import { SeedInput } from './SeedInput';
-import { StepsInput } from './StepsInput';
+'use client';
+/* =========================================================
+   Chef's AI OS — UICanon v2.5 — ChatArea
+   Center column: Agent header + messages + input
+   ========================================================= */
 
+import React, { useRef, useEffect, useState } from 'react';
+import { AgentConfig, Message } from '@/types/ui';
+import { TEXT_MODELS, TextModelId } from '@/constants/ui';
+
+/* ---------------------------------------------------------
+   ChatArea Props
+--------------------------------------------------------- */
 interface ChatAreaProps {
-    activeAgent: AgentConfig;
-    messages: Message[];
-    onSendMessage: (text: string) => void;
-    isLoading: boolean;
-    onMediaAction?: (action: 'image' | 'video' | 'gallery') => void;
-    // Media Props
-    mediaOptions?: {
-        model: string;
-        format: string;
-        quality: 'standard' | 'hd' | 'premium';
-        seed: number | null;
-        steps: number;
-        lastImage?: string | null;
-    };
-    onMediaOptionChange?: (key: 'model' | 'format' | 'quality' | 'seed' | 'steps', value: string | number | null) => void;
-    onUpscaleComplete?: (url: string) => void;
-    // Model Switcher Props
-    selectedModelId?: string | null;
-    onModelChange?: (modelId: string) => void;
+  activeAgent: AgentConfig;
+  messages: Message[];
+  onSendMessage: (text: string) => Promise<void>;
+  isLoading: boolean;
+  selectedModelId: string | null;
+  onModelChange: (modelId: string) => void;
 }
 
-export const ChatArea: React.FC<ChatAreaProps> = ({
-    activeAgent,
-    messages,
-    onSendMessage,
-    isLoading,
-    onMediaAction,
-    mediaOptions,
-    onMediaOptionChange,
-    onUpscaleComplete,
-    selectedModelId,
-    onModelChange
-}) => {
-    const [inputText, setInputText] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+/* ---------------------------------------------------------
+   ChatArea
+--------------------------------------------------------- */
+export function ChatArea({
+  activeAgent,
+  messages,
+  onSendMessage,
+  isLoading,
+  selectedModelId,
+  onModelChange,
+}: ChatAreaProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const [inputText, setInputText] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+  /* Auto-scroll on new message */
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages, isLoading]);
+  /* Auto-resize textarea */
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [inputText]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (inputText.trim() && !isLoading) {
-            onSendMessage(inputText);
-            setInputText('');
-        }
-    };
+  const handleSend = async () => {
+    const text = inputText.trim();
+    if (!text || isLoading) return;
+    setInputText('');
+    await onSendMessage(text);
+  };
 
-    const isMediaAgent = activeAgent.id === 'foodframe';
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
-    const [activeDropdown, setActiveDropdown] = useState<'model' | 'format' | 'quality' | null>(null);
+  const isEmpty = messages.length === 0;
 
-    const toggleDropdown = (name: 'model' | 'format' | 'quality') => {
-        setActiveDropdown(prev => prev === name ? null : name);
-    };
+  return (
+    <div className="flex flex-col h-full" style={{ background: 'var(--bg-root)' }}>
 
-    const closeDropdowns = () => setActiveDropdown(null);
+      {/* ── Agent Header ── */}
+      <header
+        className="flex items-center justify-between px-6"
+        style={{ height: 64, borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="agent-icon agent-icon--md"
+            style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border-accent)' }}
+          >
+            <span style={{ fontSize: 18 }}>{activeAgent.icon}</span>
+          </div>
+          <div>
+            <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {activeAgent.label}
+            </div>
+            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {activeAgent.subtitle}
+            </div>
+          </div>
+        </div>
 
+        {/* Model selector */}
+        <ModelSelector
+          selectedModelId={(selectedModelId || 'auto') as TextModelId}
+          onChange={onModelChange}
+        />
+      </header>
+
+      {/* ── Messages Area ── */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+        {isEmpty ? (
+          <EmptyState agent={activeAgent} />
+        ) : (
+          <>
+            {messages.map(msg => (
+              <ChatMessage key={msg.id} message={msg} agentIcon={activeAgent.icon} />
+            ))}
+            {isLoading && <TypingIndicator agentIcon={activeAgent.icon} />}
+          </>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* ── Input Area ── */}
+      <div
+        className="px-6 py-4"
+        style={{ borderTop: '1px solid var(--border-subtle)', flexShrink: 0 }}
+      >
+        <div
+          className="flex items-end gap-3 rounded-2xl p-3"
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-soft)',
+            transition: 'border-color 200ms ease, box-shadow 200ms ease',
+          }}
+          onFocus={() => {}}
+        >
+          {/* Textarea */}
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Message ${activeAgent.label}…`}
+            rows={1}
+            className="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed"
+            style={{
+              color: 'var(--text-primary)',
+              minHeight: 36,
+              maxHeight: 160,
+              fontFamily: 'inherit',
+            }}
+          />
+
+          {/* Attach button */}
+          <button
+            className="flex-shrink-0 flex items-center justify-center rounded-xl transition-colors"
+            style={{
+              width: 36,
+              height: 36,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-muted)',
+            }}
+            title="Attach file"
+          >
+            <PaperclipIcon />
+          </button>
+
+          {/* Send button */}
+          <button
+            onClick={handleSend}
+            disabled={!inputText.trim() || isLoading}
+            className="flex-shrink-0 flex items-center justify-center rounded-xl transition-all"
+            style={{
+              width: 36,
+              height: 36,
+              background: inputText.trim() && !isLoading ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+              border: '1px solid transparent',
+              color: inputText.trim() && !isLoading ? '#fff' : 'var(--text-disabled)',
+              boxShadow: inputText.trim() && !isLoading ? '0 0 16px var(--accent-glow)' : 'none',
+              cursor: inputText.trim() && !isLoading ? 'pointer' : 'not-allowed',
+            }}
+            title="Send (Enter)"
+          >
+            {isLoading ? <SpinnerIcon /> : <SendIcon />}
+          </button>
+        </div>
+
+        <div className="mt-2 flex items-center justify-center">
+          <span className="text-xs" style={{ color: 'var(--text-disabled)' }}>
+            Enter to send · Shift+Enter for new line
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   ChatMessage
+--------------------------------------------------------- */
+function ChatMessage({ message, agentIcon }: { message: Message; agentIcon: string }) {
+  const isUser = message.role === 'user';
+  const isSystem = message.role === 'system';
+
+  if (isSystem) {
     return (
-        <ChatShell>
-
-            {/* Task 1.3: Backdrop for closing dropdowns */}
-            {activeDropdown && (
-                <div
-                    className="fixed inset-0 z-40 bg-transparent"
-                    onClick={closeDropdowns}
-                    aria-label="Close dropdowns"
-                />
-            )}
-
-            {/* Header */}
-            <div className="absolute top-0 left-0 right-0 h-20 bg-surface/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 z-10 justify-between">
-                <div className="flex items-center gap-3">
-                    {/* Only show logo for Universal Chat (or if explicitly requested) - FoodFrame should be text only */}
-                    {activeAgent.id === 'universal' && (
-                        <Logo iconOnly className="opacity-50 scale-75 hover:opacity-100 transition-opacity" />
-                    )}
-                    <div>
-                        <h2 className="text-lg font-bold text-textPrimary flex items-center gap-2">
-                            {activeAgent.title}
-                            <div className="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_#4BC9FF] animate-pulse"></div>
-                        </h2>
-                        <p className="text-xs text-textSecondary">{activeAgent.subtitle}</p>
-                    </div>
-                </div>
-
-                {/* Model Switcher */}
-                {onModelChange && (
-                    <ModelSwitcher
-                        agentKey={activeAgent.id as any}
-                        selectedModelId={selectedModelId || null}
-                        onChange={onModelChange}
-                    />
-                )}
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 pt-24 pb-32 space-y-6 custom-scrollbar">
-                {messages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center opacity-40">
-                        <Bot size={64} className="text-accent mb-4" />
-                        <p className="text-textSecondary text-lg">Start a conversation with {activeAgent.title}</p>
-                    </div>
-                )}
-
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`flex w-full animate-in fade-in slide-in-from-bottom-2 duration-200 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div className={`max-w-[70%] p-4 rounded-2xl relative group shadow-sm transition-all ${msg.role === 'user'
-                            ? 'bg-accent/10 border border-accent/20 text-textPrimary rounded-tr-sm hover:bg-accent/15'
-                            : 'bg-surface border border-white/5 text-textSecondary rounded-tl-sm hover:bg-surface/80'
-                            }`}>
-                            <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
-                            <span className="text-[10px] opacity-40 mt-2 block text-right">
-                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-
-                {isLoading && (
-                    <div
-                        className="flex justify-start w-full"
-                        style={{
-                            opacity: 0,
-                            transform: 'translateY(10px)',
-                            animation: 'fadeIn 0.2s forwards'
-                        }}
-                    >
-                        <div className="bg-surface border border-white/5 p-4 rounded-2xl rounded-tl-sm flex items-center gap-2 shadow-sm">
-                            <Loader2 className="animate-spin text-accent" size={18} />
-                            <span className="text-sm text-textSecondary">Thinking...</span>
-                        </div>
-                    </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-transparent pt-10 pb-6 px-6">
-
-                {/* Media Actions for FoodFrame */}
-                {isMediaAgent && (
-                    <div className="flex flex-col gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 relative z-50">
-                        {/* Advanced Controls Row */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <MediaModelSelector
-                                value={mediaOptions?.model || ''}
-                                onChange={(val) => onMediaOptionChange?.('model', val)}
-                                type="image"
-                                isOpen={activeDropdown === 'model'}
-                                onToggle={() => toggleDropdown('model')}
-                            />
-                            <MediaFormatSelector
-                                value={mediaOptions?.format || ''}
-                                onChange={(val) => onMediaOptionChange?.('format', val)}
-                                isOpen={activeDropdown === 'format'}
-                                onToggle={() => toggleDropdown('format')}
-                            />
-                            <QualitySelector
-                                value={mediaOptions?.quality || 'standard'}
-                                onChange={(val) => onMediaOptionChange?.('quality', val)}
-                                isOpen={activeDropdown === 'quality'}
-                                onToggle={() => toggleDropdown('quality')}
-                            />
-                            <UpscaleButton
-                                lastImage={mediaOptions?.lastImage}
-                                onUpscaleComplete={onUpscaleComplete}
-                            />
-                        </div>
-
-                        {/* Additional Controls Row */}
-                        <div className="flex items-center gap-4">
-                            <SeedInput
-                                value={mediaOptions?.seed || null}
-                                onChange={(val) => onMediaOptionChange?.('seed', val)}
-                            />
-                            <StepsInput
-                                value={mediaOptions?.steps || 30}
-                                onChange={(val) => onMediaOptionChange?.('steps', val)}
-                            />
-                        </div>
-
-                        {/* Action Buttons Row */}
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => onMediaAction?.('image')}
-                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-accent/30 text-accent text-sm hover:bg-accent hover:text-white transition-all hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                <ImageIcon size={16} /> Generate Image
-                            </button>
-                            <button
-                                onClick={() => onMediaAction?.('video')}
-                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-accent/30 text-accent text-sm hover:bg-accent hover:text-white transition-all hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                                <Video size={16} /> Generate Video
-                            </button>
-                            <button
-                                onClick={() => onMediaAction?.('gallery')}
-                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-white/10 text-textSecondary text-sm hover:text-textPrimary hover:border-white/20 transition-all hover:bg-white/5"
-                            >
-                                <Grid size={16} /> View Gallery
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Input Box */}
-                <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
-                    <div className="relative flex-1 group">
-                        <input
-                            type="text"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            placeholder={`Message ${activeAgent.title}...`}
-                            className="w-full bg-slate-950/50 border border-white/10 text-textPrimary rounded-xl py-4 pl-6 pr-14 focus:outline-none focus:border-accent/50 focus:shadow-glow transition-all placeholder:text-textSecondary/50 hover:border-white/20"
-                            disabled={isLoading}
-                        />
-                        <button
-                            type="button"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-textSecondary hover:text-accent transition-colors p-2 hover:bg-white/5 rounded-lg"
-                        >
-                            <Paperclip size={20} />
-                        </button>
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={!inputText.trim() || isLoading}
-                        className={`
-              p-4 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center
-              ${!inputText.trim() || isLoading
-                                ? 'bg-surface text-textSecondary cursor-not-allowed border border-white/5'
-                                : 'bg-accent text-white shadow-glow hover:shadow-glow-active hover:scale-105 active:scale-95'
-                            }
-            `}
-                    >
-                        <Send size={20} />
-                    </button>
-                </form>
-                <p className="text-center text-[10px] text-textSecondary mt-3 opacity-50">
-                    AI generated content may be inaccurate. Check important info.
-                </p>
-            </div>
-        </ChatShell>
+      <div className="flex justify-center">
+        <div
+          className="message-bubble--system px-4 py-2 text-xs max-w-md text-center"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {message.text}
+        </div>
+      </div>
     );
-};
+  }
+
+  return (
+    <div className={`flex items-end gap-3 animate-fade-in-up ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      {/* Avatar */}
+      {!isUser && (
+        <div
+          className="agent-icon agent-icon--sm flex-shrink-0"
+          style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border-accent)', marginBottom: 2 }}
+        >
+          <span style={{ fontSize: 13 }}>{agentIcon}</span>
+        </div>
+      )}
+
+      {/* Bubble */}
+      <div
+        className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${isUser ? 'message-bubble--user' : 'message-bubble--assistant'}`}
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {/* Image result */}
+        {message.mediaUrl && message.mediaType === 'image' && (
+          <img
+            src={message.mediaUrl}
+            alt="Generated"
+            className="rounded-xl mb-2 max-w-full"
+            style={{ maxHeight: 300, objectFit: 'cover' }}
+          />
+        )}
+        {message.text}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   EmptyState — shown when no messages
+--------------------------------------------------------- */
+function EmptyState({ agent }: { agent: AgentConfig }) {
+  const suggestions: Record<string, string[]> = {
+    souschef:    ['Create a recipe for sea bass', 'Suggest a plating technique', 'Prep schedule for 40 covers'],
+    gastrocount: ['Calculate food cost for tonight', 'Inventory status', 'Generate weekly cost report'],
+    gastromind:  ['Latest food trends 2025', 'Competitor analysis', 'Seasonal ingredient insights'],
+    foodframe:   ['Generate a hero dish photo', 'Create a menu visual', 'Style a social media post'],
+  };
+
+  const prompts = suggestions[agent.id] || [];
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full py-16 text-center animate-fade-in">
+      <div
+        className="agent-icon agent-icon--lg mb-5"
+        style={{
+          background: 'var(--accent-subtle)',
+          border: '1px solid var(--border-accent)',
+          boxShadow: '0 0 32px var(--accent-glow)',
+        }}
+      >
+        <span style={{ fontSize: 28 }}>{agent.icon}</span>
+      </div>
+
+      <h2 className="text-xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+        {agent.label}
+      </h2>
+      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
+        {agent.subtitle}
+      </p>
+
+      {prompts.length > 0 && (
+        <div className="flex flex-col gap-2 w-full max-w-sm">
+          {prompts.map((prompt, i) => (
+            <button
+              key={i}
+              className="px-4 py-3 rounded-xl text-sm text-left transition-all group relative"
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-soft)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <div
+                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'var(--bg-hover)', pointerEvents: 'none' }}
+              />
+              <span className="relative z-10">{prompt}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   Typing Indicator
+--------------------------------------------------------- */
+function TypingIndicator({ agentIcon }: { agentIcon: string }) {
+  return (
+    <div className="flex items-end gap-3 animate-fade-in">
+      <div
+        className="agent-icon agent-icon--sm flex-shrink-0"
+        style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border-accent)', marginBottom: 2 }}
+      >
+        <span style={{ fontSize: 13 }}>{agentIcon}</span>
+      </div>
+      <div
+        className="message-bubble--assistant px-4 py-3 flex items-center gap-1.5"
+        style={{ minHeight: 42 }}
+      >
+        <div className="typing-dot" />
+        <div className="typing-dot" />
+        <div className="typing-dot" />
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   Model Selector (chat header)
+--------------------------------------------------------- */
+function ModelSelector({ selectedModelId, onChange }: {
+  selectedModelId: TextModelId;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = TEXT_MODELS.find(m => m.id === selectedModelId) || TEXT_MODELS[0];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid var(--border-soft)',
+          color: 'var(--text-muted)',
+          fontSize: 13,
+        }}
+      >
+        <span>{selected.label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-2 z-20 popover-canon"
+            style={{ minWidth: 180 }}
+          >
+            {TEXT_MODELS.map(model => (
+              <button
+                key={model.id}
+                onClick={() => { onChange(model.id); setOpen(false); }}
+                className="w-full flex items-start gap-3 px-3 py-2.5 rounded-xl text-left transition-colors group relative"
+              >
+                <div
+                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'var(--bg-hover)', pointerEvents: 'none' }}
+                />
+                <div className="relative z-10">
+                  <div
+                    className="text-sm font-medium"
+                    style={{ color: selectedModelId === model.id ? 'var(--accent)' : 'var(--text-primary)' }}
+                  >
+                    {model.label}
+                  </div>
+                  <div className="text-xs" style={{ color: 'var(--text-disabled)' }}>
+                    {model.description}
+                  </div>
+                </div>
+                {selectedModelId === model.id && (
+                  <div
+                    className="ml-auto flex-shrink-0 relative z-10"
+                    style={{ width: 6, height: 6, borderRadius: 9999, background: 'var(--accent)', marginTop: 6 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------
+   Icons
+--------------------------------------------------------- */
+function SendIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+function PaperclipIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" strokeLinecap="round" />
+    </svg>
+  );
+}

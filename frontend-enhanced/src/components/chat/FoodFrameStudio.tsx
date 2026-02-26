@@ -10,7 +10,7 @@ export function FoodFrameStudio() {
     const agent = AGENT_CANON.foodframe;
     const activeAgent: AgentConfig = {
         id: agent.id,
-        title: agent.label,
+        label: agent.label,
         subtitle: agent.subtitle,
         iconName: agent.iconName,
         icon: agent.icon,
@@ -26,6 +26,7 @@ export function FoodFrameStudio() {
         },
     ]);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
     // 3. Media State
     const [mediaOptions, setMediaOptions] = useState({
@@ -85,7 +86,7 @@ export function FoodFrameStudio() {
         }
     };
 
-    const handleMediaOptionChange = (key: string, value: any) => {
+    const handleMediaOptionChange = (key: string, value: string | number | null) => {
         setMediaOptions(prev => ({ ...prev, [key]: value }));
     };
 
@@ -97,16 +98,19 @@ export function FoodFrameStudio() {
         console.log('[Studio] Media Action:', action);
     };
 
+    // Suppress unused-variable warnings for handlers kept for future use
+    void handleMediaOptionChange;
+    void handleUpscaleComplete;
+    void handleMediaAction;
+
     return (
         <ChatArea
             activeAgent={activeAgent}
             messages={messages}
             onSendMessage={handleSendMessage}
             isLoading={isLoading}
-            mediaOptions={mediaOptions}
-            onMediaOptionChange={handleMediaOptionChange}
-            onUpscaleComplete={handleUpscaleComplete}
-            onMediaAction={handleMediaAction}
+            selectedModelId={selectedModelId}
+            onModelChange={setSelectedModelId}
         />
     );
 }

@@ -10,8 +10,6 @@ type AgentId = 'souschef' | 'gastrocount' | 'gastromind' | 'foodframe' | null;
 
 interface ChatInterfaceProps {
   initialAgentId: AgentId;
-  title?: string;
-  subtitle?: string;
 }
 
 export function ChatInterface({ initialAgentId }: ChatInterfaceProps) {
@@ -19,15 +17,16 @@ export function ChatInterface({ initialAgentId }: ChatInterfaceProps) {
   const canonAgent = initialAgentId ? AGENT_CANON[initialAgentId] : null;
   const activeAgent: AgentConfig = canonAgent ? {
     id: canonAgent.id,
-    title: canonAgent.label,
+    label: canonAgent.label,
     subtitle: canonAgent.subtitle,
     iconName: canonAgent.iconName,
     icon: canonAgent.icon
   } : {
-    id: 'universal',
-    title: 'Universal Chat',
+    id: 'souschef',
+    label: 'Universal Chat',
     subtitle: 'Orchestrator',
-    iconName: 'Layout',
+    iconName: 'chef_hat',
+    icon: '🍳',
   };
 
   // 2. State
@@ -40,6 +39,7 @@ export function ChatInterface({ initialAgentId }: ChatInterfaceProps) {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   // 3. Handlers
   const handleSendMessage = async (text: string) => {
@@ -92,6 +92,8 @@ export function ChatInterface({ initialAgentId }: ChatInterfaceProps) {
       messages={messages}
       onSendMessage={handleSendMessage}
       isLoading={isLoading}
+      selectedModelId={selectedModelId}
+      onModelChange={setSelectedModelId}
     />
   );
 }

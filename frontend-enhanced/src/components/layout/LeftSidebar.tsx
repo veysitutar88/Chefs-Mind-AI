@@ -1,99 +1,225 @@
 'use client';
+/* =========================================================
+   Chef's AI OS — UICanon v2.5 — LeftSidebar
+   Agents Navigation Column
+   ========================================================= */
 
 import React from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Logo } from '../ui/Logo';
-import { AgentCard } from '../ui/AgentCard';
+import { useApp } from './AppLayout';
 import { AGENTS } from '@/constants/ui';
 import { AgentId } from '@/types/ui';
-import { Settings, Sparkles, MessageSquare } from 'lucide-react';
 
+/* ---------------------------------------------------------
+   Agent accent color map
+--------------------------------------------------------- */
+const AGENT_COLORS: Record<AgentId, { bg: string; glow: string }> = {
+  souschef:    { bg: '#1e3a5f', glow: 'rgba(59,130,246,0.35)' },
+  gastrocount: { bg: '#1a3a2e', glow: 'rgba(34,197,94,0.35)' },
+  gastromind:  { bg: '#2d1f4e', glow: 'rgba(139,92,246,0.35)' },
+  foodframe:   { bg: '#3a1f1f', glow: 'rgba(239,68,68,0.35)' },
+};
+
+/* ---------------------------------------------------------
+   LeftSidebar Component
+--------------------------------------------------------- */
 export function LeftSidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [showSettings, setShowSettings] = React.useState(false);
-  const [showModelInfo, setShowModelInfo] = React.useState(false);
-
-  // Derived active agent ID from pathname
-  const activeAgentId = AGENTS.find(a => pathname.includes(a.id))?.id || (pathname === '/' ? null : null);
+  const { activeAgentId, setActiveAgentId, openOverlay } = useApp();
 
   return (
-    <aside className="h-full flex flex-col p-4 gap-4 min-w-[320px]">
-
-      {/* 1. Static Header / Logo Placeholder (Non-interactive) - Fixed Height */}
+    <aside
+      className="flex flex-col h-full"
+      style={{
+        width: 'var(--sidebar-width)',
+        minWidth: 'var(--sidebar-width)',
+        background: 'var(--bg-surface)',
+        borderRight: '1px solid var(--border-subtle)',
+      }}
+    >
+      {/* ── Brand Header ── */}
       <div
-        className="flex-shrink-0 flex items-center justify-center pointer-events-none select-none h-24 w-full"
-        aria-hidden="true"
+        className="flex items-center gap-3 px-5"
+        style={{ borderBottom: '1px solid var(--border-subtle)', height: 64, flexShrink: 0 }}
       >
-        <div className="relative w-24 h-24 flex items-center justify-center opacity-40 border-2 border-dashed border-white/10 rounded-lg">
-          <span className="text-[10px] text-textSecondary font-mono tracking-widest text-center leading-tight">LOGO<br />SLOT<br />4:5</span>
+        <div
+          className="agent-icon agent-icon--md flex-shrink-0"
+          style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border-accent)' }}
+        >
+          <span style={{ fontSize: 18 }}>🍽️</span>
+        </div>
+        <div>
+          <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.01em' }}>
+            Chef&apos;s AI OS
+          </div>
+          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            v2.5 · Pro
+          </div>
         </div>
       </div>
 
-      {/* 2. Universal Chat Link - Fixed Item */}
-      <div className="px-1 flex-shrink-0">
-        <Link
-          href="/"
-          className={`
-                        w-[calc(100%-1rem)] mx-auto flex items-center gap-4 py-3 px-3 rounded-[2rem] transition-all duration-300 text-left group
-                        relative overflow-visible
-                        ${pathname === '/'
-              ? 'bg-gradient-to-r from-accent/20 via-accent/5 to-transparent shadow-[0_0_15px_-3px_rgba(56,189,248,0.3)]'
-              : 'hover:bg-white/5 hover:shadow-lg hover:shadow-black/20'
-            }
-                    `}
+      {/* ── Section Label ── */}
+      <div className="px-5 pt-5 pb-2 flex-shrink-0">
+        <span
+          className="text-xs font-semibold uppercase"
+          style={{ color: 'var(--text-disabled)', letterSpacing: '0.08em' }}
         >
-          <div className={`
-                        flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300
-                        ${pathname === '/' ? 'bg-accent/20 text-accent shadow-[0_0_10px_-2px_rgba(56,189,248,0.4)]' : 'bg-white/5 text-textSecondary group-hover:text-white group-hover:bg-white/10'}
-                    `}>
-            <MessageSquare size={24} strokeWidth={pathname === '/' ? 2.5 : 2} />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className={`font-semibold text-base truncate transition-colors ${pathname === '/' ? 'text-accent' : 'text-textPrimary group-hover:text-white'}`}>
-              Universal Chat
-            </span>
-            <span className="text-xs text-textSecondary leading-snug line-clamp-1">
-              Global orchestration
-            </span>
-          </div>
-        </Link>
+          Agents
+        </span>
       </div>
 
-      {/* 3. Agent List - Fixed Column (No Scroll, No Overflow Hiding) */}
-      <div className="flex flex-col gap-1 py-1 px-1 flex-shrink-0">
-        {AGENTS.map(agent => (
-          <AgentCard
-            key={agent.id}
-            agent={agent}
-            isActive={activeAgentId === agent.id}
-            onClick={(id) => router.push(`/agents/${id}`)}
-          />
-        ))}
-      </div>
+      {/* ── Agent Navigation ── */}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        {AGENTS.map((agent) => {
+          const isActive = activeAgentId === agent.id;
+          const colors = AGENT_COLORS[agent.id];
 
-      {/* Footer: User Profile + Settings (Design A: Bottom Left) */}
-      <div className="mt-auto pt-2 pb-2">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-[2rem] hover:bg-white/5 transition-colors group cursor-pointer">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accentSoft flex items-center justify-center text-white font-bold text-xs shadow-lg ring-2 ring-background group-hover:ring-accent/50 transition-all">
-            CM
+          return (
+            <AgentButton
+              key={agent.id}
+              agentId={agent.id}
+              label={agent.label}
+              subtitle={agent.subtitle}
+              icon={agent.icon}
+              isActive={isActive}
+              colors={colors}
+              onClick={() => setActiveAgentId(agent.id)}
+            />
+          );
+        })}
+      </nav>
+
+      {/* ── Bottom Section ── */}
+      <div
+        className="px-3 pb-4 pt-3 flex-shrink-0"
+        style={{ borderTop: '1px solid var(--border-subtle)' }}
+      >
+        {/* Settings */}
+        <button
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl group transition-colors duration-150 relative"
+          onClick={() => openOverlay('settings')}
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <div
+            className="agent-icon agent-icon--sm flex-shrink-0 group-hover:bg-white/10 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+          >
+            <SettingsIcon />
+          </div>
+          <span
+            className="text-sm group-hover:text-white transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Settings
+          </span>
+        </button>
+
+        {/* User row */}
+        <div className="flex items-center gap-3 px-3 py-2 mt-1">
+          <div
+            className="agent-icon agent-icon--sm flex-shrink-0"
+            style={{
+              background: 'var(--accent-subtle)',
+              border: '1px solid var(--border-accent)',
+              color: 'var(--accent)',
+              fontWeight: 700,
+              fontSize: 12,
+            }}
+          >
+            C
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-textPrimary truncate group-hover:text-white">Chef Admin</div>
-            <div className="text-[10px] text-textSecondary truncate">admin@chefsmind.ai</div>
+            <div className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>Chef</div>
+            <div className="text-xs truncate" style={{ color: 'var(--text-disabled)' }}>Pro Plan</div>
           </div>
-
-          {/* Settings Access (Moved UP/Inside Footer as requested) */}
-          <Link
-            href="/settings"
-            className="p-2 mr-1 rounded-full text-textSecondary hover:text-white hover:bg-white/10 transition-all"
-            aria-label="Settings"
-          >
-            <Settings size={20} />
-          </Link>
+          <div className="status-dot status-dot--online" />
         </div>
       </div>
     </aside>
+  );
+}
+
+/* ---------------------------------------------------------
+   AgentButton
+--------------------------------------------------------- */
+interface AgentButtonProps {
+  agentId: AgentId;
+  label: string;
+  subtitle: string;
+  icon: string;
+  isActive: boolean;
+  colors: { bg: string; glow: string };
+  onClick: () => void;
+}
+
+function AgentButton({ label, subtitle, icon, isActive, colors, onClick }: AgentButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left relative group"
+      style={{
+        background: isActive ? 'var(--bg-active)' : 'transparent',
+        border: `1px solid ${isActive ? 'var(--border-accent)' : 'transparent'}`,
+        boxShadow: isActive ? `0 0 18px ${colors.glow}` : 'none',
+        transition: 'background 150ms ease, border-color 150ms ease, box-shadow 150ms ease',
+      }}
+    >
+      {/* Hover layer */}
+      {!isActive && (
+        <div
+          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+          style={{ background: 'var(--bg-hover)', pointerEvents: 'none' }}
+        />
+      )}
+
+      {/* Icon — rounded-full per Canon */}
+      <div
+        className="agent-icon agent-icon--md flex-shrink-0 relative z-10"
+        style={{
+          background: isActive ? colors.bg : 'rgba(255,255,255,0.06)',
+          boxShadow: isActive ? `0 0 0 2px var(--accent), 0 0 14px ${colors.glow}` : 'none',
+          transition: 'box-shadow 150ms ease',
+        }}
+      >
+        <span style={{ fontSize: 18 }}>{icon}</span>
+      </div>
+
+      {/* Labels */}
+      <div className="flex-1 min-w-0 relative z-10">
+        <div
+          className="text-sm font-medium truncate transition-colors duration-150"
+          style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}
+        >
+          {label}
+        </div>
+        <div className="text-xs truncate mt-0.5" style={{ color: 'var(--text-disabled)' }}>
+          {subtitle}
+        </div>
+      </div>
+
+      {/* Active dot */}
+      {isActive && (
+        <div
+          className="flex-shrink-0 relative z-10"
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 9999,
+            background: 'var(--accent)',
+            boxShadow: '0 0 8px var(--accent-glow)',
+          }}
+        />
+      )}
+    </button>
+  );
+}
+
+/* ---------------------------------------------------------
+   Icons
+--------------------------------------------------------- */
+function SettingsIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   );
 }

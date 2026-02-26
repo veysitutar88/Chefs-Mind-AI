@@ -1,55 +1,129 @@
 'use client';
+/* =========================================================
+   Chef's AI OS — UICanon v2.5 — AppLayout
+   3-Column: Left(Agents) | Center(Chat/Canvas) | Right(Tools|FoodFrame)
+   ========================================================= */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, createContext, useContext } from 'react';
 import { LeftSidebar } from './LeftSidebar';
-import { RightSidebar } from './RightSidebar';
-import { AppHeader } from './AppHeader';
+import { RightSidebarTools } from './RightSidebarTools';
+import { RightSidebarFoodFrame } from './RightSidebarFoodFrame';
+import { ToolOverlayShell } from '@/components/overlays/ToolOverlayShell';
+import {
+  AgentId, OverlayType, MediaOptions, RightSidebarMode,
+  TodoItem, FileItem,
+} from '@/types/ui';
+import { INITIAL_TODOS, INITIAL_FILES } from '@/constants/ui';
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-  currentAgent?: string;
+/* ---------------------------------------------------------
+   App Context — shared state across layout
+--------------------------------------------------------- */
+export interface AppContextValue {
+  activeAgentId: AgentId;
+  setActiveAgentId: (id: AgentId) => void;
+  activeOverlay: OverlayType;
+  openOverlay: (type: OverlayType) => void;
+  closeOverlay: () => void;
+  rightSidebarMode: RightSidebarMode;
+  mediaOptions: MediaOptions;
+  setMediaOptions: React.Dispatch<React.SetStateAction<MediaOptions>>;
+  todos: TodoItem[];
+  setTodos: React.Dispatch<React.SetStateAction<TodoItem[]>>;
+  files: FileItem[];
 }
 
-export function AppLayout({ children, currentAgent }: AppLayoutProps) {
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+export const AppContext = createContext<AppContextValue | null>(null);
+
+export function useApp(): AppContextValue {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within AppLayout');
+  return ctx;
+}
+
+/* ---------------------------------------------------------
+   AppLayout
+--------------------------------------------------------- */
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
+  const [activeAgentId, setActiveAgentIdState] = useState<AgentId>('souschef');
+  const [activeOverlay, setActiveOverlay] = useState<OverlayType>(null);
+  const [todos, setTodos] = useState<TodoItem[]>(INITIAL_TODOS);
+  const [files] = useState<FileItem[]>(INITIAL_FILES);
+
+  const [mediaOptions, setMediaOptions] = useState<MediaOptions>({
+    model: 'gpt-image',
+    aspectRatio: '1:1',
+    resolution: '2K',
+    type: 'image',
+  });
+
+  /* Right sidebar mode: FoodFrame if active agent is foodframe */
+  const rightSidebarMode: RightSidebarMode =
+    activeAgentId === 'foodframe' ? 'foodframe' : 'tools';
+
+  const setActiveAgentId = useCallback((id: AgentId) => {
+    setActiveAgentIdState(id);
+    setActiveOverlay(null);
+  }, []);
+
+  const openOverlay = useCallback((type: OverlayType) => {
+    setActiveOverlay(type);
+  }, []);
+
+  const closeOverlay = useCallback(() => {
+    setActiveOverlay(null);
+  }, []);
+
+  const contextValue: AppContextValue = {
+    activeAgentId,
+    setActiveAgentId,
+    activeOverlay,
+    openOverlay,
+    closeOverlay,
+    rightSidebarMode,
+    mediaOptions,
+    setMediaOptions,
+    todos,
+    setTodos,
+    files,
+  };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-slate-950 text-slate-50">
-      {/* Header */}
-      <AppHeader currentAgent={currentAgent} />
+    <AppContext.Provider value={contextValue}>
+      {/* Full-height 3-column grid */}
+      <div
+        className="flex h-screen w-screen overflow-hidden"
+        style={{ background: 'var(--bg-root)' }}
+      >
+        {/* ── Col 1: Left Sidebar — Agents Navigation ── */}
+        <LeftSidebar />
 
-      {/* Main Layout (3 Columns) */}
-      <div className="flex-1 w-full h-full overflow-hidden flex">
-        {/* Left Sidebar - Agent Navigation */}
-        <div className="hidden lg:flex h-full flex-shrink-0">
-          <LeftSidebar />
-        </div>
-
-        {/* Main Content Area */}
-        <main className="flex-1 min-w-0 h-full overflow-hidden relative flex flex-col">
+        {/* ── Col 2: Center — Chat / Canvas ── */}
+        <main
+          className="flex-1 min-w-0 flex flex-col overflow-hidden"
+          style={{ borderLeft: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)' }}
+        >
           {children}
         </main>
 
-        {/* Right Sidebar - Tools & Context */}
-        {rightSidebarOpen && (
-          <div className="hidden xl:flex h-full border-l border-white/5 flex-shrink-0">
-            <RightSidebar onClose={() => setRightSidebarOpen(false)} />
-          </div>
-        )}
-
-        {/* Right Sidebar Toggle (when closed - Desktop only) */}
-        {!rightSidebarOpen && (
-          <button
-            onClick={() => setRightSidebarOpen(true)}
-            className="fixed right-0 top-20 bg-slate-800 p-2 rounded-l-lg hover:bg-slate-700 transition-colors hidden xl:block"
-            aria-label="Open tools sidebar"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+        {/* ── Col 3: Right Sidebar — conditional ── */}
+        {rightSidebarMode === 'foodframe' ? (
+          <RightSidebarFoodFrame />
+        ) : (
+          <RightSidebarTools />
         )}
       </div>
-    </div>
+
+      {/* ── Overlay Layer ── */}
+      {activeOverlay && (
+        <ToolOverlayShell
+          type={activeOverlay}
+          onClose={closeOverlay}
+        />
+      )}
+    </AppContext.Provider>
   );
 }
