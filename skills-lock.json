@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "aesthetic": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "computedHash": "895c5752c2dd2f49b0afdd2a2e3ca1eed259632e133263dc342f3785694a1804"
+    },
     "drizzle-orm": {
       "source": "bobmatnyc/claude-mpm-skills",
       "sourceType": "github",
