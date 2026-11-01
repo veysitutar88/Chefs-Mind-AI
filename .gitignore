@@ -20,3 +20,10 @@ test-results/
 .gemini/
 gha-creds-*.json
 .local/
+# Never commit runtime credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.*.example
+!.env.*.sample
